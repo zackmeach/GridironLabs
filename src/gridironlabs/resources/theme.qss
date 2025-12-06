@@ -141,25 +141,30 @@ QLabel#StatusText {
 }
 
 QFrame#LeadersPanel {
-    background-color: #10131b;
-    border: 1px solid #1f2430;
+    background-color: #171a21;
+    border: 1px solid #20242d;
     border-radius: 10px;
+    padding: 6px;
 }
 
 QLabel#LeadersTitle {
-    font-size: 18px;
-    font-weight: 700;
+    font-size: 20px;
+    font-weight: 800;
 }
 
 QLabel#LeadersSeasonLabel {
     color: #9ca3af;
     font-size: 12px;
+    margin-left: 6px;
 }
 
 QPushButton#LeadersActionButton {
-    color: #93c5fd;
+    color: #7db1ff;
     border: none;
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 0 6px;
+    text-decoration: underline;
 }
 
 QPushButton#LeadersActionButton:disabled {
@@ -167,30 +172,37 @@ QPushButton#LeadersActionButton:disabled {
 }
 
 QFrame#LeaderSection {
-    background-color: #14171f;
-    border: 1px solid #1f2430;
+    background-color: #1c1f27;
+    border: 1px solid #20242d;
     border-radius: 8px;
+    padding: 4px 6px 8px 6px;
 }
 
 QLabel#LeaderSectionTitle {
-    font-size: 15px;
-    font-weight: 700;
+    font-size: 18px;
+    font-weight: 800;
+    color: #e5e7eb;
+    margin-bottom: 4px;
 }
 
 QFrame#LeaderCard {
-    background-color: #10131b;
-    border: 1px solid #1c1f27;
-    border-radius: 6px;
+    background-color: #12151c;
+    border: 1px solid #1c2029;
+    border-radius: 8px;
+    padding: 6px 8px;
 }
 
 QLabel#LeaderCardTitle {
-    font-weight: 700;
-    color: #e5e7eb;
+    font-weight: 800;
+    color: #f3f4f6;
+    font-size: 16px;
 }
 
 QLabel#LeaderEntry {
-    color: #d1d5db;
-    font-size: 13px;
+    color: #e5e7eb;
+    font-size: 15px;
+    font-weight: 600;
+    margin-top: 3px;
 }
 
 QLabel#LeaderEmptyLabel {
