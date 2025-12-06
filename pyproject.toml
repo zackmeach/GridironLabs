@@ -1,0 +1,48 @@
+ [build-system]
+ requires = ["setuptools>=68", "wheel"]
+ build-backend = "setuptools.build_meta"
+ 
+ [project]
+ name = "gridironlabs"
+ version = "0.1.0"
+ description = "Gridiron Labs – OOTP26-inspired NFL analytics explorer built with PySide6."
+ authors = [{ name = "Gridiron Labs" }]
+ readme = "README.md"
+ license = { text = "MIT" }
+requires-python = ">=3.10"
+ dependencies = [
+     "PySide6>=6.7.1",
+     "pandas>=2.2",
+     "pyarrow>=15.0",
+     "polars>=1.5",
+     "requests>=2.31",
+     "beautifulsoup4>=4.12",
+    "rich>=13.7",
+    "nflreadpy>=0.1.5",
+ ]
+ 
+ [project.optional-dependencies]
+ dev = [
+     "pytest>=7.4",
+    "pytest-qt>=4.4.0",
+     "ruff>=0.6.0",
+     "mypy>=1.11",
+ ]
+ 
+ [project.scripts]
+ gridironlabs = "gridironlabs.main:main"
+ 
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+ 
+[tool.mypy]
+python_version = "3.10"
+ warn_unused_configs = true
+ warn_return_any = true
+ disallow_untyped_defs = true
+ ignore_missing_imports = true
+ 
+ [tool.pytest.ini_options]
+ pythonpath = ["src"]
+ testpaths = ["tests"]

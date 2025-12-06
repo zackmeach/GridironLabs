@@ -1,0 +1,60 @@
+1 Purpose and Scope
+1.1 The application delivers an OOTP26-inspired NFL analytics explorer covering players, teams, and coaches via a PySide6 desktop UI.
+1.2 Scope includes local data ingestion, Parquet-backed storage, desktop UI, and supporting scripts; excludes backend services and auth.
+
+2 Functional Requirements
+2.1 Entity summaries: Provide overview pages for players, teams, and coaches with bio, basic stats, and 80/20-style ratings; allow additional tabs for deeper analytics and history.
+2.2 Search: Enable search across players/teams/coaches; support case-insensitive matching and future ranking improvements.
+2.3 Filters: Allow filtering by position, team, era/season, and key statistical metrics.
+2.4 Statistical views: Let users toggle between traditional and advanced metrics on summary and comparison views.
+2.5 Comparisons: Support side-by-side comparisons for multiple players/teams/coaches with tabular and chart visualizations.
+2.6 Home dashboard: Show league standings, leaders, and highlights on load; all entries are clickable to drill into detail pages.
+2.7 Navigation bar: Persistent top bar with back/forward/home, section tabs (e.g., seasons/players/teams/drafts), settings menu, search field, and a “what’s happening” ticker.
+2.8 States: Provide clear loading, empty, and error states for all data-driven views.
+
+3 Data Requirements
+3.1 Primary source: Pull players, teams, and (placeholder) coaches from NFLreadpy; fail gracefully if the library is missing.
+3.2 Supplemental source: Scrape Pro-Football-Reference for gaps; include user-agent, timeouts, retry with backoff, and polite rate limits/cache to avoid re-scraping.
+3.3 Storage format: Parquet-first; no CSV/JSON/SQL for canonical data.
+3.4 Layout: Use data/raw, data/interim, data/processed, data/external directories.
+3.5 Schemas: Define and version Parquet schemas for players/teams/coaches; validate frames before write; preserve backward compatibility or supply migrations.
+3.6 IDs and de-duplication: Maintain stable unique IDs; de-dupe records across sources; normalize keys (e.g., team codes, player ids).
+3.7 Provenance: Record source, pull timestamp, and schema version with each dataset.
+3.8 Refresh process: Provide scripts to refresh data; detect offline mode and fall back to last processed data when remote fetch fails.
+
+4 Services and Repository
+4.1 SummaryRepository: Implement Parquet-backed repository providing players/teams/coaches iterables.
+4.2 Search service: In-memory search over cached summaries; ready for future indexing/scoring improvements.
+4.3 Summary service: Fetch single-entity payloads by id with optional enrichment for UI display.
+
+5 UI/UX Requirements
+5.1 Theme: Dark theme with consistent typography and spacing aligned to the grid/panel layout.
+5.2 Layout: Panel-with-content grid inspired by OOTP26; baseline window 1280x800; resize gracefully.
+5.3 Accessibility: Keyboard navigation (Tab/Shift+Tab), sensible focus order, minimum touch-friendly targets.
+5.4 Feedback: Toast/dialog for errors, non-blocking notifications for background refresh.
+5.5 Charts/tables: Comparison visuals must support sorting and basic export/clipboard copy of tables.
+
+6 Technical/Architecture Requirements
+6.1 Runtime: Python 3.10+; entrypoint `python -m gridironlabs.main` and console script `gridironlabs`.
+6.2 Config: Centralized AppConfig/AppPaths with feature flags (enable_scraping, enable_live_refresh); allow override via env/.env.
+6.3 Logging: Structured logging to file plus console; include correlation ids for data pulls; rotate logs.
+6.4 Error handling: Network timeouts, retry with backoff for HTTP; user-friendly error surfaces in UI.
+6.5 Packaging: Editable/deployable install via pyproject; optional `[dev]` extras for tooling.
+
+7 Quality and Testing Requirements
+7.1 Lint/type: Ruff and mypy clean by default; disallow untyped public defs.
+7.2 Unit tests: Services, repository adapters, and data utilities covered with pytest.
+7.3 Integration tests: Parquet read/write round-trips; scraping adapters with HTTP mocking; search flows with fixture data.
+7.4 UI smoke: pytest-qt smoke tests for main window, navigation bar, and search dialog.
+7.5 Performance: Reasonable startup (<2s on dev hardware) and search under 150 ms on processed data size targets.
+
+8 Documentation and Collaboration Requirements
+8.1 Folder-level READMEs for all major directories explaining intent and wiring.
+8.2 Contribution guide for agentic collaborators: coding standards, branch/PR flow, review expectations.
+8.3 Data dictionary documenting schemas, field meanings, and units; changelog for schema versions.
+8.4 Release notes/changelog per iteration; minimal architecture diagram for services/data flow.
+
+9 Future Enhancements
+9.1 College football integration for player history and cross-level analytics.
+9.2 Live refresh for scores/standings where available.
+9.3 Advanced analytics packs (e.g., EPA, win probability, coaching trees) layered on processed data.
