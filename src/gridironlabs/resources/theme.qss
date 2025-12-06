@@ -1,30 +1,127 @@
-/* Placeholder dark theme; extend with component-level styles. */
+/* Dark theme inspired by the provided reference. */
 QWidget {
     background-color: #0f1115;
     color: #e5e7eb;
     font-family: "Inter", "Segoe UI", sans-serif;
+    font-size: 13px;
 }
 
-QLineEdit, QComboBox, QListView, QTableView {
-    background-color: #1b1f27;
-    border: 1px solid #2b3240;
-    padding: 6px;
-    border-radius: 4px;
+#GridironLabsMainWindow {
+    background-color: #0f1115;
 }
 
-QPushButton {
-    background-color: #2563eb;
-    color: #f8fafc;
-    border: none;
+#TopNavigationBar {
+    background-color: #1b1d23;
+    border-bottom: 1px solid #262a33;
+}
+
+QToolButton#NavIconButton {
+    color: #d1d5db;
+    border: 1px solid #262a33;
+    background-color: #13151c;
+    padding: 6px 10px;
+    border-radius: 6px;
+}
+
+QToolButton#NavIconButton:hover {
+    background-color: #1c2029;
+}
+
+QToolButton#NavIconButton:disabled {
+    color: #4b5563;
+    border-color: #1c1f27;
+}
+
+QPushButton#NavSectionButton {
+    color: #d1d5db;
+    background-color: #14171f;
+    border: 1px solid #262a33;
     padding: 8px 12px;
-    border-radius: 4px;
+    border-radius: 6px;
 }
 
-QPushButton:hover {
-    background-color: #1d4ed8;
+QPushButton#NavSectionButton:hover {
+    background-color: #1c2029;
 }
 
-QPushButton:disabled {
-    background-color: #1b2534;
+QPushButton#NavSectionButton:checked {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    color: #f9fafb;
+}
+
+QLineEdit#TopNavSearch {
+    min-width: 220px;
+    background-color: #13171f;
+    border: 1px solid #262a33;
+    padding: 7px 10px;
+    border-radius: 6px;
+    selection-background-color: #2563eb;
+}
+
+QPushButton#SettingsButton {
+    background-color: #232733;
+    color: #e5e7eb;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #262a33;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+QPushButton#SettingsButton:hover {
+    background-color: #2b3140;
+}
+
+QLabel#ContextLabel {
+    color: #cbd5e1;
+    padding: 4px 8px;
+}
+
+QLabel#TickerLabel {
     color: #9ca3af;
+}
+
+#ContentFrame {
+    background-color: #11141b;
+}
+
+QLabel#PageTitle {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+QLabel#PageSubtitle {
+    color: #cbd5e1;
+    font-size: 13px;
+}
+
+QFrame#StatePanel {
+    background-color: #14171f;
+    border: 1px solid #1f2430;
+    border-radius: 8px;
+}
+
+QLabel#StateTitle {
+    font-weight: 600;
+    color: #e5e7eb;
+}
+
+QLabel#StateSubtitle {
+    color: #9ca3af;
+}
+
+QFrame#StatusBanner {
+    background-color: #1a2331;
+    border-bottom: 1px solid #1f2634;
+}
+
+QFrame#StatusBanner[severity="offline"] {
+    background-color: #2c1f2b;
+    border-color: #3a2537;
+}
+
+QLabel#StatusText {
+    color: #e5e7eb;
+    font-weight: 600;
 }

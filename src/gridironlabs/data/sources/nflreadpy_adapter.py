@@ -21,6 +21,7 @@ class NFLReadPyAdapter:
             import nflreadpy  # type: ignore  # pragma: no cover
         except ImportError as exc:  # pragma: no cover - optional dependency
             raise MissingDependencyError("nflreadpy is not installed") from exc
+        _ = nflreadpy  # Prevent unused-import linting until integration lands.
         raise NotImplementedError("nflreadpy integration will be implemented later.")
 
     def fetch_teams(self) -> Iterable[EntitySummary]:

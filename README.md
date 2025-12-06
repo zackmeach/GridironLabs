@@ -3,11 +3,12 @@
 OOTP26-inspired NFL analytics explorer built with PySide6. This repository ships the project skeleton so you can begin implementing data ingestion, Parquet-backed storage, and UI features for players, teams, and coaches.
 
 ## Quickstart
-- Install Python 3.10+ and create a virtualenv: `python -m venv .venv && source .venv/bin/activate`
+- Install Python 3.11+ and create a virtualenv: `python -m venv .venv && source .venv/bin/activate`
 - Install dependencies (plus dev tools): `pip install -e .[dev]`
-- Launch the desktop shell: `python -m gridironlabs.main` (or `gridironlabs`)
-- Expect a dark-themed shell with a persistent top nav. If Parquet datasets are present in `data/processed`, the UI uses them; otherwise it falls back to placeholders.
-- (Optional) Generate synthetic-but-complete data: `python scripts/generate_fake_nfl_data.py --start-season 1999 --end-season 2025 --min-players 21000 --max-players 25000`
+- Launch the desktop shell: `python -m gridironlabs.main`, the `gridironlabs` console script, or `python main.py`.
+- You should see a dark-themed shell with a persistent top nav, stacked content area, and stub pages for Home/Seasons/Teams/Players/Drafts/History.
+- If `nflreadpy` is unavailable, the app shows an offline placeholder banner and continues with stub data.
+- Run smoke tests (includes pytest-qt UI check): `pytest`
 
 ## Architecture
 - `src/gridironlabs/core` — configuration, domain models, repository interfaces, logging wiring.

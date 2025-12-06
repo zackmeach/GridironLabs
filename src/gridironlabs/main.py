@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sys
 
-from gridironlabs.core.config import AppConfig, AppPaths, load_config
+from gridironlabs.core.config import AppPaths, load_config
 from gridironlabs.core.logging import configure_logging
 from gridironlabs.ui.app import GridironLabsApplication
 
