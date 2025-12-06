@@ -1,0 +1,30 @@
+ /* Minimal dark theme scaffold; extend as widgets arrive. */
+ QWidget {
+     background-color: #121212;
+     color: #e0e0e0;
+     font-family: "Inter", "Segoe UI", sans-serif;
+     font-size: 14px;
+ }
+ 
+ #navigationBar {
+     background-color: #1c1c1c;
+     border-bottom: 1px solid #2a2a2a;
+ }
+ 
+ QLineEdit {
+     background-color: #1e1e1e;
+     padding: 6px 8px;
+     border: 1px solid #2f2f2f;
+     border-radius: 4px;
+ }
+ 
+ QToolButton {
+     background: #1f1f1f;
+     border: 1px solid #2f2f2f;
+     border-radius: 4px;
+     padding: 6px 10px;
+ }
+ 
+ QToolButton:hover {
+     border-color: #3f3f3f;
+ }

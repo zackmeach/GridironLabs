@@ -1,0 +1,14 @@
+ __pycache__/
+ *.pyc
+ .venv/
+ .env
+ dist/
+ build/
+ .pytest_cache/
+ .ruff_cache/
+ .mypy_cache/
+ .idea/
+ .vscode/
+ *.egg-info/
+ # Uncomment if you prefer keeping generated data out of git
+ # data/**/*.parquet
