@@ -1,0 +1,2 @@
+[console_scripts]
+gridironlabs = gridironlabs.main:main

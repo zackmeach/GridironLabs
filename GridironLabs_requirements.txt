@@ -35,7 +35,7 @@
 5.5 Charts/tables: Comparison visuals must support sorting and basic export/clipboard copy of tables.
 
 6 Technical/Architecture Requirements
-6.1 Runtime: Python 3.11+; entrypoint `python -m gridironlabs.main` and console script `gridironlabs`.
+6.1 Runtime: Python 3.10+; entrypoint `python -m gridironlabs.main` and console script `gridironlabs`.
 6.2 Config: Centralized AppConfig/AppPaths with feature flags (enable_scraping, enable_live_refresh); allow override via env/.env.
 6.3 Logging: Structured logging to file plus console; include correlation ids for data pulls; rotate logs.
 6.4 Error handling: Network timeouts, retry with backoff for HTTP; user-friendly error surfaces in UI.

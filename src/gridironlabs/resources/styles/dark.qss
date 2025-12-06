@@ -1,30 +1,126 @@
- /* Minimal dark theme scaffold; extend as widgets arrive. */
- QWidget {
-     background-color: #121212;
-     color: #e0e0e0;
-     font-family: "Inter", "Segoe UI", sans-serif;
-     font-size: 14px;
- }
- 
- #navigationBar {
-     background-color: #1c1c1c;
-     border-bottom: 1px solid #2a2a2a;
- }
- 
- QLineEdit {
-     background-color: #1e1e1e;
-     padding: 6px 8px;
-     border: 1px solid #2f2f2f;
-     border-radius: 4px;
- }
- 
- QToolButton {
-     background: #1f1f1f;
-     border: 1px solid #2f2f2f;
-     border-radius: 4px;
-     padding: 6px 10px;
- }
- 
- QToolButton:hover {
-     border-color: #3f3f3f;
- }
+/* Global */
+QWidget {
+    background-color: #0f1115;
+    color: #e5e7eb;
+    font-family: "Inter", "Segoe UI", sans-serif;
+    font-size: 14px;
+}
+
+#mainWindow {
+    background-color: #0f1115;
+}
+
+/* Top navigation */
+#topNav {
+    background-color: #16191f;
+    border-bottom: 1px solid #1f2229;
+}
+
+#topNav QToolButton,
+#topNav QPushButton {
+    background-color: #1c2028;
+    border: 1px solid #1f232c;
+    border-radius: 6px;
+    padding: 6px 12px;
+    color: #e5e7eb;
+}
+
+#topNav QPushButton:checked {
+    background-color: #243042;
+    border-color: #3a4a63;
+}
+
+#topNav QToolButton:hover,
+#topNav QPushButton:hover {
+    border-color: #3a4a63;
+}
+
+#navSearch {
+    background-color: #11141a;
+    border: 1px solid #1f2229;
+    border-radius: 6px;
+    padding: 8px 10px;
+    min-width: 220px;
+    color: #e5e7eb;
+}
+
+#navSearch:focus {
+    border-color: #4da3ff;
+    outline: none;
+}
+
+#navSettings {
+    font-weight: 600;
+}
+
+#contextLabel {
+    color: #cbd5e1;
+    font-size: 13px;
+}
+
+#tickerLabel {
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+/* Banners and placeholders */
+#infoBanner {
+    background-color: #1b1f27;
+    border: 1px solid #2a3140;
+    border-left: 3px solid #4da3ff;
+    border-radius: 6px;
+}
+
+#statePlaceholder {
+    background-color: #16191f;
+    border: 1px dashed #2a3140;
+    border-radius: 8px;
+}
+
+#statePlaceholder[state="loading"] {
+    border-style: solid;
+    border-color: #4da3ff;
+}
+
+#statePlaceholder[state="error"] {
+    border-color: #f87171;
+}
+
+#statePlaceholder[state="empty"] {
+    border-color: #94a3b8;
+}
+
+#stateTitle {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+#stateBody {
+    color: #cbd5e1;
+}
+
+#heroTitle {
+    font-size: 28px;
+    font-weight: 700;
+}
+
+#heroSubtitle {
+    color: #cbd5e1;
+}
+
+#pageHeader {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+QListWidget#searchResultsList {
+    background-color: #11141a;
+    border: 1px solid #1f2229;
+    border-radius: 6px;
+    padding: 8px;
+}
+
+QListWidget#searchResultsList::item:selected {
+    background-color: #243042;
+}
