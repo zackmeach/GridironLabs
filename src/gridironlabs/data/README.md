@@ -11,3 +11,5 @@
  1) Fetch from NFLreadpy and PFR scraper.
  2) Normalize and write Parquet into `data/processed`.
  3) UI and services read Parquet via `loaders/`.
+
+Paths default to `data/` at the repo root; override with `GRIDIRONLABS_DATA_ROOT` in `.env` if needed.
