@@ -48,18 +48,17 @@
      )
      return InMemoryRepository(players, teams, coaches)
  
- 
- def bootstrap(config: AppConfig) -> MainWindow:
-     repository = build_repository()
+def bootstrap(config: AppConfig) -> MainWindow:
+    repository = build_repository()
     search_service = SearchService(repository)
     _ = SummaryService(repository)
 
     window = MainWindow(search_service=search_service)
- 
-     stylesheet = load_stylesheet(config.paths.resources / "styles" / "dark.qss")
-     if stylesheet:
-         window.setStyleSheet(stylesheet)
-     return window
+
+    stylesheet = load_stylesheet(config.paths.resources / "styles" / "dark.qss")
+    if stylesheet:
+        window.setStyleSheet(stylesheet)
+    return window
  
  
  def run() -> None:

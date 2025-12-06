@@ -18,19 +18,19 @@
      external_data: Path
      resources: Path
  
-     @staticmethod
-     def default(root: Path | None = None) -> "AppPaths":
+    @staticmethod
+    def default(root: Path | None = None) -> "AppPaths":
         base = root or Path(__file__).resolve().parents[3]
-         data_root = base / "data"
-         return AppPaths(
-             root=base,
-             data_root=data_root,
-             raw_data=data_root / "raw",
-             interim_data=data_root / "interim",
-             processed_data=data_root / "processed",
-             external_data=data_root / "external",
-             resources=base / "src" / "gridironlabs" / "resources",
-         )
+        data_root = base / "data"
+        return AppPaths(
+            root=base,
+            data_root=data_root,
+            raw_data=data_root / "raw",
+            interim_data=data_root / "interim",
+            processed_data=data_root / "processed",
+            external_data=data_root / "external",
+            resources=base / "src" / "gridironlabs" / "resources",
+        )
  
  
  @dataclass(frozen=True)
