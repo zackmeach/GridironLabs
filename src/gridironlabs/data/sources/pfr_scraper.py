@@ -32,4 +32,5 @@ class PfrScraper:
             import requests  # type: ignore  # pragma: no cover
         except ImportError as exc:  # pragma: no cover - should be present
             raise MissingDependencyError("requests is required for scraping") from exc
+        _ = requests  # Prevent unused-import linting until scraping is implemented.
         raise NotImplementedError("PFR scraping will be implemented later.")
