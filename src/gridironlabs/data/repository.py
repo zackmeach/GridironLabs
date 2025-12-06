@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+from datetime import date, datetime
 from pathlib import Path
 from typing import Iterable, Protocol
 
-from gridironlabs.core.errors import DataValidationError, NotFoundError
+from gridironlabs.core.errors import DataValidationError, MissingDependencyError, NotFoundError
 from gridironlabs.core.models import EntitySummary
 from gridironlabs.data.schemas import SchemaVersion
 
@@ -27,14 +28,76 @@ class SummaryRepository(Protocol):
 
 
 class ParquetSummaryRepository:
-    """Skeleton Parquet-backed implementation."""
+    """Parquet-backed implementation used by services and UI."""
 
     def __init__(self, root: Path, schema_version: SchemaVersion) -> None:
         self.root = root
         self.schema_version = schema_version
+        self._cache: dict[str, list[EntitySummary]] = {}
+
+    def _path_for(self, name: str) -> Path:
+        return self.root / f"{name}.parquet"
+
+    def _normalize_date(self, raw: object) -> date | None:
+        if raw is None:
+            return None
+        if isinstance(raw, date):
+            return raw
+        if isinstance(raw, datetime):
+            return raw.date()
+        if isinstance(raw, str):
+            try:
+                return date.fromisoformat(raw)
+            except ValueError:
+                return None
+        return None
 
     def _load_table(self, name: str) -> Iterable[EntitySummary]:
-        raise NotImplementedError("Parquet loading will be implemented later.")
+        if name in self._cache:
+            return self._cache[name]
+
+        path = self._path_for(name)
+        if not path.exists():
+            raise NotFoundError(f"Parquet table {name} not found at {path}")
+
+        try:
+            import polars as pl
+        except ImportError as exc:  # pragma: no cover - optional dependency at runtime
+            raise MissingDependencyError("polars is required to load Parquet datasets") from exc
+
+        try:
+            df = pl.read_parquet(path)
+        except Exception as exc:  # pragma: no cover - surface IO errors
+            raise DataValidationError(f"Failed to read Parquet table {name}: {exc}") from exc
+
+        required_columns = {"id", "name"}
+        missing = required_columns.difference(set(df.columns))
+        if missing:
+            raise DataValidationError(f"Table {name} is missing columns: {', '.join(sorted(missing))}")
+
+        records: list[EntitySummary] = []
+        for row in df.to_dicts():
+            entity_type = row.get("entity_type") or name.rstrip("s")
+            ratings = row.get("ratings")
+            stats = row.get("stats")
+            records.append(
+                EntitySummary(
+                    id=str(row["id"]),
+                    name=str(row["name"]),
+                    entity_type=str(entity_type),
+                    era=str(row.get("era") or ""),
+                    team=(row.get("team") or None),
+                    position=(row.get("position") or None),
+                    ratings=ratings,  # type: ignore[arg-type]
+                    stats=stats,  # type: ignore[arg-type]
+                    schema_version=str(row.get("schema_version") or self.schema_version.version),
+                    source=row.get("source"),
+                    updated_at=self._normalize_date(row.get("updated_at")),
+                )
+            )
+
+        self._cache[name] = records
+        return records
 
     def iter_players(self) -> Iterable[EntitySummary]:
         return self._load_table("players")

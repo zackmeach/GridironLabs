@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Iterable
 
 from PySide6.QtWidgets import (
     QFrame,
@@ -15,6 +15,12 @@ from PySide6.QtWidgets import (
 )
 
 from gridironlabs.core.config import AppConfig, AppPaths
+from gridironlabs.core.errors import DataValidationError, NotFoundError
+from gridironlabs.core.models import SearchResult
+from gridironlabs.data.repository import ParquetSummaryRepository
+from gridironlabs.data.schemas import SCHEMA_REGISTRY
+from gridironlabs.services.search import SearchService
+from gridironlabs.services.summary import SummaryService
 from gridironlabs.ui.widgets.navigation import NavigationBar
 from gridironlabs.ui.widgets.state_panels import (
     EmptyPanel,
@@ -82,18 +88,38 @@ class SearchResultsPage(QWidget):
 
         placeholders = QHBoxLayout()
         placeholders.setSpacing(10)
-        placeholders.addWidget(
-            EmptyPanel("Results will appear here once data is wired to services.")
-        )
+        self.results_layout = QVBoxLayout()
+        self.results_layout.setSpacing(6)
+        placeholders.addLayout(self.results_layout, 3)
         placeholders.addStretch(1)
         layout.addLayout(placeholders)
         layout.addStretch(1)
 
     def set_query(self, query: str) -> None:
         if query:
-            self.summary_label.setText(f'Showing placeholder results for "{query}".')
+            self.summary_label.setText(f'Showing results for "{query}".')
         else:
             self.summary_label.setText("Type a query and press Enter.")
+
+    def set_results(self, results: Iterable[SearchResult]) -> None:
+        for idx in reversed(range(self.results_layout.count())):
+            item = self.results_layout.takeAt(idx)
+            if widget := item.widget():
+                widget.setParent(None)
+
+        results = list(results)
+        if not results:
+            self.results_layout.addWidget(EmptyPanel("No matches yet."))
+            return
+
+        for hit in results:
+            label = QLabel(
+                f"{hit.entity_type.title()}: {hit.label} "
+                f"{'(team: ' + hit.context.get('team', '') + ')' if hit.context else ''}"
+            )
+            label.setObjectName("SearchResultRow")
+            self.results_layout.addWidget(label)
+        self.results_layout.addStretch(1)
 
 
 class GridironLabsMainWindow(QMainWindow):
@@ -107,6 +133,9 @@ class GridironLabsMainWindow(QMainWindow):
         self.paths = paths
         self.logger = logger
         self.offline_mode = offline_mode
+        self.repository: ParquetSummaryRepository | None = None
+        self.search_service: SearchService | None = None
+        self.summary_service: SummaryService | None = None
 
         self.setObjectName("GridironLabsMainWindow")
         self.setWindowTitle("Gridiron Labs")
@@ -130,14 +159,18 @@ class GridironLabsMainWindow(QMainWindow):
                 ("drafts", "DRAFTS"),
                 ("history", "HISTORY"),
             ],
-            context_text="NFL Season | Week 10 | GB Packers (10-1) @ PIT Steelers (0-11)",
-            ticker_text="What's happening",
             on_home=self._on_home,
             on_section_selected=self._navigate_to,
             on_search=self._on_search,
             on_settings=self._on_settings,
             on_back=self._go_back,
             on_forward=self._go_forward,
+            context_items=[
+                "NFL Season",
+                "Week 10",
+                "Sun Nov 7th",
+                "GB Packers (10-1) @ PIT Steelers (0-11)",
+            ],
         )
         container_layout.addWidget(self.top_nav)
 
@@ -169,6 +202,7 @@ class GridironLabsMainWindow(QMainWindow):
         container_layout.addWidget(content_frame)
         self.setCentralWidget(container)
 
+        self._bootstrap_data(container_layout)
         self._navigate_to("home")
         self._update_history_buttons()
 
@@ -186,6 +220,88 @@ class GridironLabsMainWindow(QMainWindow):
             page.setObjectName(f"page-{key}")
             self.pages[key] = page
             self.content_stack.addWidget(page)
+
+    def _bootstrap_data(self, container_layout: QVBoxLayout) -> None:
+        try:
+            schema_key = f"players:{self.config.default_schema_version}"
+            schema_version = SCHEMA_REGISTRY.get(schema_key, SCHEMA_REGISTRY["players:v0"])
+            self.repository = ParquetSummaryRepository(self.paths.data_processed, schema_version)
+            players = list(self.repository.iter_players())
+            teams = list(self.repository.iter_teams())
+            coaches = list(self.repository.iter_coaches())
+
+            self.summary_service = SummaryService(repository=self.repository)
+            self.search_service = SearchService(repository=self.repository)
+            self.search_service.build_index()
+
+            seasons = {p.era for p in players if p.era} | {t.era for t in teams if t.era}
+            season_span = (
+                f"{min(seasons)}-{max(seasons)}" if seasons else "No seasons detected"
+            )
+
+            self._update_page_subtitles(players=players, teams=teams, coaches=coaches, seasons=season_span)
+            self.top_nav.set_context_items(
+                [
+                    f"Seasons {season_span}",
+                    f"Players {len(players):,}",
+                    f"Teams {len(teams):,}",
+                ]
+            )
+        except NotFoundError as exc:
+            container_layout.insertWidget(
+                1,
+                StatusBanner(
+                    f"Processed data missing at {self.paths.data_processed}. "
+                    "Run scripts/generate_fake_nfl_data.py to bootstrap.",
+                    severity="offline",
+                ),
+            )
+            if self.logger:
+                self.logger.warning("Data missing", extra={"error": str(exc)})
+        except DataValidationError as exc:
+            container_layout.insertWidget(
+                1,
+                StatusBanner(
+                    f"Data validation issue: {exc}",
+                    severity="error",
+                ),
+            )
+            if self.logger:
+                self.logger.error("Data validation failed", extra={"error": str(exc)})
+        except Exception as exc:  # pragma: no cover - catch-all for UI bootstrap
+            container_layout.insertWidget(
+                1,
+                StatusBanner(
+                    "Failed to load processed data. See logs for details.",
+                    severity="error",
+                ),
+            )
+            if self.logger:
+                self.logger.exception("Unhandled data bootstrap failure", exc_info=exc)
+
+    def _update_page_subtitles(
+        self,
+        *,
+        players: list,
+        teams: list,
+        coaches: list,
+        seasons: str,
+    ) -> None:
+        players_page = self.pages.get("players")
+        teams_page = self.pages.get("teams")
+        home_page = self.pages.get("home")
+        seasons_page = self.pages.get("seasons")
+
+        if players_page and hasattr(players_page, "set_subtitle"):
+            players_page.set_subtitle(f"{len(players):,} players across {seasons}")
+        if teams_page and hasattr(teams_page, "set_subtitle"):
+            teams_page.set_subtitle(f"{len(teams):,} teams across {seasons}")
+        if seasons_page and hasattr(seasons_page, "set_subtitle"):
+            seasons_page.set_subtitle(f"Season span: {seasons}")
+        if home_page and hasattr(home_page, "set_subtitle"):
+            home_page.set_subtitle(
+                f"{len(players):,} players | {len(teams):,} teams | {len(coaches):,} coaches"
+            )
 
     def _navigate_to(self, section_key: str, *, from_history: bool = False) -> None:
         if section_key not in self.pages:
@@ -237,6 +353,9 @@ class GridironLabsMainWindow(QMainWindow):
         if self.logger:
             self.logger.info("Search submitted", extra={"query": cleaned})
         self.search_page.set_query(cleaned)
+        if self.search_service:
+            results = self.search_service.search(cleaned, limit=12)
+            self.search_page.set_results(results)
         self._navigate_to("search")
 
     def _on_settings(self) -> None:

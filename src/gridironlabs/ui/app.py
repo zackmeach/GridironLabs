@@ -63,12 +63,14 @@ class GridironLabsApplication:
     def run(self) -> int:
         try:
             from PySide6.QtWidgets import QApplication
+            from PySide6.QtGui import QFont
         except ImportError as exc:  # pragma: no cover - optional dep at scaffold time
             raise MissingDependencyError("PySide6 is required to launch the UI") from exc
 
         app = QApplication.instance() or QApplication(sys.argv)
         app.setApplicationName("Gridiron Labs")
         app.setOrganizationName("Gridiron Labs")
+        app.setFont(QFont("Roboto Condensed"))
         stylesheet = self._load_stylesheet()
         if stylesheet:
             app.setStyleSheet(stylesheet)

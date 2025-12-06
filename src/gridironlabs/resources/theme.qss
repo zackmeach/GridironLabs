@@ -2,7 +2,7 @@
 QWidget {
     background-color: #0f1115;
     color: #e5e7eb;
-    font-family: "Inter", "Segoe UI", sans-serif;
+    font-family: "Roboto Condensed", "Inter", "Segoe UI", sans-serif;
     font-size: 13px;
 }
 
@@ -13,6 +13,7 @@ QWidget {
 #TopNavigationBar {
     background-color: #1b1d23;
     border-bottom: 1px solid #262a33;
+    font-size: 28px;
 }
 
 QToolButton#NavIconButton {
@@ -21,6 +22,8 @@ QToolButton#NavIconButton {
     background-color: #13151c;
     padding: 6px 10px;
     border-radius: 6px;
+    font-weight: 700;
+    font-size: 28px;
 }
 
 QToolButton#NavIconButton:hover {
@@ -38,6 +41,8 @@ QPushButton#NavSectionButton {
     border: 1px solid #262a33;
     padding: 8px 12px;
     border-radius: 6px;
+    font-weight: 700;
+    font-size: 28px;
 }
 
 QPushButton#NavSectionButton:hover {
@@ -54,9 +59,10 @@ QLineEdit#TopNavSearch {
     min-width: 220px;
     background-color: #13171f;
     border: 1px solid #262a33;
-    padding: 7px 10px;
+    padding: 7px 12px;
     border-radius: 6px;
     selection-background-color: #2563eb;
+    font-size: 28px;
 }
 
 QPushButton#SettingsButton {
@@ -66,16 +72,24 @@ QPushButton#SettingsButton {
     border-radius: 6px;
     border: 1px solid #262a33;
     text-transform: uppercase;
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 28px;
 }
 
 QPushButton#SettingsButton:hover {
     background-color: #2b3140;
 }
 
+QFrame#ContextStrip {
+    background-color: #11141b;
+    border: 1px solid #262a33;
+    border-radius: 8px;
+}
+
 QLabel#ContextLabel {
     color: #cbd5e1;
     padding: 4px 8px;
+    font-size: 28px;
 }
 
 QLabel#TickerLabel {

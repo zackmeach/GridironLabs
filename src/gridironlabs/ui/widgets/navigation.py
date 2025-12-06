@@ -12,8 +12,10 @@ from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
     QPushButton,
+    QSizePolicy,
     QStyle,
     QToolButton,
+    QWidget,
 )
 
 
@@ -24,14 +26,13 @@ class NavigationBar(QFrame):
         self,
         *,
         sections: Iterable[tuple[str, str]],
-        context_text: str,
-        ticker_text: str,
         on_section_selected: Callable[[str], None],
         on_home: Callable[[], None],
         on_search: Callable[[str], None],
         on_settings: Callable[[], None] | None,
         on_back: Callable[[], None] | None = None,
         on_forward: Callable[[], None] | None = None,
+        context_items: Iterable[str] = (),
     ) -> None:
         super().__init__()
         self.setObjectName("TopNavigationBar")
@@ -50,8 +51,8 @@ class NavigationBar(QFrame):
         self.home_button = self._icon_button(QStyle.SP_DirHomeIcon, "Home", self._on_home)
 
         layout.addWidget(self.back_button)
-        layout.addWidget(self.forward_button)
         layout.addWidget(self.home_button)
+        layout.addWidget(self.forward_button)
 
         self.section_group = QButtonGroup(self)
         self.section_group.setExclusive(True)
@@ -65,27 +66,27 @@ class NavigationBar(QFrame):
             self.section_buttons[key] = button
             layout.addWidget(button)
 
-        self.context_label = QLabel(context_text)
-        self.context_label.setObjectName("ContextLabel")
-        self.context_label.setAlignment(Qt.AlignVCenter)
-        self.context_label.setMinimumWidth(240)
-        layout.addWidget(self.context_label, 1)
-
-        self.ticker_label = QLabel(ticker_text)
-        self.ticker_label.setObjectName("TickerLabel")
-        self.ticker_label.setAlignment(Qt.AlignVCenter)
-        layout.addWidget(self.ticker_label, 0)
+        self.context_strip = self._build_context_strip(context_items)
+        layout.addWidget(self.context_strip, 2)
 
         self.search_input = QLineEdit()
         self.search_input.setObjectName("TopNavSearch")
-        self.search_input.setPlaceholderText("Search players, teams, coaches...")
+        self.search_input.setPlaceholderText("Search...")
+        self.search_input.setClearButtonEnabled(True)
+        self.search_input.setMinimumWidth(320)
+        self.search_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        search_icon = self.style().standardIcon(QStyle.SP_FileDialogContentsView)
+        self.search_input.addAction(search_icon, QLineEdit.LeadingPosition)
         self.search_input.returnPressed.connect(self._emit_search)
-        layout.addWidget(self.search_input, 0)
+        layout.addWidget(self.search_input, 2)
 
         self.settings_button = QPushButton("SETTINGS")
         self.settings_button.setObjectName("SettingsButton")
         self.settings_button.clicked.connect(lambda: self._on_settings() if self._on_settings else None)
         layout.addWidget(self.settings_button, 0)
+
+        # Make the bar 1.5x taller than its natural hint for better touch targets.
+        self.setFixedHeight(57)
 
     def _icon_button(
         self,
@@ -124,3 +125,29 @@ class NavigationBar(QFrame):
     def set_history_enabled(self, *, back_enabled: bool, forward_enabled: bool) -> None:
         self.back_button.setEnabled(back_enabled)
         self.forward_button.setEnabled(forward_enabled)
+
+    def set_context_items(self, items: Iterable[str]) -> None:
+        # Clear existing
+        for idx in reversed(range(self.context_layout.count())):
+            item = self.context_layout.takeAt(idx)
+            if widget := item.widget():
+                widget.setParent(None)
+        for text in items:
+            label = QLabel(text)
+            label.setObjectName("ContextLabel")
+            self.context_layout.addWidget(label)
+        self.context_layout.addStretch(1)
+
+    def _build_context_strip(self, items: Iterable[str]) -> QWidget:
+        strip = QFrame()
+        strip.setObjectName("ContextStrip")
+        self.context_layout = QHBoxLayout(strip)
+        self.context_layout.setContentsMargins(8, 6, 8, 6)
+        self.context_layout.setSpacing(12)
+        for text in items:
+            label = QLabel(text)
+            label.setObjectName("ContextLabel")
+            self.context_layout.addWidget(label)
+        self.context_layout.addStretch(1)
+        strip.setFixedHeight(42)
+        return strip
