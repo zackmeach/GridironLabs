@@ -12,6 +12,7 @@ Requires-Dist: pyarrow>=15.0
 Requires-Dist: polars>=1.5
 Requires-Dist: requests>=2.31
 Requires-Dist: beautifulsoup4>=4.12
+Requires-Dist: rich>=13.7
 Requires-Dist: nflreadpy>=0.1.5
 Provides-Extra: dev
 Requires-Dist: pytest>=7.4; extra == "dev"

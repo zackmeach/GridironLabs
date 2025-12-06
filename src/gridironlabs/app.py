@@ -11,6 +11,7 @@ from PySide6 import QtCore, QtWidgets
 from gridironlabs.core.config import AppConfig
 from gridironlabs.core.models import CoachSummary, PlayerSummary, TeamSummary
 from gridironlabs.core.repository import SummaryRepository
+from gridironlabs.data.parquet_repository import ParquetSummaryRepository
 from gridironlabs.services.search_service import SearchService
 from gridironlabs.services.summary_service import SummaryService
 from gridironlabs.ui.main_window import MainWindow, load_stylesheet
@@ -41,7 +42,35 @@ def _nflreadpy_missing() -> bool:
     return importlib.util.find_spec("nflreadpy") is None
 
 
-def build_repository() -> SummaryRepository:
+def build_repository(config: AppConfig, logger: logging.Logger) -> SummaryRepository:
+    """
+    Prefer Parquet-backed data (generated fake dataset) and fall back to placeholders.
+    Loads partial data when only some parquet files are present.
+    """
+
+    players_path = config.paths.processed_data / "players.parquet"
+    teams_path = config.paths.processed_data / "teams.parquet"
+    coaches_path = config.paths.processed_data / "coaches.parquet"
+
+    available = {
+        "players": players_path.exists(),
+        "teams": teams_path.exists(),
+        "coaches": coaches_path.exists(),
+    }
+
+    if any(available.values()):
+        logger.info(
+            "Loading summaries from Parquet datasets",
+            extra={"available_players": available["players"], "available_teams": available["teams"], "available_coaches": available["coaches"]},
+        )
+        # Only pass paths that exist; missing slices stay empty.
+        return ParquetSummaryRepository(
+            players_path=str(players_path) if available["players"] else str(players_path),
+            teams_path=str(teams_path) if available["teams"] else str(teams_path),
+            coaches_path=str(coaches_path) if available["coaches"] else str(coaches_path),
+        )
+
+    logger.info("Parquet datasets missing; falling back to placeholder data")
     players = (
         PlayerSummary(player_id="p1", name="Jane Doe", position="QB", team="NYG"),
         PlayerSummary(player_id="p2", name="John Smith", position="WR", team="KC"),
@@ -58,10 +87,11 @@ def build_repository() -> SummaryRepository:
 
 
 def bootstrap(config: AppConfig, logger: logging.Logger) -> MainWindow:
-    repository = build_repository()
-    offline_mode = config.offline_mode or _nflreadpy_missing()
+    repository = build_repository(config, logger)
+    offline_mode = config.offline_mode or isinstance(repository, InMemoryRepository)
     if offline_mode:
-        logger.info("Starting in offline placeholder mode (nflreadpy not available)")
+        reason = "forced by config" if config.offline_mode else "parquet datasets unavailable"
+        logger.info("Starting in placeholder mode (%s)", reason)
 
     search_service = SearchService(repository, logger=logger)
     summary_service = SummaryService(repository)
@@ -86,5 +116,5 @@ def run(config: AppConfig, logger: logging.Logger) -> None:
     app.setApplicationName("Gridiron Labs")
     app.setOrganizationName("Gridiron Labs")
     window = bootstrap(config, logger)
-    window.show()
+    window.showMaximized()
     app.exec()

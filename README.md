@@ -6,8 +6,8 @@ OOTP26-inspired NFL analytics explorer built with PySide6. This repository ships
 - Install Python 3.10+ and create a virtualenv: `python -m venv .venv && source .venv/bin/activate`
 - Install dependencies (plus dev tools): `pip install -e .[dev]`
 - Launch the desktop shell: `python -m gridironlabs.main` (or `gridironlabs`)
-- Expect a dark-themed shell with a persistent top nav and placeholder pages; if `nflreadpy` is missing the app starts in offline placeholder mode.
-- (Optional) Scaffold data pulls: `python scripts/bootstrap_data.py`
+- Expect a dark-themed shell with a persistent top nav. If Parquet datasets are present in `data/processed`, the UI uses them; otherwise it falls back to placeholders.
+- (Optional) Generate synthetic-but-complete data: `python scripts/generate_fake_nfl_data.py --start-season 1999 --end-season 2025 --min-players 21000 --max-players 25000`
 
 ## Architecture
 - `src/gridironlabs/core` — configuration, domain models, repository interfaces, logging wiring.
@@ -19,15 +19,15 @@ OOTP26-inspired NFL analytics explorer built with PySide6. This repository ships
 - `scripts/` — operational scripts (bootstrap placeholder included).
 - `tests/` — reserved for unit/integration tests.
 
-## Data workflow (planned)
-1) Pull base datasets via NFLreadpy (`scripts/bootstrap_data.py`).
-2) Augment with Pro-Football-Reference scraping where NFLreadpy lacks coverage.
+## Data workflow
+1) Pull/generate base datasets via NFLreadpy or the synthetic generator (`scripts/generate_fake_nfl_data.py`).
+2) (Planned) Augment with Pro-Football-Reference scraping where NFLreadpy lacks coverage.
 3) Normalize and persist Parquet tables to `data/processed`.
-4) UI reads Parquet via `gridironlabs.data.loaders` to populate summary pages and comparisons.
+4) UI reads Parquet via `gridironlabs.data.loaders` / `ParquetSummaryRepository` to populate summary pages and search.
 
 ## Next steps you can tackle
 - Flesh out PFR scraping targets and caching.
 - Define final Parquet schemas for players/teams/coaches and add validation.
-- Replace the in-memory repository with a Parquet-backed implementation.
+- Ensure `ParquetSummaryRepository` stays aligned with Parquet schemas and handles partial/missing slices gracefully.
 - Build UI tabs for home, players, teams, coaches, drafts, and comparisons.
 - Add tests (pytest/pytest-qt) for services and widget smoke coverage.
