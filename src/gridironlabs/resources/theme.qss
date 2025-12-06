@@ -1,0 +1,30 @@
+/* Placeholder dark theme; extend with component-level styles. */
+QWidget {
+    background-color: #0f1115;
+    color: #e5e7eb;
+    font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+QLineEdit, QComboBox, QListView, QTableView {
+    background-color: #1b1f27;
+    border: 1px solid #2b3240;
+    padding: 6px;
+    border-radius: 4px;
+}
+
+QPushButton {
+    background-color: #2563eb;
+    color: #f8fafc;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+}
+
+QPushButton:hover {
+    background-color: #1d4ed8;
+}
+
+QPushButton:disabled {
+    background-color: #1b2534;
+    color: #9ca3af;
+}

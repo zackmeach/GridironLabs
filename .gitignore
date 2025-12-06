@@ -201,6 +201,19 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
+# Project artifacts
+data/**
+!data/README.md
+!data/raw/
+!data/raw/README.md
+!data/interim/
+!data/interim/README.md
+!data/processed/
+!data/processed/README.md
+!data/external/
+!data/external/README.md
+logs/
+
 # Marimo
 marimo/_static/
 marimo/_lsp/

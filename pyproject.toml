@@ -19,6 +19,7 @@ requires-python = ">=3.10"
      "beautifulsoup4>=4.12",
     "rich>=13.7",
     "nflreadpy>=0.1.5",
+    "python-dotenv>=1.0.0",
  ]
  
  [project.optional-dependencies]
@@ -32,6 +33,15 @@ requires-python = ">=3.10"
  [project.scripts]
  gridironlabs = "gridironlabs.main:main"
  
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+gridironlabs = ["resources/**/*.qss"]
+
 [tool.ruff]
 line-length = 100
 target-version = "py310"
