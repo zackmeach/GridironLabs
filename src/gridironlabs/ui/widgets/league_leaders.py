@@ -167,7 +167,7 @@ class LeaderCard(QFrame):
         self.setObjectName("LeaderCard")
         layout = QVBoxLayout(self)
         layout.setContentsMargins(10, 8, 10, 8)
-        layout.setSpacing(6)
+        layout.setSpacing(4)
 
         title_label = QLabel(title)
         title_label.setObjectName("LeaderCardTitle")
@@ -249,17 +249,23 @@ class LeadersPanel(QFrame):
             action.setEnabled(False)
         header.addWidget(action, 0, Qt.AlignRight)
         layout.addLayout(header)
+        header.addSpacing(2)
 
         self.grid = QGridLayout()
-        self.grid.setContentsMargins(0, 0, 0, 0)
-        self.grid.setHorizontalSpacing(10)
-        self.grid.setVerticalSpacing(10)
+        self.grid.setContentsMargins(0, 4, 0, 0)
+        self.grid.setHorizontalSpacing(14)
+        self.grid.setVerticalSpacing(14)
+        # Give the first two columns a bit more weight to mirror the reference.
+        self.grid.setColumnStretch(0, 2)
+        self.grid.setColumnStretch(1, 2)
+        self.grid.setColumnStretch(2, 2)
         layout.addLayout(self.grid)
 
         self.empty_label = QLabel("No leaderboard data available.")
         self.empty_label.setObjectName("LeaderEmptyLabel")
         self.empty_label.setAlignment(Qt.AlignHCenter)
         layout.addWidget(self.empty_label)
+        layout.addStretch(1)
 
     def set_data(self, data: LeaderboardData) -> None:
         self._clear_grid()
@@ -272,12 +278,36 @@ class LeadersPanel(QFrame):
         if not has_groups:
             return
 
-        cols = 3
-        for idx, group in enumerate(data.groups):
-            row = idx // cols
-            col = idx % cols
+        # Preferred layout to mimic the reference visual: first row Passing/Receiving/Defense,
+        # second row Rushing/Kicking & Punting.
+        preferred_positions: dict[str, tuple[int, int]] = {
+            "Passing": (0, 0),
+            "Receiving": (0, 1),
+            "Defense": (0, 2),
+            "Rushing": (1, 0),
+            "Kicking & Punting": (1, 1),
+        }
+
+        placed = set()
+        for group in data.groups:
+            pos = preferred_positions.get(group.title)
+            if pos is None:
+                continue
+            row, col = pos
             section = LeaderSection(group.title, group.stats)
             self.grid.addWidget(section, row, col)
+            placed.add(group.title)
+
+        # Fallback for any groups not mapped above.
+        remaining = [g for g in data.groups if g.title not in placed]
+        if remaining:
+            start_index = self.grid.count()
+            cols = 3
+            for idx, group in enumerate(remaining, start=start_index):
+                row = idx // cols
+                col = idx % cols
+                section = LeaderSection(group.title, group.stats)
+                self.grid.addWidget(section, row, col)
 
     def _clear_grid(self) -> None:
         while self.grid.count():
