@@ -139,3 +139,60 @@ QLabel#StatusText {
     color: #e5e7eb;
     font-weight: 600;
 }
+
+QFrame#LeadersPanel {
+    background-color: #10131b;
+    border: 1px solid #1f2430;
+    border-radius: 10px;
+}
+
+QLabel#LeadersTitle {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+QLabel#LeadersSeasonLabel {
+    color: #9ca3af;
+    font-size: 12px;
+}
+
+QPushButton#LeadersActionButton {
+    color: #93c5fd;
+    border: none;
+    font-weight: 600;
+}
+
+QPushButton#LeadersActionButton:disabled {
+    color: #4b5563;
+}
+
+QFrame#LeaderSection {
+    background-color: #14171f;
+    border: 1px solid #1f2430;
+    border-radius: 8px;
+}
+
+QLabel#LeaderSectionTitle {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+QFrame#LeaderCard {
+    background-color: #10131b;
+    border: 1px solid #1c1f27;
+    border-radius: 6px;
+}
+
+QLabel#LeaderCardTitle {
+    font-weight: 700;
+    color: #e5e7eb;
+}
+
+QLabel#LeaderEntry {
+    color: #d1d5db;
+    font-size: 13px;
+}
+
+QLabel#LeaderEmptyLabel {
+    color: #9ca3af;
+}

@@ -22,12 +22,52 @@ from gridironlabs.data.schemas import SCHEMA_REGISTRY
 from gridironlabs.services.search import SearchService
 from gridironlabs.services.summary import SummaryService
 from gridironlabs.ui.widgets.navigation import NavigationBar
+from gridironlabs.ui.widgets.league_leaders import (
+    LeaderboardData,
+    LeadersPanel,
+    build_leaderboard,
+)
 from gridironlabs.ui.widgets.state_panels import (
     EmptyPanel,
     ErrorPanel,
     LoadingPanel,
     StatusBanner,
 )
+
+
+class HomePage(QWidget):
+    """Home dashboard with league leaders grid."""
+
+    def __init__(self, title: str, subtitle: str) -> None:
+        super().__init__()
+        self.setObjectName("page-home")
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setSpacing(12)
+
+        title_label = QLabel(title)
+        title_label.setObjectName("PageTitle")
+        subtitle_label = QLabel(subtitle)
+        subtitle_label.setObjectName("PageSubtitle")
+        subtitle_label.setWordWrap(True)
+
+        layout.addWidget(title_label)
+        layout.addWidget(subtitle_label)
+
+        self.leaders_panel = LeadersPanel()
+        layout.addWidget(self.leaders_panel)
+        layout.addStretch(1)
+
+        self.subtitle_label = subtitle_label
+
+    def set_subtitle(self, text: str) -> None:
+        self.subtitle_label.setText(text)
+
+    def set_leaders(self, data: LeaderboardData | None) -> None:
+        if data is None:
+            data = LeaderboardData(groups=())
+        self.leaders_panel.set_data(data)
 
 
 class SectionPage(QWidget):
@@ -144,6 +184,7 @@ class GridironLabsMainWindow(QMainWindow):
         self.history: list[str] = []
         self.history_index = -1
         self.navigation_sections = ["home", "seasons", "teams", "players", "drafts", "history"]
+        self.home_page: HomePage | None = None
 
         container = QWidget(self)
         container_layout = QVBoxLayout(container)
@@ -216,7 +257,11 @@ class GridironLabsMainWindow(QMainWindow):
             "history": ("History", "Historic leaders and milestones."),
         }
         for key, (title, subtitle) in definitions.items():
-            page = SectionPage(title, subtitle)
+            if key == "home":
+                page = HomePage(title, subtitle)
+                self.home_page = page
+            else:
+                page = SectionPage(title, subtitle)
             page.setObjectName(f"page-{key}")
             self.pages[key] = page
             self.content_stack.addWidget(page)
@@ -240,6 +285,9 @@ class GridironLabsMainWindow(QMainWindow):
             )
 
             self._update_page_subtitles(players=players, teams=teams, coaches=coaches, seasons=season_span)
+            if self.home_page:
+                leaderboard = build_leaderboard(players)
+                self.home_page.set_leaders(leaderboard)
             self.top_nav.set_context_items(
                 [
                     f"Seasons {season_span}",
