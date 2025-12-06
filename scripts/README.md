@@ -5,3 +5,4 @@
  - `bootstrap_data.py` (placeholder) – orchestrate pulls from NFLreadpy and PFR scraper, then write Parquet into `data/processed`.
  
  Keep scripts idempotent and fast; heavy scraping should cache results locally.
+Honor feature flags in `.env` (e.g., `GRIDIRONLABS_ENABLE_SCRAPING`) when enabling fetch-heavy steps.
