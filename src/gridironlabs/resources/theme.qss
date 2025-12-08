@@ -11,7 +11,7 @@ QWidget {
 }
 
 #TopNavigationBar {
-    background-color: #1b1d23;
+    background-color: #252525;
     border-bottom: 1px solid #262a33;
     font-size: 28px;
 }
@@ -97,7 +97,42 @@ QLabel#TickerLabel {
 }
 
 #ContentFrame {
-    background-color: #11141b;
+    background-color: #1A1A1A;
+}
+
+QFrame#PageContextBar {
+    background-color: #252525;
+    border: 1px solid #20242d;
+    border-radius: 0px;
+}
+
+QLabel#ContextBarTitle {
+    font-size: 17px;
+    font-weight: 800;
+}
+
+QLabel#ContextBarSubtitle {
+    color: #cbd5e1;
+    font-size: 13px;
+}
+
+QFrame#ContextBarStat {
+    background-color: #1b1f29;
+    border: 1px solid #20242d;
+    border-radius: 8px;
+}
+
+QLabel#ContextBarStatLabel {
+    color: #9ca3af;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+QLabel#ContextBarStatValue {
+    font-size: 20px;
+    font-weight: 800;
+    color: #e5e7eb;
 }
 
 QLabel#PageTitle {
@@ -111,7 +146,7 @@ QLabel#PageSubtitle {
 }
 
 QFrame#StatePanel {
-    background-color: #14171f;
+    background-color: #252525;
     border: 1px solid #1f2430;
     border-radius: 8px;
 }
@@ -141,7 +176,7 @@ QLabel#StatusText {
 }
 
 QFrame#LeadersPanel {
-    background-color: #171a21;
+    background-color: #252525;
     border: 1px solid #20242d;
     border-radius: 10px;
     padding: 6px;

@@ -33,4 +33,23 @@ SCHEMA_REGISTRY: Mapping[str, SchemaVersion] = {
         fields=("id", "name", "team", "era", "ratings", "stats"),
         checksum=None,
     ),
+    "games:v0": SchemaVersion(
+        name="games",
+        version="v0",
+        fields=(
+            "id",
+            "season",
+            "week",
+            "home_team",
+            "away_team",
+            "location",
+            "start_time",
+            "status",
+            "is_postseason",
+            "playoff_round",
+            "home_score",
+            "away_score",
+        ),
+        checksum=None,
+    ),
 }

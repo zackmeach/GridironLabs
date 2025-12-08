@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Iterable, Protocol
 
 from gridironlabs.core.errors import DataValidationError, MissingDependencyError, NotFoundError
-from gridironlabs.core.models import EntitySummary
+from gridironlabs.core.models import EntitySummary, GameSummary
 from gridironlabs.data.schemas import SchemaVersion
 
 
@@ -19,6 +19,8 @@ class SummaryRepository(Protocol):
     def iter_teams(self) -> Iterable[EntitySummary]: ...
 
     def iter_coaches(self) -> Iterable[EntitySummary]: ...
+
+    def iter_games(self) -> Iterable[GameSummary]: ...
 
     def get_player(self, player_id: str) -> EntitySummary: ...
 
@@ -50,6 +52,21 @@ class ParquetSummaryRepository:
                 return date.fromisoformat(raw)
             except ValueError:
                 return None
+        return None
+
+    def _normalize_datetime(self, raw: object) -> datetime | None:
+        if raw is None:
+            return None
+        if isinstance(raw, datetime):
+            return raw
+        if isinstance(raw, date):
+            return datetime.combine(raw, datetime.min.time())
+        if isinstance(raw, str):
+            for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"):
+                try:
+                    return datetime.strptime(raw, fmt)
+                except ValueError:
+                    continue
         return None
 
     def _load_table(self, name: str) -> Iterable[EntitySummary]:
@@ -125,6 +142,55 @@ class ParquetSummaryRepository:
             if coach.id == coach_id:
                 return coach
         raise NotFoundError(f"Coach {coach_id} not found")
+
+    def iter_games(self) -> Iterable[GameSummary]:
+        cache_key = "games"
+        if cache_key in self._cache:
+            return self._cache[cache_key]  # type: ignore[return-value]
+
+        path = self._path_for("games")
+        if not path.exists():
+            raise NotFoundError(f"Parquet table games not found at {path}")
+
+        try:
+            import polars as pl
+        except ImportError as exc:  # pragma: no cover - optional dependency at runtime
+            raise MissingDependencyError("polars is required to load Parquet datasets") from exc
+
+        try:
+            df = pl.read_parquet(path)
+        except Exception as exc:  # pragma: no cover - surface IO errors
+            raise DataValidationError(f"Failed to read Parquet table games: {exc}") from exc
+
+        required = {"id", "season", "week", "home_team", "away_team", "start_time", "status"}
+        missing = required.difference(set(df.columns))
+        if missing:
+            raise DataValidationError(f"Table games is missing columns: {', '.join(sorted(missing))}")
+
+        games: list[GameSummary] = []
+        for row in df.to_dicts():
+            start_time = self._normalize_datetime(row.get("start_time"))
+            if start_time is None:
+                raise DataValidationError(f"Invalid start_time for game {row.get('id')}")
+            games.append(
+                GameSummary(
+                    id=str(row["id"]),
+                    season=int(row.get("season") or 0),
+                    week=int(row.get("week") or 0),
+                    home_team=str(row["home_team"]),
+                    away_team=str(row["away_team"]),
+                    location=str(row.get("location") or ""),
+                    start_time=start_time,
+                    status=str(row.get("status") or "scheduled"),
+                    is_postseason=bool(row.get("is_postseason") or False),
+                    home_score=row.get("home_score"),
+                    away_score=row.get("away_score"),
+                    playoff_round=str(row.get("playoff_round") or "") or None,
+                )
+            )
+
+        self._cache[cache_key] = games  # type: ignore[assignment]
+        return games
 
     def validate_schema(self) -> None:
         """Placeholder for schema validation logic."""
