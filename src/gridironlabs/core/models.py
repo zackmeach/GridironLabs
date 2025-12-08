@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from typing import Mapping, Sequence
 
 
@@ -49,3 +49,21 @@ class SearchResult:
     entity_type: str
     score: float | None = None
     context: Mapping[str, str] | None = None
+
+
+@dataclass(frozen=True)
+class GameSummary:
+    """Scheduled or completed game metadata."""
+
+    id: str
+    season: int
+    week: int
+    home_team: str
+    away_team: str
+    location: str
+    start_time: datetime
+    status: str  # "scheduled" | "final"
+    is_postseason: bool = False
+    home_score: int | None = None
+    away_score: int | None = None
+    playoff_round: str | None = None

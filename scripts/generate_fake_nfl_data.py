@@ -11,7 +11,7 @@ import argparse
 import random
 import sys
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime, time, timedelta
 from pathlib import Path
 from typing import Iterable, Sequence
 from uuid import NAMESPACE_DNS, uuid5
@@ -583,6 +583,119 @@ def generate_coaches(
     return pl.from_dicts(records)
 
 
+def _first_sunday_of_september(year: int) -> date:
+    seed = date(year, 9, 5)
+    while seed.weekday() != 6:  # 6 == Sunday
+        seed += timedelta(days=1)
+    return seed
+
+
+def generate_games(
+    *,
+    seasons: Sequence[int],
+    team_catalog: Sequence[tuple[str, str]],
+    rng: random.Random,
+    schema_version: str,
+    weeks: int = 18,
+) -> pl.DataFrame:
+    records: list[dict[str, object]] = []
+    today = date.today()
+    kickoff_times = [time(13, 0), time(16, 25), time(20, 20)]
+    team_lookup = {abbr: name for abbr, name in team_catalog}
+
+    def weekly_pairings(teams: Sequence[str]) -> list[tuple[str, str]]:
+        pool = list(teams)
+        rng.shuffle(pool)
+        pairs = []
+        for idx in range(0, len(pool), 2):
+            if idx + 1 >= len(pool):
+                break
+            home, away = pool[idx], pool[idx + 1]
+            if rng.random() < 0.45:
+                home, away = away, home
+            pairs.append((home, away))
+        return pairs
+
+    for season in seasons:
+        base_sunday = _first_sunday_of_september(season)
+        teams = [abbr for abbr, _ in team_catalog]
+        for week in range(1, weeks + 1):
+            week_pairs = weekly_pairings(teams)
+            for home, away in week_pairs:
+                start_date = base_sunday + timedelta(days=7 * (week - 1))
+                start_dt = datetime.combine(start_date, rng.choice(kickoff_times))
+                status = "final" if start_date <= today else "scheduled"
+                home_score = away_score = None
+                if status == "final":
+                    home_score = rng.randint(10, 42)
+                    away_score = rng.randint(10, 42)
+                    # Slight tilt for home field.
+                    home_score = int(round(home_score + rng.normalvariate(1.5, 3)))
+                records.append(
+                    {
+                        "id": stable_id("game", str(season), f"wk{week}", home, away),
+                        "season": season,
+                        "week": week,
+                        "home_team": home,
+                        "away_team": away,
+                        "location": f"{team_lookup.get(home, home)} Stadium",
+                        "start_time": start_dt,
+                        "status": status,
+                        "is_postseason": False,
+                        "playoff_round": None,
+                        "home_score": home_score,
+                        "away_score": away_score,
+                        "schema_version": schema_version,
+                        "source": "synthetic:schedule",
+                    }
+                )
+
+        # Simple postseason bracket with placeholder matchups.
+        rounds: list[tuple[str, int]] = [
+            ("Wild Card", 6),
+            ("Divisional", 4),
+            ("Conference", 2),
+            ("Super Bowl", 1),
+        ]
+        current_week = weeks
+        pool = list(teams)
+        for round_name, game_count in rounds:
+            current_week += 1
+            rng.shuffle(pool)
+            for i in range(game_count):
+                if len(pool) < 2:
+                    pool = list(teams)
+                    rng.shuffle(pool)
+                home, away = pool[i % len(pool)], pool[(i + 1) % len(pool)]
+                start_date = base_sunday + timedelta(days=7 * (current_week - 1))
+                start_dt = datetime.combine(start_date, rng.choice(kickoff_times))
+                status = "final" if start_date <= today else "scheduled"
+                home_score = away_score = None
+                if status == "final":
+                    home_score = rng.randint(13, 38)
+                    away_score = rng.randint(10, 34)
+                    home_score = int(round(home_score + rng.normalvariate(1.0, 2.5)))
+                records.append(
+                    {
+                        "id": stable_id("game", str(season), f"post-{round_name}-{i}", home, away),
+                        "season": season,
+                        "week": current_week,
+                        "home_team": home,
+                        "away_team": away,
+                        "location": f"{team_lookup.get(home, home)} Stadium",
+                        "start_time": start_dt,
+                        "status": status,
+                        "is_postseason": True,
+                        "playoff_round": round_name,
+                        "home_score": home_score,
+                        "away_score": away_score,
+                        "schema_version": schema_version,
+                        "source": "synthetic:schedule",
+                    }
+                )
+    return pl.from_dicts(records)
+
+
 def write_parquet(df: pl.DataFrame, path: Path) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     df.write_parquet(path, compression="zstd")
@@ -603,9 +716,11 @@ def render_results(
     players_path: Path,
     teams_path: Path,
     coaches_path: Path,
+    games_path: Path,
     players_df: pl.DataFrame,
     teams_df: pl.DataFrame,
     coaches_df: pl.DataFrame,
+    games_df: pl.DataFrame,
     seasons: Sequence[int],
 ) -> None:
     size_table = Table(title="Data package sizes", expand=True)
@@ -616,6 +731,7 @@ def render_results(
         ("Players", players_path, players_df),
         ("Teams", teams_path, teams_df),
         ("Coaches", coaches_path, coaches_df),
+        ("Games", games_path, games_df),
     ]:
         size_table.add_row(label, f"{len(df):,}", human_bytes(path.stat().st_size))
 
@@ -628,6 +744,7 @@ def render_results(
     stat_table.add_row("Seasons covered", f"{min(seasons)}-{max(seasons)}")
     stat_table.add_row("Players per season (avg)", f"{len(players_df) // len(seasons):,}")
     stat_table.add_row("Teams per season", f"{len(teams_df) // len(seasons):,}")
+    stat_table.add_row("Games per season", f"{len(games_df) // len(seasons):,}")
     stat_table.add_row("Average player overall", f"{player_overall:.1f}")
     stat_table.add_row("Average team overall", f"{team_overall:.1f}")
     stat_table.add_row("Average coach overall", f"{coach_overall:.1f}")
@@ -715,13 +832,26 @@ def main() -> None:
             rng=rng,
             schema_version=schema_version,
         )
+        games_task = progress.add_task(
+            "Generating schedules", total=len(seasons) * 18 * (len(TEAM_CATALOG) // 2)
+        )
+        games_df = generate_games(
+            seasons=seasons,
+            team_catalog=TEAM_CATALOG,
+            rng=rng,
+            schema_version=schema_version,
+            weeks=18,
+        )
+        progress.update(games_task, completed=games_task.total)
 
-        write_task = progress.add_task("Writing Parquet datasets", total=3)
+        write_task = progress.add_task("Writing Parquet datasets", total=4)
         players_path = write_parquet(players_df, output_root / "players.parquet")
         progress.advance(write_task)
         teams_path = write_parquet(team_df, output_root / "teams.parquet")
         progress.advance(write_task)
         coaches_path = write_parquet(coaches_df, output_root / "coaches.parquet")
+        progress.advance(write_task)
+        games_path = write_parquet(games_df, output_root / "games.parquet")
         progress.advance(write_task)
 
     render_results(
@@ -729,9 +859,11 @@ def main() -> None:
         players_path=players_path,
         teams_path=teams_path,
         coaches_path=coaches_path,
+        games_path=games_path,
         players_df=players_df,
         teams_df=team_df,
         coaches_df=coaches_df,
+        games_df=games_df,
         seasons=seasons,
     )
     console.print(

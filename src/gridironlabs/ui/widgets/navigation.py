@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Callable, Iterable
 
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QColor, QIcon, QPainter, QPixmap
 from PySide6.QtWidgets import (
     QButtonGroup,
     QFrame,
@@ -96,13 +97,35 @@ class NavigationBar(QFrame):
     ) -> QToolButton:
         button = QToolButton(self)
         button.setObjectName("NavIconButton")
-        button.setIcon(self.style().standardIcon(icon))
+        button.setIcon(self._tinted_icon(icon))
         button.setToolTip(tooltip)
         button.setAutoRaise(True)
         button.setEnabled(on_click is not None)
         if on_click:
             button.clicked.connect(on_click)
         return button
+
+    def _tinted_icon(self, icon: QStyle.StandardPixmap) -> QIcon:
+        base_icon = self.style().standardIcon(icon)
+        size = 24
+
+        def make_pix(color: QColor, mode: QIcon.Mode) -> QPixmap:
+            pix = base_icon.pixmap(size, size, mode)
+            if pix.isNull():
+                return pix
+            tinted = QPixmap(pix.size())
+            tinted.fill(Qt.transparent)
+            painter = QPainter(tinted)
+            painter.drawPixmap(0, 0, pix)
+            painter.setCompositionMode(QPainter.CompositionMode_SourceIn)
+            painter.fillRect(tinted.rect(), color)
+            painter.end()
+            return tinted
+
+        icon_out = QIcon()
+        icon_out.addPixmap(make_pix(QColor("#ffffff"), QIcon.Mode.Normal), QIcon.Mode.Normal)
+        icon_out.addPixmap(make_pix(QColor("#4b5563"), QIcon.Mode.Disabled), QIcon.Mode.Disabled)
+        return icon_out
 
     def _handle_section(self, key: str) -> None:
         self.set_active(key)

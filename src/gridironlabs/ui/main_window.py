@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any, Iterable
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
+    QFormLayout,
     QFrame,
     QHBoxLayout,
     QLabel,
@@ -106,6 +108,118 @@ class SectionPage(QWidget):
         self.subtitle_label.setText(text)
 
 
+class PageContextBar(QFrame):
+    """Persistent context bar under the top navigation with per-page highlights."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.setObjectName("PageContextBar")
+        self.setMinimumHeight(75)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(16, 12, 16, 12)
+        layout.setSpacing(8)
+
+        self.title_label = QLabel("Context")
+        self.title_label.setObjectName("ContextBarTitle")
+        self.subtitle_label = QLabel("Page-specific context will appear here.")
+        self.subtitle_label.setObjectName("ContextBarSubtitle")
+        self.subtitle_label.setWordWrap(True)
+
+        layout.addWidget(self.title_label)
+        layout.addWidget(self.subtitle_label)
+
+        self.stats_layout = QHBoxLayout()
+        self.stats_layout.setSpacing(16)
+        layout.addLayout(self.stats_layout)
+        layout.addStretch(1)
+
+    def set_content(self, *, title: str, subtitle: str, stats: Iterable[tuple[str, str]]) -> None:
+        self.title_label.setText(title)
+        self.subtitle_label.setText(subtitle)
+
+        for idx in reversed(range(self.stats_layout.count())):
+            item = self.stats_layout.takeAt(idx)
+            if widget := item.widget():
+                widget.setParent(None)
+
+        for label_text, value_text in stats:
+            stat = QFrame(self)
+            stat.setObjectName("ContextBarStat")
+            stat_layout = QVBoxLayout(stat)
+            stat_layout.setContentsMargins(10, 8, 10, 8)
+            stat_layout.setSpacing(2)
+
+            value_label = QLabel(value_text)
+            value_label.setObjectName("ContextBarStatValue")
+            label_label = QLabel(label_text)
+            label_label.setObjectName("ContextBarStatLabel")
+            stat_layout.addWidget(value_label)
+            stat_layout.addWidget(label_label)
+            self.stats_layout.addWidget(stat)
+
+        self.stats_layout.addStretch(1)
+
+
+class SettingsPage(QWidget):
+    """Read-only settings overview until editable preferences land."""
+
+    def __init__(self, config: AppConfig, paths: AppPaths) -> None:
+        super().__init__()
+        self.setObjectName("page-settings")
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setSpacing(12)
+
+        title_label = QLabel("Settings")
+        title_label.setObjectName("PageTitle")
+        subtitle_label = QLabel(
+            "Review runtime configuration and app paths. "
+            "Edit your environment or .env file to change these values."
+        )
+        subtitle_label.setObjectName("PageSubtitle")
+        subtitle_label.setWordWrap(True)
+
+        layout.addWidget(title_label)
+        layout.addWidget(subtitle_label)
+        layout.addWidget(
+            StatusBanner(
+                "Settings are read-only for now; updates come from environment variables or .env.",
+                severity="info",
+            )
+        )
+
+        form_frame = QFrame(self)
+        form_frame.setObjectName("SettingsForm")
+        form = QFormLayout(form_frame)
+        form.setContentsMargins(4, 4, 4, 4)
+        form.setSpacing(8)
+        form.setLabelAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        form.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
+
+        def add_row(label_text: str, value: str) -> None:
+            label = QLabel(label_text)
+            value_label = QLabel(value)
+            value_label.setWordWrap(True)
+            value_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
+            form.addRow(label, value_label)
+
+        add_row("Environment", config.environment)
+        add_row("UI theme", config.ui_theme)
+        add_row("Schema version", config.default_schema_version)
+        add_row("Enable scraping", "On" if config.enable_scraping else "Off")
+        add_row("Live refresh", "On" if config.enable_live_refresh else "Off")
+        add_row("Processed data path", str(paths.data_processed))
+        add_row("Raw data path", str(paths.data_raw))
+        add_row("Cache path", str(paths.cache))
+        add_row("Logs path", str(paths.logs))
+        add_row(".env path", str(paths.root / ".env"))
+
+        layout.addWidget(form_frame)
+        layout.addStretch(1)
+
+
 class SearchResultsPage(QWidget):
     """Placeholder search results view triggered from the top nav."""
 
@@ -185,11 +299,14 @@ class GridironLabsMainWindow(QMainWindow):
         self.history_index = -1
         self.navigation_sections = ["home", "seasons", "teams", "players", "drafts", "history"]
         self.home_page: HomePage | None = None
+        self.context_payloads = self._build_context_payloads(
+            players=0, teams=0, coaches=0, seasons_span="No seasons detected"
+        )
 
         container = QWidget(self)
         container_layout = QVBoxLayout(container)
         container_layout.setContentsMargins(0, 0, 0, 0)
-        container_layout.setSpacing(0)
+        container_layout.setSpacing(16)
 
         self.top_nav = NavigationBar(
             sections=[
@@ -215,6 +332,9 @@ class GridironLabsMainWindow(QMainWindow):
         )
         container_layout.addWidget(self.top_nav)
 
+        self.context_bar = PageContextBar()
+        container_layout.addWidget(self.context_bar)
+
         if offline_mode:
             container_layout.addWidget(
                 StatusBanner(
@@ -234,6 +354,10 @@ class GridironLabsMainWindow(QMainWindow):
 
         self.pages: dict[str, QWidget] = {}
         self._build_sections()
+
+        self.settings_page = SettingsPage(config=self.config, paths=self.paths)
+        self.content_stack.addWidget(self.settings_page)
+        self.pages["settings"] = self.settings_page
 
         self.search_page = SearchResultsPage()
         self.content_stack.addWidget(self.search_page)
@@ -295,6 +419,9 @@ class GridironLabsMainWindow(QMainWindow):
                     f"Teams {len(teams):,}",
                 ]
             )
+            self._refresh_context_payloads(
+                players=len(players), teams=len(teams), coaches=len(coaches), seasons_span=season_span
+            )
         except NotFoundError as exc:
             container_layout.insertWidget(
                 1,
@@ -306,6 +433,7 @@ class GridironLabsMainWindow(QMainWindow):
             )
             if self.logger:
                 self.logger.warning("Data missing", extra={"error": str(exc)})
+            self._refresh_context_payloads(players=0, teams=0, coaches=0, seasons_span="No seasons detected")
         except DataValidationError as exc:
             container_layout.insertWidget(
                 1,
@@ -316,6 +444,7 @@ class GridironLabsMainWindow(QMainWindow):
             )
             if self.logger:
                 self.logger.error("Data validation failed", extra={"error": str(exc)})
+            self._refresh_context_payloads(players=0, teams=0, coaches=0, seasons_span="Validation error")
         except Exception as exc:  # pragma: no cover - catch-all for UI bootstrap
             container_layout.insertWidget(
                 1,
@@ -326,6 +455,7 @@ class GridironLabsMainWindow(QMainWindow):
             )
             if self.logger:
                 self.logger.exception("Unhandled data bootstrap failure", exc_info=exc)
+            self._refresh_context_payloads(players=0, teams=0, coaches=0, seasons_span="Load failure")
 
     def _update_page_subtitles(
         self,
@@ -351,6 +481,81 @@ class GridironLabsMainWindow(QMainWindow):
                 f"{len(players):,} players | {len(teams):,} teams | {len(coaches):,} coaches"
             )
 
+    def _build_context_payloads(
+        self, *, players: int, teams: int, coaches: int, seasons_span: str
+    ) -> dict[str, dict[str, str | list[tuple[str, str]]]]:
+        return {
+            "home": {
+                "title": "League Overview",
+                "subtitle": f"Seasons {seasons_span}",
+                "stats": [
+                    ("Players", f"{players:,}"),
+                    ("Teams", f"{teams:,}"),
+                    ("Coaches", f"{coaches:,}"),
+                ],
+            },
+            "seasons": {
+                "title": "Season Timeline",
+                "subtitle": f"Season span: {seasons_span}",
+                "stats": [("Players", f"{players:,}"), ("Teams", f"{teams:,}")],
+            },
+            "teams": {
+                "title": "Teams Overview",
+                "subtitle": "Rosters, schedules, and ratings",
+                "stats": [("Teams", f"{teams:,}"), ("Players", f"{players:,}")],
+            },
+            "players": {
+                "title": "Player Pool",
+                "subtitle": f"{players:,} players across {seasons_span}",
+                "stats": [("Players", f"{players:,}"), ("Coaches", f"{coaches:,}")],
+            },
+            "drafts": {
+                "title": "Draft Histories",
+                "subtitle": "Draft outcomes and pick values",
+                "stats": [("Seasons", seasons_span), ("Teams", f"{teams:,}")],
+            },
+            "history": {
+                "title": "Historic Leaders",
+                "subtitle": "Milestones, records, and franchise lore",
+                "stats": [("Players", f"{players:,}"), ("Teams", f"{teams:,}")],
+            },
+            "search": {
+                "title": "Search",
+                "subtitle": "Type a query and press Enter to search players, teams, and coaches.",
+                "stats": [("Players indexed", f"{players:,}"), ("Teams indexed", f"{teams:,}")],
+            },
+            "settings": {
+                "title": "Settings",
+                "subtitle": "Runtime configuration overview",
+                "stats": [
+                    ("Environment", self.config.environment),
+                    ("Schema", self.config.default_schema_version),
+                    ("Theme", self.config.ui_theme),
+                ],
+            },
+            "default": {
+                "title": "Context",
+                "subtitle": "Details will appear here.",
+                "stats": [],
+            },
+        }
+
+    def _refresh_context_payloads(
+        self, *, players: int, teams: int, coaches: int, seasons_span: str
+    ) -> None:
+        self.context_payloads = self._build_context_payloads(
+            players=players, teams=teams, coaches=coaches, seasons_span=seasons_span
+        )
+        current_section = self.history[self.history_index] if self.history_index >= 0 else "home"
+        self._update_context_bar(current_section)
+
+    def _update_context_bar(self, section_key: str) -> None:
+        payload = self.context_payloads.get(section_key, self.context_payloads.get("default", {}))
+        title = payload.get("title", "Context")
+        subtitle = payload.get("subtitle", "")
+        stats = payload.get("stats", [])
+        self.context_bar.set_content(title=title, subtitle=subtitle, stats=stats)  # type: ignore[arg-type]
+
     def _navigate_to(self, section_key: str, *, from_history: bool = False) -> None:
         if section_key not in self.pages:
             return
@@ -364,6 +569,7 @@ class GridironLabsMainWindow(QMainWindow):
         if not from_history:
             self._record_history(section_key)
         self._update_history_buttons()
+        self._update_context_bar(section_key)
 
         if self.logger:
             self.logger.info("Navigate", extra={"section": section_key})
@@ -408,4 +614,5 @@ class GridironLabsMainWindow(QMainWindow):
 
     def _on_settings(self) -> None:
         if self.logger:
-            self.logger.info("Settings clicked (placeholder)")
+            self.logger.info("Settings opened")
+        self._navigate_to("settings")
