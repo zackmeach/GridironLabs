@@ -181,6 +181,13 @@ cython_debug/
 # Learn more at https://abstra.io/docs
 .abstra/
 
+# OS/editor artifacts
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
 # Visual Studio Code
 #  Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore 
 #  that can be found at https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore
@@ -200,6 +207,19 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+# Project artifacts
+data/**
+!data/README.md
+!data/raw/
+!data/raw/README.md
+!data/interim/
+!data/interim/README.md
+!data/processed/
+!data/processed/README.md
+!data/external/
+!data/external/README.md
+logs/
 
 # Marimo
 marimo/_static/

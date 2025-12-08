@@ -1,0 +1,245 @@
+/* Dark theme inspired by the provided reference. */
+QWidget {
+    background-color: #0f1115;
+    color: #e5e7eb;
+    font-family: "Roboto Condensed", "Inter", "Segoe UI", sans-serif;
+    font-size: 13px;
+}
+
+#GridironLabsMainWindow {
+    background-color: #0f1115;
+}
+
+#TopNavigationBar {
+    background-color: #252525;
+    border-bottom: 1px solid #262a33;
+    font-size: 28px;
+}
+
+QToolButton#NavIconButton {
+    color: #d1d5db;
+    border: 1px solid #262a33;
+    background-color: #13151c;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 28px;
+}
+
+QToolButton#NavIconButton:hover {
+    background-color: #1c2029;
+}
+
+QToolButton#NavIconButton:disabled {
+    color: #4b5563;
+    border-color: #1c1f27;
+}
+
+QPushButton#NavSectionButton {
+    color: #d1d5db;
+    background-color: #14171f;
+    border: 1px solid #262a33;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 28px;
+}
+
+QPushButton#NavSectionButton:hover {
+    background-color: #1c2029;
+}
+
+QPushButton#NavSectionButton:checked {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    color: #f9fafb;
+}
+
+QLineEdit#TopNavSearch {
+    min-width: 220px;
+    background-color: #13171f;
+    border: 1px solid #262a33;
+    padding: 7px 12px;
+    border-radius: 6px;
+    selection-background-color: #2563eb;
+    font-size: 28px;
+}
+
+QPushButton#SettingsButton {
+    background-color: #232733;
+    color: #e5e7eb;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #262a33;
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 28px;
+}
+
+QPushButton#SettingsButton:hover {
+    background-color: #2b3140;
+}
+
+QFrame#ContextStrip {
+    background-color: #11141b;
+    border: 1px solid #262a33;
+    border-radius: 8px;
+}
+
+QLabel#ContextLabel {
+    color: #cbd5e1;
+    padding: 4px 8px;
+    font-size: 28px;
+}
+
+QLabel#TickerLabel {
+    color: #9ca3af;
+}
+
+#ContentFrame {
+    background-color: #1A1A1A;
+}
+
+QFrame#PageContextBar {
+    background-color: #252525;
+    border: 1px solid #20242d;
+    border-radius: 0px;
+}
+
+QLabel#ContextBarTitle {
+    font-size: 17px;
+    font-weight: 800;
+}
+
+QLabel#ContextBarSubtitle {
+    color: #cbd5e1;
+    font-size: 13px;
+}
+
+QFrame#ContextBarStat {
+    background-color: #1b1f29;
+    border: 1px solid #20242d;
+    border-radius: 8px;
+}
+
+QLabel#ContextBarStatLabel {
+    color: #9ca3af;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+QLabel#ContextBarStatValue {
+    font-size: 20px;
+    font-weight: 800;
+    color: #e5e7eb;
+}
+
+QLabel#PageTitle {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+QLabel#PageSubtitle {
+    color: #cbd5e1;
+    font-size: 13px;
+}
+
+QFrame#StatePanel {
+    background-color: #252525;
+    border: 1px solid #1f2430;
+    border-radius: 8px;
+}
+
+QLabel#StateTitle {
+    font-weight: 600;
+    color: #e5e7eb;
+}
+
+QLabel#StateSubtitle {
+    color: #9ca3af;
+}
+
+QFrame#StatusBanner {
+    background-color: #1a2331;
+    border-bottom: 1px solid #1f2634;
+}
+
+QFrame#StatusBanner[severity="offline"] {
+    background-color: #2c1f2b;
+    border-color: #3a2537;
+}
+
+QLabel#StatusText {
+    color: #e5e7eb;
+    font-weight: 600;
+}
+
+QFrame#LeadersPanel {
+    background-color: #252525;
+    border: 1px solid #20242d;
+    border-radius: 10px;
+    padding: 6px;
+}
+
+QLabel#LeadersTitle {
+    font-size: 20px;
+    font-weight: 800;
+}
+
+QLabel#LeadersSeasonLabel {
+    color: #9ca3af;
+    font-size: 12px;
+    margin-left: 6px;
+}
+
+QPushButton#LeadersActionButton {
+    color: #7db1ff;
+    border: none;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 0 6px;
+    text-decoration: underline;
+}
+
+QPushButton#LeadersActionButton:disabled {
+    color: #4b5563;
+}
+
+QFrame#LeaderSection {
+    background-color: #1c1f27;
+    border: 1px solid #20242d;
+    border-radius: 8px;
+    padding: 4px 6px 8px 6px;
+}
+
+QLabel#LeaderSectionTitle {
+    font-size: 18px;
+    font-weight: 800;
+    color: #e5e7eb;
+    margin-bottom: 4px;
+}
+
+QFrame#LeaderCard {
+    background-color: #12151c;
+    border: 1px solid #1c2029;
+    border-radius: 8px;
+    padding: 6px 8px;
+}
+
+QLabel#LeaderCardTitle {
+    font-weight: 800;
+    color: #f3f4f6;
+    font-size: 16px;
+}
+
+QLabel#LeaderEntry {
+    color: #e5e7eb;
+    font-size: 15px;
+    font-weight: 600;
+    margin-top: 3px;
+}
+
+QLabel#LeaderEmptyLabel {
+    color: #9ca3af;
+}

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import runpy
 import sys
 from pathlib import Path
 
@@ -15,12 +14,13 @@ def _ensure_src_on_path() -> None:
         sys.path.insert(0, str(src_path))
 
 
-def main() -> None:
+def main() -> int:
     _ensure_src_on_path()
-    # Delegate to the package entrypoint.
-    runpy.run_module("gridironlabs.main", run_name="__main__")
+    from gridironlabs.main import main as _app_main
+
+    return _app_main()
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
 
