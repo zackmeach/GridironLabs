@@ -832,9 +832,8 @@ def main() -> None:
             rng=rng,
             schema_version=schema_version,
         )
-        games_task = progress.add_task(
-            "Generating schedules", total=len(seasons) * 18 * (len(TEAM_CATALOG) // 2)
-        )
+        games_task_total = len(seasons) * 18 * (len(TEAM_CATALOG) // 2)
+        games_task = progress.add_task("Generating schedules", total=games_task_total)
         games_df = generate_games(
             seasons=seasons,
             team_catalog=TEAM_CATALOG,
@@ -842,7 +841,7 @@ def main() -> None:
             schema_version=schema_version,
             weeks=18,
         )
-        progress.update(games_task, completed=games_task.total)
+        progress.update(games_task, completed=games_task_total)
 
         write_task = progress.add_task("Writing Parquet datasets", total=4)
         players_path = write_parquet(players_df, output_root / "players.parquet")
