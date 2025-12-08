@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any, Iterable
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
     QFormLayout,
     QFrame,
@@ -18,7 +19,7 @@ from PySide6.QtWidgets import (
 
 from gridironlabs.core.config import AppConfig, AppPaths
 from gridironlabs.core.errors import DataValidationError, NotFoundError
-from gridironlabs.core.models import SearchResult
+from gridironlabs.core.models import GameSummary, SearchResult
 from gridironlabs.data.repository import ParquetSummaryRepository
 from gridironlabs.data.schemas import SCHEMA_REGISTRY
 from gridironlabs.services.search import SearchService
@@ -302,6 +303,9 @@ class GridironLabsMainWindow(QMainWindow):
         self.context_payloads = self._build_context_payloads(
             players=0, teams=0, coaches=0, seasons_span="No seasons detected"
         )
+        self._matchup_strings: list[str] = []
+        self._matchup_index = 0
+        self._matchup_timer: QTimer | None = None
 
         container = QWidget(self)
         container_layout = QVBoxLayout(container)
@@ -398,6 +402,7 @@ class GridironLabsMainWindow(QMainWindow):
             players = list(self.repository.iter_players())
             teams = list(self.repository.iter_teams())
             coaches = list(self.repository.iter_coaches())
+            games = list(self.repository.iter_games())
 
             self.summary_service = SummaryService(repository=self.repository)
             self.search_service = SearchService(repository=self.repository)
@@ -412,13 +417,8 @@ class GridironLabsMainWindow(QMainWindow):
             if self.home_page:
                 leaderboard = build_leaderboard(players)
                 self.home_page.set_leaders(leaderboard)
-            self.top_nav.set_context_items(
-                [
-                    f"Seasons {season_span}",
-                    f"Players {len(players):,}",
-                    f"Teams {len(teams):,}",
-                ]
-            )
+            matchups = self._build_upcoming_matchups(games, teams)
+            self._start_matchup_cycle(matchups)
             self._refresh_context_payloads(
                 players=len(players), teams=len(teams), coaches=len(coaches), seasons_span=season_span
             )
@@ -616,3 +616,72 @@ class GridironLabsMainWindow(QMainWindow):
         if self.logger:
             self.logger.info("Settings opened")
         self._navigate_to("settings")
+
+    def _build_upcoming_matchups(
+        self, games: Iterable[GameSummary], teams: Iterable[Any]
+    ) -> list[str]:
+        games_list = list(games)
+        if not games_list:
+            return []
+
+        latest_season = max(game.season for game in games_list)
+        season_games = [g for g in games_list if g.season == latest_season]
+        if not season_games:
+            return []
+
+        now = datetime.now()
+        upcoming = [g for g in season_games if g.status != "final" or g.start_time >= now]
+        if upcoming:
+            future_weeks = [g.week for g in upcoming if g.start_time >= now]
+            target_week = min(future_weeks) if future_weeks else min(g.week for g in upcoming)
+        else:
+            target_week = max(g.week for g in season_games)
+
+        week_games = sorted(
+            [g for g in season_games if g.week == target_week], key=lambda g: g.start_time
+        )
+        if not week_games:
+            return []
+
+        team_lookup: dict[str, str] = {}
+        for team in teams:
+            if getattr(team, "team", None):
+                team_lookup[team.team] = team.name
+
+        return [self._format_matchup(g, team_lookup) for g in week_games]
+
+    def _format_matchup(self, game: GameSummary, team_lookup: dict[str, str]) -> str:
+        day = game.start_time.day
+        suffix = "th" if 10 <= day % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
+        date_str = f"{game.start_time.strftime('%a %b')} {day}{suffix}"
+        home = team_lookup.get(game.home_team, game.home_team)
+        away = team_lookup.get(game.away_team, game.away_team)
+        return f"Week {game.week} {date_str} {away} @ {home}"
+
+    def _start_matchup_cycle(self, matchups: list[str]) -> None:
+        self._stop_matchup_cycle()
+        self._matchup_strings = matchups
+        self._matchup_index = 0
+        if not matchups:
+            return
+
+        self.top_nav.set_context_items([self._matchup_strings[self._matchup_index]])
+        if len(self._matchup_strings) == 1:
+            return
+
+        self._matchup_timer = QTimer(self)
+        self._matchup_timer.setInterval(6000)
+        self._matchup_timer.timeout.connect(self._advance_matchup)
+        self._matchup_timer.start()
+
+    def _advance_matchup(self) -> None:
+        if not self._matchup_strings:
+            return
+        self._matchup_index = (self._matchup_index + 1) % len(self._matchup_strings)
+        self.top_nav.set_context_items([self._matchup_strings[self._matchup_index]])
+
+    def _stop_matchup_cycle(self) -> None:
+        if self._matchup_timer:
+            self._matchup_timer.stop()
+            self._matchup_timer.deleteLater()
+        self._matchup_timer = None

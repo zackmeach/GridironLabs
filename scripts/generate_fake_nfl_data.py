@@ -693,7 +693,23 @@ def generate_games(
                         "source": "synthetic:schedule",
                     }
                 )
-    return pl.from_dicts(records)
+    games_schema = {
+        "id": pl.Utf8,
+        "season": pl.Int64,
+        "week": pl.Int64,
+        "home_team": pl.Utf8,
+        "away_team": pl.Utf8,
+        "location": pl.Utf8,
+        "start_time": pl.Datetime,
+        "status": pl.Utf8,
+        "is_postseason": pl.Boolean,
+        "playoff_round": pl.Utf8,
+        "home_score": pl.Int64,
+        "away_score": pl.Int64,
+        "schema_version": pl.Utf8,
+        "source": pl.Utf8,
+    }
+    return pl.from_dicts(records, schema=games_schema)
 
 
 def write_parquet(df: pl.DataFrame, path: Path) -> Path:
@@ -832,9 +848,8 @@ def main() -> None:
             rng=rng,
             schema_version=schema_version,
         )
-        games_task = progress.add_task(
-            "Generating schedules", total=len(seasons) * 18 * (len(TEAM_CATALOG) // 2)
-        )
+        games_task_total = len(seasons) * 18 * (len(TEAM_CATALOG) // 2)
+        games_task = progress.add_task("Generating schedules", total=games_task_total)
         games_df = generate_games(
             seasons=seasons,
             team_catalog=TEAM_CATALOG,
@@ -842,7 +857,7 @@ def main() -> None:
             schema_version=schema_version,
             weeks=18,
         )
-        progress.update(games_task, completed=games_task.total)
+        progress.update(games_task, completed=games_task_total)
 
         write_task = progress.add_task("Writing Parquet datasets", total=4)
         players_path = write_parquet(players_df, output_root / "players.parquet")

@@ -67,8 +67,12 @@ class NavigationBar(QFrame):
             self.section_buttons[key] = button
             layout.addWidget(button)
 
+        reference_height = next(iter(self.section_buttons.values()), None)
+        self._context_height = reference_height.sizeHint().height() if reference_height else 42
+
         self.context_strip = self._build_context_strip(context_items)
-        layout.addWidget(self.context_strip, 2)
+        layout.addWidget(self.context_strip, 0)
+        layout.setAlignment(self.context_strip, Qt.AlignVCenter)
 
         self.search_input = QLineEdit()
         self.search_input.setObjectName("TopNavSearch")
@@ -165,12 +169,14 @@ class NavigationBar(QFrame):
         strip = QFrame()
         strip.setObjectName("ContextStrip")
         self.context_layout = QHBoxLayout(strip)
-        self.context_layout.setContentsMargins(8, 6, 8, 6)
+        self.context_layout.setContentsMargins(8, 0, 8, 0)
         self.context_layout.setSpacing(12)
+        strip.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        strip.setFixedWidth(520)
+        strip.setFixedHeight(self._context_height)
         for text in items:
             label = QLabel(text)
             label.setObjectName("ContextLabel")
             self.context_layout.addWidget(label)
         self.context_layout.addStretch(1)
-        strip.setFixedHeight(42)
         return strip
