@@ -101,15 +101,38 @@ def fetch_json(url: str, params: Dict[str, object]) -> Optional[object]:
 
 
 def fetch_polls_for_year(year: int) -> List[dict]:
-    data = fetch_json(f"{API_BASE}/polls", {"year": year, "poll": POLL_NAME})
+    """
+    Return a list of poll snapshots for the requested year, each shaped like:
+    { "seasonType": str, "week": int, "ranks": [...] }
+    The list is sorted from earliest (preseason/regular week 1) to latest (postseason).
+    """
+    data = fetch_json(f"{API_BASE}/rankings", {"year": year, "poll": POLL_NAME})
     if not isinstance(data, list):
         return []
-    # Ensure ordered by week ascending.
-    return sorted(data, key=lambda p: p.get("week", 9999))
+
+    polls: List[dict] = []
+    for entry in data:
+        if not isinstance(entry, dict):
+            continue
+        season_type = entry.get("seasonType")
+        week = entry.get("week")
+        for poll in entry.get("polls", []) or []:
+            if poll.get("poll") == POLL_NAME:
+                polls.append(
+                    {
+                        "seasonType": season_type,
+                        "week": week,
+                        "ranks": poll.get("ranks", []) or [],
+                    }
+                )
+
+    season_order = {"preseason": 0, "regular": 1, "postseason": 2}
+    polls.sort(key=lambda p: (season_order.get(p.get("seasonType"), 99), p.get("week", 9999)))
+    return polls
 
 
 def rankings_to_map(poll_entry: dict) -> Dict[str, int]:
-    rankings = poll_entry.get("rankings", []) if isinstance(poll_entry, dict) else []
+    rankings = poll_entry.get("ranks", []) if isinstance(poll_entry, dict) else []
     return {r["school"]: int(r["rank"]) for r in rankings if "school" in r and "rank" in r}
 
 
@@ -127,10 +150,13 @@ def fetch_games_for_team_year(team: str, year: int) -> List[dict]:
 
 def location_and_opponent(game: dict, team: str) -> Optional[Tuple[str, bool]]:
     """Return (opponent, is_home) if determinate and non-neutral, else None."""
-    if not isinstance(game, dict) or game.get("neutral_site"):
+    if not isinstance(game, dict):
         return None
-    home_team = game.get("home_team")
-    away_team = game.get("away_team")
+    neutral = game.get("neutral_site", game.get("neutralSite"))
+    if neutral:
+        return None
+    home_team = game.get("home_team") or game.get("homeTeam")
+    away_team = game.get("away_team") or game.get("awayTeam")
     if home_team == team:
         return away_team, True
     if away_team == team:
