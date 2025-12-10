@@ -243,3 +243,126 @@ QLabel#LeaderEntry {
 QLabel#LeaderEmptyLabel {
     color: #9ca3af;
 }
+
+/* Settings layout */
+QFrame#SettingsPanel {
+    background-color: #252525;
+    border: 1px solid #1f2430;
+    border-radius: 10px;
+}
+
+QLabel#SettingsPanelTitle {
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+}
+
+QFrame#SettingsGroup {
+    background-color: #1b1f24;
+    border: 1px solid #20242d;
+    border-radius: 8px;
+}
+
+QLabel#SettingsGroupLabel {
+    font-weight: 700;
+    color: #e5e7eb;
+}
+
+QLabel#SettingsRowLabel {
+    font-weight: 600;
+    color: #e5e7eb;
+}
+
+QLabel#SettingsValueLabel {
+    color: #9ca3af;
+    font-weight: 600;
+}
+
+QComboBox#SettingsCombo,
+QLineEdit#HexInput,
+QSpinBox#CellSizeSpin {
+    background-color: #13171f;
+    border: 1px solid #262a33;
+    border-radius: 6px;
+    padding: 6px 8px;
+    color: #e5e7eb;
+}
+
+QComboBox#SettingsCombo:focus,
+QLineEdit#HexInput:focus,
+QSpinBox#CellSizeSpin:focus {
+    border-color: #2563eb;
+}
+
+QCheckBox#SettingsCheckbox {
+    color: #e5e7eb;
+    spacing: 6px;
+}
+
+QCheckBox#ToggleSwitch {
+    spacing: 8px;
+}
+
+QCheckBox#ToggleSwitch::indicator {
+    width: 42px;
+    height: 22px;
+    border-radius: 11px;
+    border: 1px solid #2f3542;
+    background-color: #1c1f27;
+    margin: 2px;
+}
+
+QCheckBox#ToggleSwitch::indicator:checked {
+    background-color: #8c63ff;
+    border-color: #8c63ff;
+}
+
+QCheckBox#ToggleSwitch::indicator:unchecked:disabled,
+QCheckBox#SettingsCheckbox:disabled {
+    color: #6b7280;
+    border-color: #1c1f27;
+}
+
+QSlider#SettingsSlider::groove:horizontal {
+    background: #1b1f24;
+    height: 8px;
+    border-radius: 4px;
+}
+
+QSlider#SettingsSlider::handle:horizontal {
+    background: #8c63ff;
+    width: 18px;
+    border-radius: 9px;
+    margin: -5px 0;
+}
+
+QPushButton#ColorSwatch {
+    border: 1px solid #262a33;
+    border-radius: 4px;
+    background-color: #cd4d4d;
+}
+
+QPushButton#ColorSwatch:focus {
+    border-color: #2563eb;
+}
+
+QPlainTextEdit#DebugOutput {
+    background-color: #0f1115;
+    border: 1px solid #1f2430;
+    border-radius: 8px;
+    font-family: "JetBrains Mono", "Roboto Mono", monospace;
+    color: #e5e7eb;
+}
+
+QPushButton#PrimaryButton {
+    background-color: #2563eb;
+    color: #f9fafb;
+    border: 1px solid #2563eb;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-weight: 700;
+}
+
+QPushButton#PrimaryButton:hover {
+    background-color: #2e6ef7;
+}
