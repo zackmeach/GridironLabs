@@ -243,3 +243,110 @@ QLabel#LeaderEntry {
 QLabel#LeaderEmptyLabel {
     color: #9ca3af;
 }
+
+QFrame#SettingsPanel {
+    background-color: #151821;
+    border: 1px solid #1f2430;
+    border-radius: 10px;
+}
+
+QLabel#SettingsSectionTitle {
+    font-size: 17px;
+    font-weight: 800;
+    color: #e5e7eb;
+}
+
+QLabel#SettingsSubheader {
+    color: #cbd5e1;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+QLabel#SettingsLabel {
+    color: #e5e7eb;
+    font-size: 13px;
+}
+
+QFrame#SettingsGroup {
+    background-color: #0f121a;
+    border: 1px solid #1c2029;
+    border-radius: 8px;
+}
+
+QCheckBox#SettingsCheckbox {
+    color: #e5e7eb;
+    spacing: 6px;
+}
+
+QCheckBox#SettingsCheckbox::indicator {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1px solid #2d313d;
+    background-color: #0f121a;
+}
+
+QCheckBox#SettingsCheckbox::indicator:checked {
+    background-color: #2563eb;
+    border-color: #2563eb;
+}
+
+QComboBox#SettingsCombo,
+QLineEdit#HexInput,
+QSpinBox#SettingsSpin {
+    background-color: #0f121a;
+    border: 1px solid #262a33;
+    border-radius: 6px;
+    padding: 6px 8px;
+    color: #e5e7eb;
+}
+
+QComboBox#SettingsCombo::drop-down {
+    width: 24px;
+    border: none;
+}
+
+QSlider#SettingsSlider::groove:horizontal {
+    border: 1px solid #1f2430;
+    height: 6px;
+    background: #1b1f29;
+    border-radius: 4px;
+}
+
+QSlider#SettingsSlider::handle:horizontal {
+    background: #2563eb;
+    border: 1px solid #1b3578;
+    width: 16px;
+    margin: -5px 0;
+    border-radius: 8px;
+}
+
+QPushButton#PrimaryButton {
+    background-color: #2563eb;
+    color: #f9fafb;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+}
+
+QPushButton#PrimaryButton:hover {
+    background-color: #1d4ed8;
+}
+
+QPushButton#PrimaryButton:pressed {
+    background-color: #1b44c4;
+}
+
+QPushButton#ColorSwatch {
+    border: 1px solid #2d313d;
+    border-radius: 4px;
+}
+
+QTextEdit#DebugConsole {
+    background-color: #0f121a;
+    border: 1px solid #1c2029;
+    border-radius: 8px;
+    color: #e5e7eb;
+    font-family: "Roboto Mono", "Fira Code", monospace;
+}

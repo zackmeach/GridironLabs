@@ -5,13 +5,22 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Iterable
 
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import Qt, QTimer, QRectF
+from PySide6.QtGui import QColor, QPainter
 from PySide6.QtWidgets import (
-    QFormLayout,
+    QCheckBox,
+    QComboBox,
+    QColorDialog,
     QFrame,
     QHBoxLayout,
     QLabel,
+    QLineEdit,
     QMainWindow,
+    QPushButton,
+    QSlider,
+    QSpinBox,
+    QTextEdit,
+    QSizePolicy,
     QStackedWidget,
     QVBoxLayout,
     QWidget,
@@ -162,63 +171,422 @@ class PageContextBar(QFrame):
         self.stats_layout.addStretch(1)
 
 
+class ToggleSwitch(QCheckBox):
+    """Lightweight painted toggle to mimic the design reference."""
+
+    def __init__(self, checked: bool = False, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.setChecked(checked)
+        self.setCursor(Qt.PointingHandCursor)
+        self.setText("")
+        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self._track_height = 20
+        self._track_width = 42
+        self._margin = 3
+        self.setFixedSize(self._track_width + self._margin * 2, self._track_height + self._margin * 2)
+
+    def paintEvent(self, event) -> None:  # type: ignore[override]
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        track_rect = QRectF(
+            self._margin,
+            (self.height() - self._track_height) / 2,
+            self._track_width,
+            self._track_height,
+        )
+
+        base_color = QColor("#3b3f4a")
+        active_color = QColor("#2563eb")
+        disabled_color = QColor("#2a2d35")
+        thumb_color = QColor("#f9fafb")
+        thumb_disabled = QColor("#6b7280")
+
+        track_color = active_color if self.isChecked() else base_color
+        if not self.isEnabled():
+            track_color = disabled_color
+
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(track_color)
+        painter.drawRoundedRect(track_rect, self._track_height / 2, self._track_height / 2)
+
+        thumb_diameter = self._track_height
+        thumb_x = track_rect.x() + (self._track_width - thumb_diameter) if self.isChecked() else track_rect.x()
+        thumb_rect = QRectF(thumb_x, track_rect.y(), thumb_diameter, thumb_diameter)
+        painter.setBrush(thumb_color if self.isEnabled() else thumb_disabled)
+        painter.drawEllipse(thumb_rect)
+
+
 class SettingsPage(QWidget):
     """Read-only settings overview until editable preferences land."""
 
     def __init__(self, config: AppConfig, paths: AppPaths) -> None:
         super().__init__()
         self.setObjectName("page-settings")
+        self.config = config
+        self.paths = paths
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(12)
 
-        title_label = QLabel("Settings")
+        self._generate_players_checkbox: QCheckBox | None = None
+        self._player_scope_checkboxes: list[QCheckBox] = []
+
+        title_label = QLabel("GridironLabs Settings")
         title_label.setObjectName("PageTitle")
-        subtitle_label = QLabel(
-            "Review runtime configuration and app paths. "
-            "Edit your environment or .env file to change these values."
-        )
+        layout.addWidget(title_label)
+        subtitle_label = QLabel("Static UI mock for upcoming Settings experience.")
         subtitle_label.setObjectName("PageSubtitle")
         subtitle_label.setWordWrap(True)
-
-        layout.addWidget(title_label)
         layout.addWidget(subtitle_label)
-        layout.addWidget(
-            StatusBanner(
-                "Settings are read-only for now; updates come from environment variables or .env.",
-                severity="info",
-            )
-        )
 
-        form_frame = QFrame(self)
-        form_frame.setObjectName("SettingsForm")
-        form = QFormLayout(form_frame)
-        form.setContentsMargins(4, 4, 4, 4)
-        form.setSpacing(8)
-        form.setLabelAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        form.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
+        canvas = QHBoxLayout()
+        canvas.setSpacing(12)
 
-        def add_row(label_text: str, value: str) -> None:
-            label = QLabel(label_text)
-            value_label = QLabel(value)
-            value_label.setWordWrap(True)
-            value_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
-            form.addRow(label, value_label)
+        data_panel = self._build_data_generation_panel()
+        grid_panel = self._build_grid_layout_panel()
+        test_panel = self._build_test_cases_panel()
+        debug_panel = self._build_debug_output_panel()
 
-        add_row("Environment", config.environment)
-        add_row("UI theme", config.ui_theme)
-        add_row("Schema version", config.default_schema_version)
-        add_row("Enable scraping", "On" if config.enable_scraping else "Off")
-        add_row("Live refresh", "On" if config.enable_live_refresh else "Off")
-        add_row("Processed data path", str(paths.data_processed))
-        add_row("Raw data path", str(paths.data_raw))
-        add_row("Cache path", str(paths.cache))
-        add_row("Logs path", str(paths.logs))
-        add_row(".env path", str(paths.root / ".env"))
+        middle_column = QVBoxLayout()
+        middle_column.setSpacing(12)
+        middle_column.addWidget(grid_panel, 1)
+        middle_column.addWidget(test_panel, 1)
 
-        layout.addWidget(form_frame)
+        canvas.addWidget(data_panel, 4)
+        canvas.addLayout(middle_column, 3)
+        canvas.addWidget(debug_panel, 3)
+
+        layout.addLayout(canvas, 1)
         layout.addStretch(1)
+
+    def _build_data_generation_panel(self) -> QFrame:
+        frame = QFrame(self)
+        frame.setObjectName("SettingsPanel")
+        frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        layout = QVBoxLayout(frame)
+        layout.setContentsMargins(14, 14, 14, 14)
+        layout.setSpacing(10)
+
+        header = QLabel("Data Generation")
+        header.setObjectName("SettingsSectionTitle")
+        layout.addWidget(header)
+
+        body = QHBoxLayout()
+        body.setSpacing(12)
+        layout.addLayout(body, 1)
+
+        left_col = QVBoxLayout()
+        left_col.setSpacing(10)
+        body.addLayout(left_col, 1)
+
+        left_col.addLayout(self._season_range_row())
+        for label in ["Real Data", "Pull NFLverse", "Pull Pro-Football-Reference"]:
+            row, _ = self._switch_row(label)
+            left_col.addLayout(row)
+
+        generation_box, generation_checks = self._checklist_box(
+            title="Generation Targets",
+            options=["Generate Teams", "Generate Coaches", "Generate Players"],
+        )
+        self._generate_players_checkbox = generation_checks[-1]
+        left_col.addWidget(generation_box)
+
+        players_box, player_checks = self._checklist_box(
+            title="Player Scope",
+            options=["Offense", "Defense", "Special Teams"],
+            enabled=False,
+        )
+        self._player_scope_checkboxes = player_checks
+        if self._generate_players_checkbox:
+            self._generate_players_checkbox.toggled.connect(
+                lambda checked: self._toggle_player_scope(checked)
+            )
+            self._generate_players_checkbox.setChecked(False)
+            self._toggle_player_scope(False)
+        left_col.addWidget(players_box)
+        left_col.addStretch(1)
+
+        right_col = QVBoxLayout()
+        right_col.setSpacing(8)
+        body.addLayout(right_col, 1)
+        right_col.addWidget(self._build_last_update_box(), 1)
+
+        generate_button = QPushButton("Generate Data")
+        generate_button.setObjectName("PrimaryButton")
+        generate_button.setMinimumHeight(38)
+        generate_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        layout.addWidget(generate_button)
+
+        return frame
+
+    def _season_range_row(self) -> QHBoxLayout:
+        row = QHBoxLayout()
+        row.setSpacing(8)
+        label = QLabel("Season Range")
+        label.setObjectName("SettingsLabel")
+        row.addWidget(label)
+
+        start_combo = self._year_combo(1999)
+        end_combo = self._year_combo(1999, default=datetime.now().year)
+        row.addStretch(1)
+        row.addWidget(start_combo)
+        row.addWidget(end_combo)
+        return row
+
+    def _year_combo(self, start_year: int, default: int | None = None) -> QComboBox:
+        combo = QComboBox()
+        combo.setObjectName("SettingsCombo")
+        current_year = datetime.now().year
+        for year in range(start_year, current_year + 1):
+            combo.addItem(str(year))
+        if default:
+            combo.setCurrentText(str(default))
+        else:
+            combo.setCurrentIndex(0)
+        return combo
+
+    def _switch_row(self, label_text: str, *, checked: bool = False) -> tuple[QHBoxLayout, ToggleSwitch]:
+        row = QHBoxLayout()
+        row.setSpacing(8)
+        label = QLabel(label_text)
+        label.setObjectName("SettingsLabel")
+        row.addWidget(label)
+        row.addStretch(1)
+        toggle = ToggleSwitch(checked)
+        row.addWidget(toggle)
+        return row, toggle
+
+    def _checklist_box(
+        self, *, title: str, options: list[str], enabled: bool = True
+    ) -> tuple[QFrame, list[QCheckBox]]:
+        frame = QFrame(self)
+        frame.setObjectName("SettingsGroup")
+        layout = QVBoxLayout(frame)
+        layout.setContentsMargins(10, 8, 10, 8)
+        layout.setSpacing(6)
+
+        header = QLabel(title)
+        header.setObjectName("SettingsSubheader")
+        layout.addWidget(header)
+
+        checkboxes: list[QCheckBox] = []
+        for option in options:
+            box = QCheckBox(option)
+            box.setObjectName("SettingsCheckbox")
+            box.setChecked(enabled)
+            box.setEnabled(enabled)
+            layout.addWidget(box)
+            checkboxes.append(box)
+
+        return frame, checkboxes
+
+    def _toggle_player_scope(self, enabled: bool) -> None:
+        for box in self._player_scope_checkboxes:
+            box.setEnabled(enabled)
+            if not enabled:
+                box.setChecked(False)
+
+    def _build_last_update_box(self) -> QFrame:
+        frame = QFrame(self)
+        frame.setObjectName("SettingsGroup")
+        layout = QVBoxLayout(frame)
+        layout.setContentsMargins(10, 8, 10, 8)
+        layout.setSpacing(4)
+
+        header_row = QHBoxLayout()
+        header_row.setSpacing(6)
+        data_label = QLabel("Data Type")
+        data_label.setObjectName("SettingsSubheader")
+        last_update_label = QLabel("Last Update")
+        last_update_label.setObjectName("SettingsSubheader")
+        header_row.addWidget(data_label)
+        header_row.addStretch(1)
+        header_row.addWidget(last_update_label)
+        layout.addLayout(header_row)
+
+        entries = [
+            ("Teams", "Dec 7th, 2025 @ 12:02pm"),
+            ("Coaches", "Dec 7th, 2025 @ 12:02pm"),
+            ("Players", "Dec 7th, 2025 @ 12:02pm"),
+            ("Offense", "Dec 7th, 2025 @ 12:02pm"),
+            ("Defense", "Dec 7th, 2025 @ 12:02pm"),
+            ("Spec Teams", "Dec 7th, 2025 @ 12:02pm"),
+        ]
+        for label_text, value_text in entries:
+            row = QHBoxLayout()
+            row.setSpacing(6)
+            label = QLabel(label_text)
+            label.setObjectName("SettingsLabel")
+            value = QLabel(value_text)
+            value.setObjectName("SettingsLabel")
+            row.addWidget(label)
+            row.addStretch(1)
+            row.addWidget(value)
+            layout.addLayout(row)
+
+        layout.addStretch(1)
+
+        total_row = QHBoxLayout()
+        total_row.setSpacing(6)
+        total_label = QLabel("Total Data Size")
+        total_label.setObjectName("SettingsSubheader")
+        total_value = QLabel("35GB")
+        total_value.setObjectName("SettingsLabel")
+        total_row.addWidget(total_label)
+        total_row.addStretch(1)
+        total_row.addWidget(total_value)
+        layout.addLayout(total_row)
+        return frame
+
+    def _build_grid_layout_panel(self) -> QFrame:
+        frame = QFrame(self)
+        frame.setObjectName("SettingsPanel")
+        frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        layout = QVBoxLayout(frame)
+        layout.setContentsMargins(14, 14, 14, 14)
+        layout.setSpacing(10)
+
+        header = QLabel("UI Grid Layout")
+        header.setObjectName("SettingsSectionTitle")
+        layout.addWidget(header)
+
+        enable_row, _ = self._switch_row("Enable Grid", checked=True)
+        layout.addLayout(enable_row)
+
+        opacity_row = QHBoxLayout()
+        opacity_row.setSpacing(8)
+        opacity_label = QLabel("Opacity")
+        opacity_label.setObjectName("SettingsLabel")
+        opacity_row.addWidget(opacity_label)
+        opacity_slider = QSlider(Qt.Horizontal)
+        opacity_slider.setRange(0, 100)
+        opacity_slider.setValue(70)
+        opacity_slider.setObjectName("SettingsSlider")
+        opacity_value = QLabel("70%")
+        opacity_value.setObjectName("SettingsLabel")
+        opacity_slider.valueChanged.connect(lambda val: opacity_value.setText(f"{val}%"))
+        opacity_row.addWidget(opacity_slider, 1)
+        opacity_row.addWidget(opacity_value)
+        layout.addLayout(opacity_row)
+
+        color_row = QHBoxLayout()
+        color_row.setSpacing(8)
+        color_label = QLabel("Color")
+        color_label.setObjectName("SettingsLabel")
+        color_row.addWidget(color_label)
+
+        color_button = QPushButton()
+        color_button.setObjectName("ColorSwatch")
+        color_button.setFixedSize(32, 24)
+        self._set_swatch_color(color_button, "#CD4D4D")
+
+        color_input = QLineEdit("#CD4D4D")
+        color_input.setObjectName("HexInput")
+        color_input.setMaxLength(7)
+        color_input.returnPressed.connect(
+            lambda: self._apply_hex_input(color_input, color_button)
+        )
+        color_button.clicked.connect(
+            lambda: self._open_color_dialog(color_button, color_input)
+        )
+        color_row.addStretch(1)
+        color_row.addWidget(color_button)
+        color_row.addWidget(color_input)
+        layout.addLayout(color_row)
+
+        cell_row = QHBoxLayout()
+        cell_row.setSpacing(8)
+        cell_label = QLabel("Cell Size")
+        cell_label.setObjectName("SettingsLabel")
+        cell_row.addWidget(cell_label)
+        cell_row.addStretch(1)
+        cell_size = QSpinBox()
+        cell_size.setObjectName("SettingsSpin")
+        cell_size.setMinimum(1)
+        cell_size.setMaximum(24)
+        cell_size.setValue(1)
+        cell_size.setSuffix(" px")
+        cell_row.addWidget(cell_size)
+        layout.addLayout(cell_row)
+        layout.addStretch(1)
+        return frame
+
+    def _set_swatch_color(self, button: QPushButton, color_hex: str) -> None:
+        button.setStyleSheet(
+            f"QPushButton#ColorSwatch {{ background-color: {color_hex}; border: 1px solid #2d313d; border-radius: 4px; }}"
+        )
+        button.setProperty("color_hex", color_hex)
+
+    def _apply_hex_input(self, line_edit: QLineEdit, button: QPushButton) -> None:
+        text = line_edit.text().strip()
+        color = QColor(text)
+        if color.isValid():
+            normalized = color.name(QColor.HexRgb)
+            self._set_swatch_color(button, normalized)
+            line_edit.setText(normalized)
+
+    def _open_color_dialog(self, button: QPushButton, line_edit: QLineEdit) -> None:
+        initial = QColor(button.property("color_hex") or "#CD4D4D")
+        color = QColorDialog.getColor(initial, self, "Select Grid Color")
+        if color.isValid():
+            normalized = color.name(QColor.HexRgb)
+            self._set_swatch_color(button, normalized)
+            line_edit.setText(normalized)
+
+    def _build_test_cases_panel(self) -> QFrame:
+        frame = QFrame(self)
+        frame.setObjectName("SettingsPanel")
+        frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        layout = QVBoxLayout(frame)
+        layout.setContentsMargins(14, 14, 14, 14)
+        layout.setSpacing(10)
+
+        header = QLabel("Test Cases")
+        header.setObjectName("SettingsSectionTitle")
+        layout.addWidget(header)
+
+        for label_text in ["Test 1", "Test 2", "Test 3"]:
+            row, _ = self._switch_row(label_text, checked=True)
+            layout.addLayout(row)
+
+        layout.addStretch(1)
+        actions = QHBoxLayout()
+        actions.addStretch(1)
+        execute_button = QPushButton("Execute Tests")
+        execute_button.setObjectName("PrimaryButton")
+        execute_button.setMinimumHeight(34)
+        actions.addWidget(execute_button)
+        layout.addLayout(actions)
+        return frame
+
+    def _build_debug_output_panel(self) -> QFrame:
+        frame = QFrame(self)
+        frame.setObjectName("SettingsPanel")
+        frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        layout = QVBoxLayout(frame)
+        layout.setContentsMargins(14, 14, 14, 14)
+        layout.setSpacing(8)
+
+        header = QLabel("Debug Output")
+        header.setObjectName("SettingsSectionTitle")
+        layout.addWidget(header)
+
+        console = QTextEdit()
+        console.setObjectName("DebugConsole")
+        console.setReadOnly(True)
+        console.setLineWrapMode(QTextEdit.NoWrap)
+        console.setText(
+            "> Executing \"Test 1\"...\n"
+            "\"Test 1\" passed!\n"
+            "> Executing \"Test 2\"...\n"
+            "\"Test 2\" failed...\n"
+            "> Executing \"Test 3\"..."
+        )
+        layout.addWidget(console, 1)
+        return frame
+
 
 
 class SearchResultsPage(QWidget):
