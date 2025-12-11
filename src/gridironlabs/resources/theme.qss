@@ -97,7 +97,7 @@ QLabel#TickerLabel {
 }
 
 #ContentFrame {
-    background-color: #1A1A1A;
+    background-color: transparent;
 }
 
 QFrame#PageContextBar {
@@ -114,6 +114,17 @@ QLabel#ContextBarTitle {
 QLabel#ContextBarSubtitle {
     color: #cbd5e1;
     font-size: 13px;
+}
+
+QLabel#ContextBarIcon {
+    background-color: #1b1f29;
+    border: 1px solid #262a33;
+    border-radius: 10px;
+}
+
+/* Make inner content of the context bar transparent */
+QFrame#PageContextBar QWidget {
+    background-color: transparent;
 }
 
 QFrame#ContextBarStat {
@@ -207,7 +218,7 @@ QPushButton#LeadersActionButton:disabled {
 }
 
 QFrame#LeaderSection {
-    background-color: #1c1f27;
+    background-color: #252525;
     border: 1px solid #20242d;
     border-radius: 8px;
     padding: 4px 6px 8px 6px;
@@ -221,8 +232,8 @@ QLabel#LeaderSectionTitle {
 }
 
 QFrame#LeaderCard {
-    background-color: #12151c;
-    border: 1px solid #1c2029;
+    background-color: #252525;
+    border: 1px solid #20242d;
     border-radius: 8px;
     padding: 6px 8px;
 }
@@ -244,6 +255,22 @@ QLabel#LeaderEmptyLabel {
     color: #9ca3af;
 }
 
+QFrame#PanelSeparator {
+    background: #262a33;
+    min-height: 1px;
+    max-height: 1px;
+    border: none;
+}
+
+/* Keep inner widgets transparent inside cards/sections to avoid striping */
+QFrame#SettingsCard QWidget,
+QFrame#SettingsSubCard QWidget,
+QFrame#LeaderSection QWidget,
+QFrame#StatePanel QWidget,
+QFrame#LeadersPanel QWidget {
+    background-color: transparent;
+}
+
 /* Settings page */
 QLabel#SettingsHeading {
     font-size: 22px;
@@ -251,8 +278,8 @@ QLabel#SettingsHeading {
 }
 
 QFrame#SettingsCard {
-    background-color: #1f232c;
-    border: 1px solid #262a33;
+    background-color: #252525;
+    border: 1px solid #20242d;
     border-radius: 12px;
 }
 
@@ -274,8 +301,8 @@ QLabel#SettingsCaption {
 }
 
 QFrame#SettingsSubCard {
-    background-color: #14171f;
-    border: 1px solid #262a33;
+    background-color: #252525;
+    border: 1px solid #20242d;
     border-radius: 10px;
 }
 

@@ -33,6 +33,11 @@
 5.3 Accessibility: Keyboard navigation (Tab/Shift+Tab), sensible focus order, minimum touch-friendly targets.
 5.4 Feedback: Toast/dialog for errors, non-blocking notifications for background refresh.
 5.5 Charts/tables: Comparison visuals must support sorting and basic export/clipboard copy of tables.
+5.6 Context bar proportions: The page context bar must always be 2x the height of the main navigation bar and span the full horizontal width of the window.
+5.7 Context bar leading image/icon: The context bar must always include an image or icon as its leftmost element (e.g., team logo, player photo) occupying a consistent reserved space, aligned to the left edge.
+5.8 Panel titles and separators: Panels may optionally include a title in the top-left corner. When present, the title text must render without a distinct background color (appearing visually integrated with the panel surface) and be separated from the panel content by a thin horizontal separator.
+5.9 Surface colors: The main navigation bar, context bar, and primary panels/cards must share the same background color for a unified surface treatment.
+5.10 Page titles: Page titles must appear only in the context bar; content sections below the context bar must not repeat the page title.
 
 6 Technical/Architecture Requirements
 6.1 Runtime: Python 3.10+; entrypoint `python -m gridironlabs.main` and console script `gridironlabs`.

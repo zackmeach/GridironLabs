@@ -209,6 +209,13 @@ class LeaderSection(QFrame):
         heading.setObjectName("LeaderSectionTitle")
         layout.addWidget(heading)
 
+        separator = QFrame()
+        separator.setObjectName("PanelSeparator")
+        separator.setFrameShape(QFrame.HLine)
+        separator.setFrameShadow(QFrame.Plain)
+        separator.setLineWidth(1)
+        layout.addWidget(separator)
+
         for stat in stats:
             layout.addWidget(LeaderCard(stat.label, stat.entries))
 

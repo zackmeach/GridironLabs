@@ -59,20 +59,12 @@ class HomePage(QWidget):
         layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(12)
 
-        title_label = QLabel(title)
-        title_label.setObjectName("PageTitle")
-        subtitle_label = QLabel(subtitle)
-        subtitle_label.setObjectName("PageSubtitle")
-        subtitle_label.setWordWrap(True)
-
-        layout.addWidget(title_label)
-        layout.addWidget(subtitle_label)
-
         self.leaders_panel = LeadersPanel()
         layout.addWidget(self.leaders_panel)
         layout.addStretch(1)
 
-        self.subtitle_label = subtitle_label
+        self.subtitle_label = QLabel(subtitle)
+        self.subtitle_label.setVisible(False)
 
     def set_subtitle(self, text: str) -> None:
         self.subtitle_label.setText(text)
@@ -94,15 +86,8 @@ class SectionPage(QWidget):
         layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(12)
 
-        title_label = QLabel(title)
-        title_label.setObjectName("PageTitle")
-        subtitle_label = QLabel(subtitle)
-        subtitle_label.setObjectName("PageSubtitle")
-        subtitle_label.setWordWrap(True)
-
-        layout.addWidget(title_label)
-        layout.addWidget(subtitle_label)
-        self.subtitle_label = subtitle_label
+        self.subtitle_label = QLabel(subtitle)
+        self.subtitle_label.setVisible(False)
 
         if show_states:
             states_row = QHBoxLayout()
@@ -125,11 +110,28 @@ class PageContextBar(QFrame):
     def __init__(self) -> None:
         super().__init__()
         self.setObjectName("PageContextBar")
-        self.setMinimumHeight(75)
+        self.setFixedHeight(114)  # 2x the 57px nav height
 
-        layout = QVBoxLayout(self)
+        layout = QHBoxLayout(self)
         layout.setContentsMargins(16, 12, 16, 12)
-        layout.setSpacing(8)
+        layout.setSpacing(12)
+
+        self.icon_label = QLabel()
+        self.icon_label.setObjectName("ContextBarIcon")
+        self.icon_label.setFixedSize(56, 56)
+        self.icon_label.setAlignment(Qt.AlignCenter)
+        icon_path = Path(__file__).resolve().parent.parent / "resources" / "icons" / "main_logo.png"
+        if icon_path.exists():
+            pixmap = QPixmap(str(icon_path))
+            if not pixmap.isNull():
+                self.icon_label.setPixmap(
+                    pixmap.scaled(self.icon_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                )
+        layout.addWidget(self.icon_label, 0, Qt.AlignVCenter)
+
+        content = QVBoxLayout()
+        content.setContentsMargins(0, 0, 0, 0)
+        content.setSpacing(8)
 
         self.title_label = QLabel("Context")
         self.title_label.setObjectName("ContextBarTitle")
@@ -137,13 +139,15 @@ class PageContextBar(QFrame):
         self.subtitle_label.setObjectName("ContextBarSubtitle")
         self.subtitle_label.setWordWrap(True)
 
-        layout.addWidget(self.title_label)
-        layout.addWidget(self.subtitle_label)
+        content.addWidget(self.title_label)
+        content.addWidget(self.subtitle_label)
 
         self.stats_layout = QHBoxLayout()
         self.stats_layout.setSpacing(16)
-        layout.addLayout(self.stats_layout)
-        layout.addStretch(1)
+        content.addLayout(self.stats_layout)
+        content.addStretch(1)
+
+        layout.addLayout(content)
 
     def set_content(self, *, title: str, subtitle: str, stats: Iterable[tuple[str, str]]) -> None:
         self.title_label.setText(title)
@@ -221,7 +225,6 @@ class SettingsPage(QWidget):
         layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(12)
 
-        layout.addLayout(self._build_header(paths))
         layout.addLayout(self._build_content_grid())
         layout.addStretch(1)
 
@@ -496,6 +499,13 @@ class SettingsPage(QWidget):
         header.setObjectName("SettingsLabel")
         layout.addWidget(header)
 
+        separator = QFrame()
+        separator.setObjectName("PanelSeparator")
+        separator.setFrameShape(QFrame.HLine)
+        separator.setFrameShadow(QFrame.Plain)
+        separator.setLineWidth(1)
+        layout.addWidget(separator)
+
         checkboxes: list[QCheckBox] = []
         for item in items:
             cb = QCheckBox(item)
@@ -515,6 +525,13 @@ class SettingsPage(QWidget):
         title_label = QLabel(title)
         title_label.setObjectName("SettingsCardTitle")
         layout.addWidget(title_label)
+
+        separator = QFrame()
+        separator.setObjectName("PanelSeparator")
+        separator.setFrameShape(QFrame.HLine)
+        separator.setFrameShadow(QFrame.Plain)
+        separator.setLineWidth(1)
+        layout.addWidget(separator)
         return frame, layout
 
     def _timestamp_text(self) -> str:
@@ -550,13 +567,10 @@ class SearchResultsPage(QWidget):
         layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(12)
 
-        title_label = QLabel("Search Results")
-        title_label.setObjectName("PageTitle")
         self.summary_label = QLabel("Type a query and press Enter.")
         self.summary_label.setObjectName("PageSubtitle")
         self.summary_label.setWordWrap(True)
 
-        layout.addWidget(title_label)
         layout.addWidget(self.summary_label)
 
         placeholders = QHBoxLayout()
@@ -657,18 +671,10 @@ class GridironLabsMainWindow(QMainWindow):
         self.context_bar = PageContextBar()
         container_layout.addWidget(self.context_bar)
 
-        if offline_mode:
-            container_layout.addWidget(
-                StatusBanner(
-                    "Offline placeholder mode: nflreadpy not installed. Data-backed views are stubbed.",
-                    severity="offline",
-                )
-            )
-
         content_frame = QFrame(self)
         content_frame.setObjectName("ContentFrame")
         content_layout = QVBoxLayout(content_frame)
-        content_layout.setContentsMargins(12, 12, 12, 12)
+        content_layout.setContentsMargins(12, 0, 12, 12)
         content_layout.setSpacing(12)
 
         self.content_stack = QStackedWidget(self)
@@ -741,36 +747,14 @@ class GridironLabsMainWindow(QMainWindow):
                 players=len(players), teams=len(teams), coaches=len(coaches), seasons_span=season_span
             )
         except NotFoundError as exc:
-            container_layout.insertWidget(
-                1,
-                StatusBanner(
-                    f"Processed data missing at {self.paths.data_processed}. "
-                    "Run scripts/generate_fake_nfl_data.py to bootstrap.",
-                    severity="offline",
-                ),
-            )
             if self.logger:
                 self.logger.warning("Data missing", extra={"error": str(exc)})
             self._refresh_context_payloads(players=0, teams=0, coaches=0, seasons_span="No seasons detected")
         except DataValidationError as exc:
-            container_layout.insertWidget(
-                1,
-                StatusBanner(
-                    f"Data validation issue: {exc}",
-                    severity="error",
-                ),
-            )
             if self.logger:
                 self.logger.error("Data validation failed", extra={"error": str(exc)})
             self._refresh_context_payloads(players=0, teams=0, coaches=0, seasons_span="Validation error")
         except Exception as exc:  # pragma: no cover - catch-all for UI bootstrap
-            container_layout.insertWidget(
-                1,
-                StatusBanner(
-                    "Failed to load processed data. See logs for details.",
-                    severity="error",
-                ),
-            )
             if self.logger:
                 self.logger.exception("Unhandled data bootstrap failure", exc_info=exc)
             self._refresh_context_payloads(players=0, teams=0, coaches=0, seasons_span="Load failure")

@@ -21,7 +21,7 @@ OOTP26-inspired NFL analytics explorer built with PySide6. This repository ships
 - `src/gridironlabs/core` — configuration, domain models, repository interfaces, logging wiring.
 - `src/gridironlabs/data` — Parquet IO helpers plus source adapters for NFLreadpy and PFR scraping; schemas now include games (schedules + outcomes).
 - `src/gridironlabs/services` — UI-facing services (search, summary retrieval).
-- `src/gridironlabs/ui` — PySide6 windows/widgets; persistent top navigation bar (with rotating matchup ticker), stacked content area, a League Leaders home grid, and a static Settings mock matching the shared reference layout.
+- `src/gridironlabs/ui` — PySide6 windows/widgets; persistent top navigation bar (with rotating matchup ticker), a 2x-height context bar with the page title/subtitle/stats, stacked content area, a League Leaders home grid, and a static Settings mock matching the shared reference layout. Page titles render only in the context bar.
 - `src/gridironlabs/resources` — QSS dark theme and future assets.
 - `data/` — Parquet-first storage (`raw`, `interim`, `processed`, `external`); processed data includes players, teams, coaches, and games.
 - `scripts/` — operational scripts (bootstrap placeholder included).
