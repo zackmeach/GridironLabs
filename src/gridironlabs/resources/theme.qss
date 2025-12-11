@@ -243,3 +243,141 @@ QLabel#LeaderEntry {
 QLabel#LeaderEmptyLabel {
     color: #9ca3af;
 }
+
+/* Settings page */
+QLabel#SettingsHeading {
+    font-size: 22px;
+    font-weight: 800;
+}
+
+QFrame#SettingsCard {
+    background-color: #1f232c;
+    border: 1px solid #262a33;
+    border-radius: 12px;
+}
+
+QLabel#SettingsCardTitle {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 2px;
+}
+
+QLabel#SettingsLabel {
+    color: #e5e7eb;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+QLabel#SettingsCaption {
+    color: #9ca3af;
+    font-size: 12px;
+}
+
+QFrame#SettingsSubCard {
+    background-color: #14171f;
+    border: 1px solid #262a33;
+    border-radius: 10px;
+}
+
+QLabel#SettingsTableHeader {
+    color: #e5e7eb;
+    font-weight: 700;
+}
+
+QLabel#SettingsTableCell {
+    color: #cbd5e1;
+}
+
+QCheckBox#SettingsCheckbox {
+    spacing: 8px;
+    font-weight: 600;
+}
+
+QCheckBox#SettingsCheckbox::indicator {
+    width: 16px;
+    height: 16px;
+    border: 1px solid #4b5563;
+    border-radius: 4px;
+    background-color: #0f1115;
+}
+
+QCheckBox#SettingsCheckbox::indicator:checked {
+    background-color: #7c3aed;
+    border-color: #7c3aed;
+}
+
+QComboBox#SettingsCombo,
+QLineEdit#SettingsInput,
+QSpinBox#SettingsSpinBox {
+    background-color: #13171f;
+    border: 1px solid #262a33;
+    border-radius: 6px;
+    padding: 8px 10px;
+    color: #e5e7eb;
+}
+
+QComboBox#SettingsCombo::drop-down {
+    width: 22px;
+}
+
+QSlider#SettingsSlider::groove:horizontal {
+    background: #1f2633;
+    height: 6px;
+    border-radius: 3px;
+}
+
+QSlider#SettingsSlider::handle:horizontal {
+    background: #9ca3af;
+    border: 1px solid #262a33;
+    width: 16px;
+    margin: -5px 0;
+    border-radius: 8px;
+}
+
+QSlider#SettingsSlider::sub-page:horizontal {
+    background: #2563eb;
+    border-radius: 3px;
+}
+
+QFrame#ColorSwatch {
+    border: 1px solid #3a3f4b;
+    border-radius: 6px;
+}
+
+QPushButton#PrimaryButton {
+    background-color: #2563eb;
+    color: #f8fafc;
+    border: 1px solid #2563eb;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+QPushButton#PrimaryButton:hover {
+    background-color: #1d4ed8;
+}
+
+QPushButton#GhostButton {
+    background-color: #232733;
+    color: #e5e7eb;
+    border: 1px solid #2b3040;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+QPushButton#GhostButton:hover {
+    background-color: #2c3140;
+}
+
+QTextEdit#TerminalOutput {
+    background-color: #0c0f16;
+    border: 1px solid #262a33;
+    border-radius: 10px;
+    color: #e5e7eb;
+    font-family: "JetBrains Mono", "Consolas", monospace;
+    font-size: 12px;
+    padding: 10px;
+}

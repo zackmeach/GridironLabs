@@ -3,16 +3,26 @@
 from __future__ import annotations
 
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Iterable
 
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import Qt, QTimer, QRect, QSize
+from PySide6.QtGui import QColor, QPainter, QPixmap
 from PySide6.QtWidgets import (
+    QCheckBox,
+    QComboBox,
     QFormLayout,
     QFrame,
     QHBoxLayout,
     QLabel,
+    QLineEdit,
     QMainWindow,
+    QPushButton,
+    QSlider,
+    QSpinBox,
+    QSizePolicy,
     QStackedWidget,
+    QTextEdit,
     QVBoxLayout,
     QWidget,
 )
@@ -162,63 +172,371 @@ class PageContextBar(QFrame):
         self.stats_layout.addStretch(1)
 
 
+class ToggleSwitch(QCheckBox):
+    """Lightweight painted toggle for cosmetic on/off controls."""
+
+    def __init__(self, checked: bool = False) -> None:
+        super().__init__()
+        self.setChecked(checked)
+        self.setCursor(Qt.PointingHandCursor)
+        self.setObjectName("ToggleSwitch")
+        self.setFixedHeight(26)
+
+    def sizeHint(self) -> QSize:  # pragma: no cover - trivial UI
+        return QSize(46, 28)
+
+    def paintEvent(self, event) -> None:  # pragma: no cover - trivial UI
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        track_rect = QRect(0, (self.height() - 22) // 2, 46, 22)
+        track_color = QColor("#7c3aed") if self.isChecked() else QColor("#1f2933")
+        if not self.isEnabled():
+            track_color = QColor("#111827")
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(track_color)
+        painter.drawRoundedRect(track_rect, 11, 11)
+
+        thumb_color = QColor("#f9fafc") if self.isEnabled() else QColor("#6b7280")
+        thumb_diameter = 16
+        thumb_x = track_rect.left() + 4 if not self.isChecked() else track_rect.right() - thumb_diameter - 3
+        thumb_rect = QRect(thumb_x, track_rect.top() + 3, thumb_diameter, thumb_diameter)
+        painter.setBrush(thumb_color)
+        painter.drawEllipse(thumb_rect)
+        painter.end()
+
+
 class SettingsPage(QWidget):
-    """Read-only settings overview until editable preferences land."""
+    """Cosmetic settings layout mirroring the shared mock."""
 
     def __init__(self, config: AppConfig, paths: AppPaths) -> None:
         super().__init__()
         self.setObjectName("page-settings")
+        self.config = config
+        self.paths = paths
+
+        self.player_option_checkboxes: list[QCheckBox] = []
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(12)
 
-        title_label = QLabel("Settings")
-        title_label.setObjectName("PageTitle")
-        subtitle_label = QLabel(
-            "Review runtime configuration and app paths. "
-            "Edit your environment or .env file to change these values."
-        )
-        subtitle_label.setObjectName("PageSubtitle")
-        subtitle_label.setWordWrap(True)
-
-        layout.addWidget(title_label)
-        layout.addWidget(subtitle_label)
-        layout.addWidget(
-            StatusBanner(
-                "Settings are read-only for now; updates come from environment variables or .env.",
-                severity="info",
-            )
-        )
-
-        form_frame = QFrame(self)
-        form_frame.setObjectName("SettingsForm")
-        form = QFormLayout(form_frame)
-        form.setContentsMargins(4, 4, 4, 4)
-        form.setSpacing(8)
-        form.setLabelAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        form.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
-
-        def add_row(label_text: str, value: str) -> None:
-            label = QLabel(label_text)
-            value_label = QLabel(value)
-            value_label.setWordWrap(True)
-            value_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
-            form.addRow(label, value_label)
-
-        add_row("Environment", config.environment)
-        add_row("UI theme", config.ui_theme)
-        add_row("Schema version", config.default_schema_version)
-        add_row("Enable scraping", "On" if config.enable_scraping else "Off")
-        add_row("Live refresh", "On" if config.enable_live_refresh else "Off")
-        add_row("Processed data path", str(paths.data_processed))
-        add_row("Raw data path", str(paths.data_raw))
-        add_row("Cache path", str(paths.cache))
-        add_row("Logs path", str(paths.logs))
-        add_row(".env path", str(paths.root / ".env"))
-
-        layout.addWidget(form_frame)
+        layout.addLayout(self._build_header(paths))
+        layout.addLayout(self._build_content_grid())
         layout.addStretch(1)
+
+    def _build_header(self, paths: AppPaths) -> QHBoxLayout:
+        header = QHBoxLayout()
+        header.setSpacing(10)
+
+        logo = QLabel()
+        logo.setObjectName("SettingsLogo")
+        icon_path = Path(__file__).resolve().parent.parent / "resources" / "icons" / "main_logo.png"
+        if icon_path.exists():
+            pixmap = QPixmap(str(icon_path))
+            if not pixmap.isNull():
+                logo.setPixmap(pixmap.scaled(52, 52, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        logo.setFixedSize(60, 60)
+        logo.setAlignment(Qt.AlignCenter)
+
+        title = QLabel("GridironLabs Settings")
+        title.setObjectName("SettingsHeading")
+
+        header.addWidget(logo, 0, Qt.AlignLeft | Qt.AlignVCenter)
+        header.addWidget(title, 0, Qt.AlignLeft | Qt.AlignVCenter)
+        header.addStretch(1)
+        return header
+
+    def _build_content_grid(self) -> QHBoxLayout:
+        row = QHBoxLayout()
+        row.setSpacing(12)
+
+        data_card = self._build_data_generation_card()
+        data_card.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        row.addWidget(data_card, 4)
+
+        middle_container = QWidget()
+        middle_layout = QVBoxLayout(middle_container)
+        middle_layout.setContentsMargins(0, 0, 0, 0)
+        middle_layout.setSpacing(12)
+
+        ui_grid = self._build_ui_grid_card()
+        ui_grid.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        middle_layout.addWidget(ui_grid, 1)
+
+        test_cases = self._build_test_cases_card()
+        test_cases.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        middle_layout.addWidget(test_cases, 1)
+
+        row.addWidget(middle_container, 3)
+
+        debug_card = self._build_debug_output_card()
+        debug_card.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        row.addWidget(debug_card, 3)
+
+        return row
+
+    def _build_data_generation_card(self) -> QFrame:
+        card, layout = self._card("Data Generation")
+
+        content = QHBoxLayout()
+        content.setSpacing(12)
+
+        left = QVBoxLayout()
+        left.setSpacing(10)
+        left.addLayout(self._build_season_range_row())
+        left.addLayout(self._build_switch_row("Real Data", checked=True))
+        left.addLayout(self._build_switch_row("Pull NFLverse", checked=True))
+        left.addLayout(self._build_switch_row("Pull Pro-Football-Reference", checked=True))
+
+        generate_group, generate_checkboxes = self._checkbox_group(
+            "Generate Data", ["Generate Teams", "Generate Coaches", "Generate Players"]
+        )
+        player_types_group, player_checkboxes = self._checkbox_group(
+            "Player Types", ["Offense", "Defense", "Special Teams"]
+        )
+        self.player_option_checkboxes = player_checkboxes
+        if generate_checkboxes:
+            generate_checkboxes[-1].toggled.connect(self._set_player_option_enabled)
+            self._set_player_option_enabled(generate_checkboxes[-1].isChecked())
+
+        left.addWidget(generate_group)
+        left.addWidget(player_types_group)
+        left.addStretch(1)
+
+        right = QVBoxLayout()
+        right.setSpacing(8)
+        right.addWidget(self._build_last_update_table())
+        right.addLayout(self._build_total_row("Total Data Size", "35GB"))
+
+        generate_button = QPushButton("Generate Data")
+        generate_button.setObjectName("PrimaryButton")
+        generate_button.setMinimumHeight(40)
+        generate_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        right.addWidget(generate_button)
+
+        content.addLayout(left, 1)
+        content.addLayout(right, 1)
+        layout.addLayout(content)
+        return card
+
+    def _build_ui_grid_card(self) -> QFrame:
+        card, layout = self._card("UI Grid Layout")
+        layout.addLayout(self._build_switch_row("Enable Grid", checked=True))
+        layout.addLayout(self._build_opacity_row())
+        layout.addLayout(self._build_color_row())
+        layout.addLayout(self._build_cell_size_row())
+        layout.addStretch(1)
+        return card
+
+    def _build_test_cases_card(self) -> QFrame:
+        card, layout = self._card("Test Cases")
+        layout.addLayout(self._build_switch_row("Test 1", checked=True))
+        layout.addLayout(self._build_switch_row("Test 2", checked=True))
+        layout.addLayout(self._build_switch_row("Test 3", checked=True))
+
+        button_row = QHBoxLayout()
+        button_row.addStretch(1)
+        execute_button = QPushButton("Execute Tests")
+        execute_button.setObjectName("GhostButton")
+        execute_button.setMinimumHeight(36)
+        button_row.addWidget(execute_button, 0, Qt.AlignRight)
+        layout.addLayout(button_row)
+        return card
+
+    def _build_debug_output_card(self) -> QFrame:
+        card, layout = self._card("Debug Output")
+        terminal = QTextEdit()
+        terminal.setObjectName("TerminalOutput")
+        terminal.setReadOnly(True)
+        terminal.setText(
+            '> Executing "Test 1"...\n'
+            '"Test 1" passed!\n'
+            '> Executing "Test 2"...\n'
+            '"Test 2" failed...\n'
+            '> Executing "Test 3"...'
+        )
+        layout.addWidget(terminal)
+        return card
+
+    def _build_header_label(self, text: str) -> QLabel:
+        label = QLabel(text)
+        label.setObjectName("SettingsLabel")
+        return label
+
+    def _build_switch_row(self, text: str, *, checked: bool = False) -> QHBoxLayout:
+        row = QHBoxLayout()
+        row.setSpacing(8)
+        row.addWidget(self._build_header_label(text))
+        row.addStretch(1)
+        row.addWidget(ToggleSwitch(checked))
+        return row
+
+    def _build_opacity_row(self) -> QHBoxLayout:
+        row = QHBoxLayout()
+        row.setSpacing(10)
+        row.addWidget(self._build_header_label("Opacity"))
+        slider = QSlider(Qt.Horizontal)
+        slider.setObjectName("SettingsSlider")
+        slider.setRange(0, 100)
+        slider.setValue(60)
+        value_label = QLabel(f"{slider.value()}%")
+        value_label.setObjectName("SettingsLabel")
+        slider.valueChanged.connect(lambda value: value_label.setText(f"{value}%"))
+        row.addWidget(slider, 1)
+        row.addWidget(value_label)
+        return row
+
+    def _build_color_row(self) -> QHBoxLayout:
+        row = QHBoxLayout()
+        row.setSpacing(10)
+        row.addWidget(self._build_header_label("Color"))
+        swatch = QFrame()
+        swatch.setObjectName("ColorSwatch")
+        swatch.setFixedSize(42, 26)
+        swatch.setStyleSheet("background-color: #cd4d4d;")
+        row.addWidget(swatch, 0, Qt.AlignLeft)
+
+        input_hex = QLineEdit("#CD4D4D")
+        input_hex.setObjectName("SettingsInput")
+        input_hex.setMaxLength(7)
+        input_hex.setFixedWidth(110)
+        input_hex.returnPressed.connect(
+            lambda: self._apply_hex_color(swatch, input_hex)
+        )
+        row.addWidget(input_hex)
+        row.addStretch(1)
+        return row
+
+    def _build_cell_size_row(self) -> QHBoxLayout:
+        row = QHBoxLayout()
+        row.setSpacing(10)
+        row.addWidget(self._build_header_label("Cell Size"))
+        spin = QSpinBox()
+        spin.setObjectName("SettingsSpinBox")
+        spin.setRange(1, 50)
+        spin.setValue(1)
+        spin.setSuffix(" px")
+        spin.setFixedWidth(90)
+        row.addWidget(spin)
+        row.addStretch(1)
+        return row
+
+    def _build_season_range_row(self) -> QHBoxLayout:
+        row = QHBoxLayout()
+        row.setSpacing(8)
+        row.addWidget(self._build_header_label("Season Range"))
+        start = self._year_combo(default=1999)
+        end = self._year_combo(default=datetime.now().year)
+        row.addWidget(start)
+        row.addWidget(end)
+        row.addStretch(1)
+        return row
+
+    def _build_last_update_table(self) -> QFrame:
+        frame = QFrame()
+        frame.setObjectName("SettingsSubCard")
+        grid = QFormLayout(frame)
+        grid.setContentsMargins(10, 10, 10, 10)
+        grid.setSpacing(6)
+
+        header_row = QHBoxLayout()
+        header_row.setSpacing(8)
+        data_label = QLabel("Data Type")
+        data_label.setObjectName("SettingsTableHeader")
+        last_label = QLabel("Last Update")
+        last_label.setObjectName("SettingsTableHeader")
+        header_row.addWidget(data_label, 1)
+        header_row.addWidget(last_label, 1)
+        grid.addRow(header_row)
+
+        now_text = self._timestamp_text()
+        for data_type in ("Teams", "Coaches", "Players", "Offense", "Defense", "Spec Teams"):
+            row = QHBoxLayout()
+            row.setSpacing(8)
+            label = QLabel(data_type)
+            label.setObjectName("SettingsTableCell")
+            stamp = QLabel(now_text)
+            stamp.setObjectName("SettingsTableCell")
+            row.addWidget(label, 1)
+            row.addWidget(stamp, 1)
+            grid.addRow(row)
+        return frame
+
+    def _build_total_row(self, label_text: str, value_text: str) -> QHBoxLayout:
+        row = QHBoxLayout()
+        row.setSpacing(8)
+        label = QLabel(label_text)
+        label.setObjectName("SettingsCaption")
+        value = QLabel(value_text)
+        value.setObjectName("SettingsLabel")
+        row.addWidget(label)
+        row.addStretch(1)
+        row.addWidget(value, 0, Qt.AlignRight)
+        return row
+
+    def _year_combo(self, *, default: int) -> QComboBox:
+        combo = QComboBox()
+        combo.setObjectName("SettingsCombo")
+        current_year = datetime.now().year
+        for year in range(1999, current_year + 1):
+            combo.addItem(str(year))
+        combo.setCurrentText(str(default))
+        combo.setFixedWidth(96)
+        return combo
+
+    def _checkbox_group(self, title: str, items: Iterable[str]) -> tuple[QFrame, list[QCheckBox]]:
+        frame = QFrame()
+        frame.setObjectName("SettingsSubCard")
+        layout = QVBoxLayout(frame)
+        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(6)
+
+        header = QLabel(title)
+        header.setObjectName("SettingsLabel")
+        layout.addWidget(header)
+
+        checkboxes: list[QCheckBox] = []
+        for item in items:
+            cb = QCheckBox(item)
+            cb.setChecked(True)
+            cb.setObjectName("SettingsCheckbox")
+            layout.addWidget(cb)
+            checkboxes.append(cb)
+        return frame, checkboxes
+
+    def _card(self, title: str) -> tuple[QFrame, QVBoxLayout]:
+        frame = QFrame()
+        frame.setObjectName("SettingsCard")
+        layout = QVBoxLayout(frame)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(10)
+
+        title_label = QLabel(title)
+        title_label.setObjectName("SettingsCardTitle")
+        layout.addWidget(title_label)
+        return frame, layout
+
+    def _timestamp_text(self) -> str:
+        return datetime.now().strftime("%b %d, %Y @ %I:%M%p").lower()
+
+    def _set_player_option_enabled(self, enabled: bool) -> None:
+        for checkbox in self.player_option_checkboxes:
+            checkbox.setEnabled(enabled)
+
+    def _apply_hex_color(self, swatch: QFrame, line_edit: QLineEdit) -> None:
+        value = self._normalize_hex(line_edit.text())
+        swatch.setStyleSheet(f"background-color: {value};")
+        line_edit.setText(value.upper())
+
+    @staticmethod
+    def _normalize_hex(text: str) -> str:
+        value = text.strip().lstrip("#")
+        if len(value) not in (3, 6) or any(ch not in "0123456789abcdefABCDEF" for ch in value):
+            return "#cd4d4d"
+        if len(value) == 3:
+            value = "".join(ch * 2 for ch in value)
+        return f"#{value.lower()}"
 
 
 class SearchResultsPage(QWidget):
