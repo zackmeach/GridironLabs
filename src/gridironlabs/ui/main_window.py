@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from PySide6.QtCore import Qt, QTimer, QRect, QSize
-from PySide6.QtGui import QColor, QPainter, QPixmap
+from PySide6.QtGui import QColor, QPainter, QPixmap, QTextCursor, QTextOption
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -35,6 +35,7 @@ from gridironlabs.data.schemas import SCHEMA_REGISTRY
 from gridironlabs.services.search import SearchService
 from gridironlabs.services.summary import SummaryService
 from gridironlabs.ui.widgets.navigation import NavigationBar
+from gridironlabs.ui.widgets.panel_card import PanelCard
 from gridironlabs.ui.widgets.league_leaders import (
     LeaderboardData,
     LeadersPanel,
@@ -222,6 +223,8 @@ class SettingsPage(QWidget):
         self.paths = paths
 
         self.player_option_checkboxes: list[QCheckBox] = []
+        self.terminal_output: QTextEdit | None = None
+        self.test1_toggle: ToggleSwitch | None = None
 
         layout = QVBoxLayout(self)
         # Align top gap with the spacing between nav and context bar.
@@ -337,7 +340,14 @@ class SettingsPage(QWidget):
 
     def _build_test_cases_card(self) -> QFrame:
         card, layout = self._card("Test Cases")
-        layout.addLayout(self._build_switch_row("Test 1", checked=True))
+        test1_row = QHBoxLayout()
+        test1_row.setSpacing(8)
+        test1_row.addWidget(self._build_header_label("Test 1"))
+        test1_row.addStretch(1)
+        self.test1_toggle = ToggleSwitch(checked=True)
+        test1_row.addWidget(self.test1_toggle)
+        layout.addLayout(test1_row)
+
         layout.addLayout(self._build_switch_row("Test 2", checked=True))
         layout.addLayout(self._build_switch_row("Test 3", checked=True))
 
@@ -346,29 +356,68 @@ class SettingsPage(QWidget):
         execute_button = QPushButton("Execute Tests")
         execute_button.setObjectName("GhostButton")
         execute_button.setMinimumHeight(36)
+        execute_button.clicked.connect(self._run_test_cases)
         button_row.addWidget(execute_button, 0, Qt.AlignRight)
         layout.addLayout(button_row)
         return card
 
     def _build_debug_output_card(self) -> QFrame:
         card, layout = self._card("Debug Output")
-        terminal = QTextEdit()
-        terminal.setObjectName("TerminalOutput")
-        terminal.setReadOnly(True)
-        terminal.setText(
-            '> Executing "Test 1"...\n'
-            '"Test 1" passed!\n'
-            '> Executing "Test 2"...\n'
-            '"Test 2" failed...\n'
-            '> Executing "Test 3"...'
-        )
-        layout.addWidget(terminal)
+        self.terminal_output = QTextEdit()
+        self.terminal_output.setObjectName("TerminalOutput")
+        self.terminal_output.setReadOnly(True)
+        self.terminal_output.setWordWrapMode(QTextOption.NoWrap)
+        self.terminal_output.clear()
+        # Force palette to black background regardless of parent transparency rules.
+        palette = self.terminal_output.palette()
+        palette.setColor(self.terminal_output.viewport().backgroundRole(), Qt.black)
+        palette.setColor(self.terminal_output.backgroundRole(), Qt.black)
+        palette.setColor(self.terminal_output.foregroundRole(), QColor("#e5e7eb"))
+        palette.setColor(self.terminal_output.viewport().foregroundRole(), QColor("#e5e7eb"))
+        self.terminal_output.setPalette(palette)
+        self.terminal_output.viewport().setAutoFillBackground(True)
+        self.terminal_output.moveCursor(QTextCursor.End)
+        self.terminal_output.ensureCursorVisible()
+        layout.addWidget(self.terminal_output)
         return card
 
     def _build_header_label(self, text: str) -> QLabel:
         label = QLabel(text)
         label.setObjectName("SettingsLabel")
         return label
+
+    def _run_test_cases(self) -> None:
+        if self.test1_toggle and self.test1_toggle.isChecked():
+            self._simulate_terminal_output()
+
+    def _simulate_terminal_output(self) -> None:
+        """Emit fake but realistic terminal output for Test 1."""
+        if not self.terminal_output:
+            return
+
+        self.terminal_output.clear()
+
+        def append_line(line: str) -> None:
+            if not self.terminal_output:
+                return
+            cursor = self.terminal_output.textCursor()
+            cursor.movePosition(QTextCursor.End)
+            cursor.insertText(line + "\n")
+            self.terminal_output.setTextCursor(cursor)
+            self.terminal_output.ensureCursorVisible()
+
+        steps: list[tuple[int, str]] = [
+            (0, '> Running "Test 1" (integration)…'),
+            (300, "[INFO] Connected to mock datastore"),
+            (650, "[INFO] Seeding sample teams, coaches, and players…"),
+            (1050, "[WARN] Missing coach rating for SEA: defaulting to 50"),
+            (1400, "[INFO] Running summary pipeline (12 checks)…"),
+            (1850, "[PASS] Assertions passed (12/12) in 1.8s"),
+            (2200, '> Completed "Test 1".'),
+        ]
+
+        for delay_ms, line in steps:
+            QTimer.singleShot(delay_ms, lambda text=line: append_line(text))
 
     def _build_switch_row(self, text: str, *, checked: bool = False) -> QHBoxLayout:
         row = QHBoxLayout()
@@ -440,11 +489,17 @@ class SettingsPage(QWidget):
         return row
 
     def _build_last_update_table(self) -> QFrame:
-        frame = QFrame()
-        frame.setObjectName("SettingsSubCard")
-        grid = QFormLayout(frame)
-        grid.setContentsMargins(10, 10, 10, 10)
+        frame = PanelCard(
+            title=None,
+            object_name="SettingsSubCard",
+            margins=(10, 10, 10, 10),
+            spacing=6,
+            show_separator=False,
+        )
+        grid = QFormLayout()
+        grid.setContentsMargins(0, 0, 0, 0)
         grid.setSpacing(6)
+        frame.body_layout.addLayout(grid)
 
         header_row = QHBoxLayout()
         header_row.setSpacing(8)
@@ -492,22 +547,15 @@ class SettingsPage(QWidget):
         return combo
 
     def _checkbox_group(self, title: str, items: Iterable[str]) -> tuple[QFrame, list[QCheckBox]]:
-        frame = QFrame()
-        frame.setObjectName("SettingsSubCard")
-        layout = QVBoxLayout(frame)
-        layout.setContentsMargins(10, 10, 10, 10)
+        container = QFrame()
+        container.setObjectName("SettingsSubCard")
+        layout = QVBoxLayout(container)
+        layout.setContentsMargins(10, 6, 10, 6)
         layout.setSpacing(6)
 
         header = QLabel(title)
         header.setObjectName("SettingsLabel")
         layout.addWidget(header)
-
-        separator = QFrame()
-        separator.setObjectName("PanelSeparator")
-        separator.setFrameShape(QFrame.HLine)
-        separator.setFrameShadow(QFrame.Plain)
-        separator.setLineWidth(1)
-        layout.addWidget(separator)
 
         checkboxes: list[QCheckBox] = []
         for item in items:
@@ -516,26 +564,18 @@ class SettingsPage(QWidget):
             cb.setObjectName("SettingsCheckbox")
             layout.addWidget(cb)
             checkboxes.append(cb)
-        return frame, checkboxes
+        return container, checkboxes
 
     def _card(self, title: str) -> tuple[QFrame, QVBoxLayout]:
-        frame = QFrame()
-        frame.setObjectName("SettingsCard")
-        layout = QVBoxLayout(frame)
-        layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(10)
-
-        title_label = QLabel(title)
-        title_label.setObjectName("SettingsCardTitle")
-        layout.addWidget(title_label)
-
-        separator = QFrame()
-        separator.setObjectName("PanelSeparator")
-        separator.setFrameShape(QFrame.HLine)
-        separator.setFrameShadow(QFrame.Plain)
-        separator.setLineWidth(1)
-        layout.addWidget(separator)
-        return frame, layout
+        frame = PanelCard(
+            title=title,
+            object_name="SettingsCard",
+            margins=(12, 12, 12, 12),
+            spacing=10,
+            show_separator=True,
+            title_object_name="SettingsCardTitle",
+        )
+        return frame, frame.body_layout
 
     def _timestamp_text(self) -> str:
         return datetime.now().strftime("%b %d, %Y @ %I:%M%p").lower()

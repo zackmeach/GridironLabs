@@ -6,16 +6,10 @@ from dataclasses import dataclass
 from typing import Callable, Iterable, Mapping, Sequence
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import (
-    QFrame,
-    QGridLayout,
-    QHBoxLayout,
-    QLabel,
-    QPushButton,
-    QVBoxLayout,
-)
+from PySide6.QtWidgets import QFrame, QGridLayout, QHBoxLayout, QLabel, QPushButton, QVBoxLayout
 
 from gridironlabs.core.models import EntitySummary
+from gridironlabs.ui.widgets.panel_card import PanelCard
 
 
 @dataclass(frozen=True)
@@ -159,19 +153,19 @@ def _latest_numeric_season(players: Sequence[EntitySummary]) -> int | None:
     return max(seasons) if seasons else None
 
 
-class LeaderCard(QFrame):
+class LeaderCard(PanelCard):
     """Small card showing the top two entries for a stat."""
 
     def __init__(self, title: str, entries: Sequence[LeaderEntry]) -> None:
-        super().__init__()
-        self.setObjectName("LeaderCard")
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(10, 8, 10, 8)
-        layout.setSpacing(4)
-
-        title_label = QLabel(title)
-        title_label.setObjectName("LeaderCardTitle")
-        layout.addWidget(title_label)
+        super().__init__(
+            title=title,
+            object_name="LeaderCard",
+            margins=(10, 8, 10, 8),
+            spacing=4,
+            show_separator=False,
+            title_object_name="LeaderCardTitle",
+        )
+        layout = self.body_layout
 
         for idx, entry in enumerate(entries, start=1):
             label = QLabel(self._format_entry(idx, entry))
@@ -195,26 +189,19 @@ class LeaderCard(QFrame):
         return f"{value:,.1f}"
 
 
-class LeaderSection(QFrame):
+class LeaderSection(PanelCard):
     """Column of stat cards within a category such as Passing or Defense."""
 
     def __init__(self, title: str, stats: Sequence[LeaderStat]) -> None:
-        super().__init__()
-        self.setObjectName("LeaderSection")
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(10, 10, 10, 10)
-        layout.setSpacing(8)
-
-        heading = QLabel(title)
-        heading.setObjectName("LeaderSectionTitle")
-        layout.addWidget(heading)
-
-        separator = QFrame()
-        separator.setObjectName("PanelSeparator")
-        separator.setFrameShape(QFrame.HLine)
-        separator.setFrameShadow(QFrame.Plain)
-        separator.setLineWidth(1)
-        layout.addWidget(separator)
+        super().__init__(
+            title=title,
+            object_name="LeaderSection",
+            margins=(10, 10, 10, 10),
+            spacing=8,
+            show_separator=True,
+            title_object_name="LeaderSectionTitle",
+        )
+        layout = self.body_layout
 
         for stat in stats:
             layout.addWidget(LeaderCard(stat.label, stat.entries))
@@ -222,23 +209,25 @@ class LeaderSection(QFrame):
         layout.addStretch(1)
 
 
-class LeadersPanel(QFrame):
+class LeadersPanel(PanelCard):
     """Top-level panel that arranges stat groups on a grid."""
 
     def __init__(self, *, on_view_full: Callable[[], None] | None = None) -> None:
-        super().__init__()
-        self.setObjectName("LeadersPanel")
-
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(10)
+        super().__init__(
+            title=None,
+            object_name="LeadersPanel",
+            margins=(12, 12, 12, 12),
+            spacing=10,
+            show_separator=False,
+        )
 
         header = QHBoxLayout()
         header.setSpacing(8)
+        header.setContentsMargins(0, 0, 0, 0)
 
-        title = QLabel("League Leaders")
-        title.setObjectName("LeadersTitle")
-        header.addWidget(title)
+        title_label = QLabel("League Leaders")
+        title_label.setObjectName("LeadersTitle")
+        header.addWidget(title_label)
 
         self.season_label = QLabel()
         self.season_label.setObjectName("LeadersSeasonLabel")
@@ -255,8 +244,14 @@ class LeadersPanel(QFrame):
         else:
             action.setEnabled(False)
         header.addWidget(action, 0, Qt.AlignRight)
-        layout.addLayout(header)
-        header.addSpacing(2)
+        self.body_layout.addLayout(header)
+
+        separator = QFrame()
+        separator.setObjectName("PanelSeparator")
+        separator.setFrameShape(QFrame.HLine)
+        separator.setFrameShadow(QFrame.Plain)
+        separator.setLineWidth(1)
+        self.body_layout.addWidget(separator)
 
         self.grid = QGridLayout()
         self.grid.setContentsMargins(0, 4, 0, 0)
@@ -266,13 +261,13 @@ class LeadersPanel(QFrame):
         self.grid.setColumnStretch(0, 2)
         self.grid.setColumnStretch(1, 2)
         self.grid.setColumnStretch(2, 2)
-        layout.addLayout(self.grid)
+        self.body_layout.addLayout(self.grid)
 
         self.empty_label = QLabel("No leaderboard data available.")
         self.empty_label.setObjectName("LeaderEmptyLabel")
         self.empty_label.setAlignment(Qt.AlignHCenter)
-        layout.addWidget(self.empty_label)
-        layout.addStretch(1)
+        self.body_layout.addWidget(self.empty_label)
+        self.body_layout.addStretch(1)
 
     def set_data(self, data: LeaderboardData) -> None:
         self._clear_grid()

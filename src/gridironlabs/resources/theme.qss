@@ -255,13 +255,6 @@ QLabel#LeaderEmptyLabel {
     color: #9ca3af;
 }
 
-QFrame#PanelSeparator {
-    background: #262a33;
-    min-height: 1px;
-    max-height: 1px;
-    border: none;
-}
-
 /* Keep inner widgets transparent inside cards/sections to avoid striping */
 QFrame#SettingsCard QWidget,
 QFrame#SettingsSubCard QWidget,
@@ -271,16 +264,62 @@ QFrame#LeadersPanel QWidget {
     background-color: transparent;
 }
 
+/* Override transparency rule for the terminal output */
+QFrame#SettingsCard QTextEdit#TerminalOutput,
+QFrame#SettingsSubCard QTextEdit#TerminalOutput {
+    background-color: #000000;
+}
+
+QFrame#SettingsCard QTextEdit#TerminalOutput QWidget,
+QFrame#SettingsSubCard QTextEdit#TerminalOutput QWidget {
+    background-color: #000000;
+}
+
 /* Settings page */
 QLabel#SettingsHeading {
     font-size: 22px;
     font-weight: 800;
 }
 
-QFrame#SettingsCard {
+/* Base panel card styling */
+QFrame#PanelCard,
+QFrame#SettingsCard,
+QFrame#SettingsSubCard,
+QFrame#LeaderSection,
+QFrame#LeaderCard,
+QFrame#LeadersPanel {
     background-color: #252525;
     border: 1px solid #20242d;
     border-radius: 12px;
+}
+
+QFrame#PanelCard QWidget,
+QFrame#SettingsCard QWidget,
+QFrame#SettingsSubCard QWidget,
+QFrame#LeaderSection QWidget,
+QFrame#LeaderCard QWidget,
+QFrame#LeadersPanel QWidget {
+    background-color: transparent;
+}
+
+/* Re-assert separator styling after transparency rules */
+QFrame#PanelCard QFrame#PanelSeparator,
+QFrame#SettingsCard QFrame#PanelSeparator,
+QFrame#SettingsSubCard QFrame#PanelSeparator,
+QFrame#LeaderSection QFrame#PanelSeparator,
+QFrame#LeaderCard QFrame#PanelSeparator,
+QFrame#LeadersPanel QFrame#PanelSeparator {
+    background: #ffffff;
+    min-height: 1px;
+    max-height: 1px;
+    border: none;
+}
+
+QLabel#PanelCardTitle {
+    font-size: 26px;
+    font-weight: 800;
+    color: #ffffff;
+    background-color: transparent;
 }
 
 QLabel#SettingsCardTitle {
@@ -315,25 +354,7 @@ QLabel#SettingsTableCell {
     color: #cbd5e1;
 }
 
-QCheckBox#SettingsCheckbox {
-    spacing: 8px;
-    font-weight: 600;
-}
-
-QCheckBox#SettingsCheckbox::indicator {
-    width: 16px;
-    height: 16px;
-    border: 1px solid #4b5563;
-    border-radius: 4px;
-    background-color: #0f1115;
-}
-
-QCheckBox#SettingsCheckbox::indicator:checked {
-    background-color: #7c3aed;
-    border-color: #7c3aed;
-}
-
-QComboBox#SettingsCombo,
+/* Let qdarktheme style checkboxes and combos; keep inputs/spinboxes custom */
 QLineEdit#SettingsInput,
 QSpinBox#SettingsSpinBox {
     background-color: #13171f;
@@ -341,10 +362,6 @@ QSpinBox#SettingsSpinBox {
     border-radius: 6px;
     padding: 8px 10px;
     color: #e5e7eb;
-}
-
-QComboBox#SettingsCombo::drop-down {
-    width: 22px;
 }
 
 QSlider#SettingsSlider::groove:horizontal {
@@ -400,11 +417,49 @@ QPushButton#GhostButton:hover {
 }
 
 QTextEdit#TerminalOutput {
-    background-color: #0c0f16;
-    border: 1px solid #262a33;
+    background-color: #000000;
+    border: 1px solid #000000;
     border-radius: 10px;
     color: #e5e7eb;
     font-family: "JetBrains Mono", "Consolas", monospace;
     font-size: 12px;
     padding: 10px;
+}
+
+/* Ensure the terminal viewport stays black even when nested in cards */
+QTextEdit#TerminalOutput QWidget {
+    background-color: #000000;
+}
+
+/* Settings page typography scaling */
+QWidget#page-settings {
+    font-size: 13px;
+}
+
+QWidget#page-settings QLabel#SettingsHeading {
+    font-size: 22px;
+}
+
+QWidget#page-settings QLabel#SettingsCardTitle {
+    font-size: 16px;
+}
+
+QWidget#page-settings QLabel#SettingsLabel,
+QWidget#page-settings QLabel#SettingsTableHeader,
+QWidget#page-settings QLabel#SettingsTableCell,
+QWidget#page-settings QCheckBox#SettingsCheckbox,
+QWidget#page-settings QComboBox#SettingsCombo,
+QWidget#page-settings QLineEdit#SettingsInput,
+QWidget#page-settings QSpinBox#SettingsSpinBox,
+QWidget#page-settings QPushButton#PrimaryButton,
+QWidget#page-settings QPushButton#GhostButton {
+    font-size: 13px;
+}
+
+QWidget#page-settings QLabel#SettingsCaption {
+    font-size: 12px;
+}
+
+QWidget#page-settings QTextEdit#TerminalOutput {
+    font-size: 12px;
 }
