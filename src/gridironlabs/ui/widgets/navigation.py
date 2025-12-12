@@ -71,19 +71,20 @@ class NavigationBar(QFrame):
         self._context_height = reference_height.sizeHint().height() if reference_height else 42
 
         self.context_strip = self._build_context_strip(context_items)
-        layout.addWidget(self.context_strip, 0)
+        # Give the matchup ticker extra horizontal weight relative to the search box.
+        layout.addWidget(self.context_strip, 2)
         layout.setAlignment(self.context_strip, Qt.AlignVCenter)
 
         self.search_input = QLineEdit()
         self.search_input.setObjectName("TopNavSearch")
         self.search_input.setPlaceholderText("Search...")
         self.search_input.setClearButtonEnabled(True)
-        self.search_input.setMinimumWidth(320)
+        self.search_input.setMinimumWidth(200)
         self.search_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         search_icon = self.style().standardIcon(QStyle.SP_FileDialogContentsView)
         self.search_input.addAction(search_icon, QLineEdit.LeadingPosition)
         self.search_input.returnPressed.connect(self._emit_search)
-        layout.addWidget(self.search_input, 2)
+        layout.addWidget(self.search_input, 1)
 
         self.settings_button = QPushButton("SETTINGS")
         self.settings_button.setObjectName("SettingsButton")
@@ -169,11 +170,11 @@ class NavigationBar(QFrame):
         strip = QFrame()
         strip.setObjectName("ContextStrip")
         self.context_layout = QHBoxLayout(strip)
-        self.context_layout.setContentsMargins(8, 0, 8, 0)
+        self.context_layout.setContentsMargins(10, 4, 10, 4)
         self.context_layout.setSpacing(12)
-        strip.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        strip.setFixedWidth(520)
-        strip.setFixedHeight(self._context_height)
+        strip.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        strip.setMinimumWidth(520)
+        strip.setFixedHeight(max(36, self._context_height - 6))
         for text in items:
             label = QLabel(text)
             label.setObjectName("ContextLabel")

@@ -56,7 +56,8 @@ class HomePage(QWidget):
         self.setObjectName("page-home")
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(16, 16, 16, 16)
+        # Remove top padding so the page hugs the context bar evenly.
+        layout.setContentsMargins(16, 0, 16, 16)
         layout.setSpacing(12)
 
         self.leaders_panel = LeadersPanel()
@@ -83,7 +84,8 @@ class SectionPage(QWidget):
         self.setObjectName(f"page-{title.lower().replace(' ', '-')}")
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(16, 16, 16, 16)
+        # Match the top gap to the nav-context spacing.
+        layout.setContentsMargins(16, 0, 16, 16)
         layout.setSpacing(12)
 
         self.subtitle_label = QLabel(subtitle)
@@ -222,7 +224,8 @@ class SettingsPage(QWidget):
         self.player_option_checkboxes: list[QCheckBox] = []
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(16, 16, 16, 16)
+        # Align top gap with the spacing between nav and context bar.
+        layout.setContentsMargins(16, 0, 16, 16)
         layout.setSpacing(12)
 
         layout.addLayout(self._build_content_grid())
@@ -564,7 +567,8 @@ class SearchResultsPage(QWidget):
         self.setObjectName("page-search")
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(16, 16, 16, 16)
+        # Keep the vertical spacing consistent with the bar above.
+        layout.setContentsMargins(16, 0, 16, 16)
         layout.setSpacing(12)
 
         self.summary_label = QLabel("Type a query and press Enter.")

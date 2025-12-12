@@ -56,7 +56,7 @@ QPushButton#NavSectionButton:checked {
 }
 
 QLineEdit#TopNavSearch {
-    min-width: 220px;
+    min-width: 200px;
     background-color: #13171f;
     border: 1px solid #262a33;
     padding: 7px 12px;
