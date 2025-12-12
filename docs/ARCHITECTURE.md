@@ -7,7 +7,7 @@ Gridiron Labs follows a layered desktop architecture built for offline-friendly 
 - **Core**: AppConfig/AppPaths, structured logging, shared domain models.
 - **Data**: Versioned Parquet schemas (players, teams, coaches, games), repository adapters for nflreadpy + PFR.
 - **Services**: Search and summary orchestration, ready for ranking/enrichment.
-- **UI**: PySide6 shell (nav + content stack) with reusable state panels.
+- **UI**: PySide6 shell (nav + content stack) with reusable state panels; panel chrome is standardized via `PanelCard` (optional title + white separator) and page titles live only in the context bar.
 - **Scripts**: Operational entrypoints for refresh and synthetic data.
 
 ## Data flow (current scaffold)
@@ -31,7 +31,7 @@ ParquetSummaryRepository (players/teams/coaches/games) ──► Services (summa
 2. Build `AppConfig` (feature flags: scraping, live refresh).
 3. Configure structured logging (console + rotating file).
 4. Initialize repository + services (search, summary).
-5. Start PySide6 shell with navigation and placeholder content. The context bar sits under nav, is 2x the nav height, carries the page title/subtitle/stats, and no page titles are repeated in body content. Nav, context bar, and primary panels share the same surface color.
+5. Start PySide6 shell with navigation and placeholder content. The context bar sits under nav, is 2x the nav height, carries the page title/subtitle/stats, and no page titles are repeated in body content. Nav, context bar, and primary panels share the same surface color; panels share `PanelCard` chrome and titles use their component-specific object names to preserve hierarchy.
 
 ## Quality & testing guardrails
 
