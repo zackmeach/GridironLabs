@@ -186,16 +186,62 @@ QLabel#StatusText {
     font-weight: 600;
 }
 
-QFrame#LeadersPanel {
+/* Unified card system */
+QFrame#Card {
     background-color: #252525;
     border: 1px solid #20242d;
-    border-radius: 10px;
-    padding: 6px;
+    border-radius: 12px;
 }
 
-QLabel#LeadersTitle {
-    font-size: 20px;
+QFrame#Card[card-role="sub"] {
+    border-radius: 10px;
+}
+
+QFrame#Card[card-role="section"] {
+    border-radius: 10px;
+}
+
+QFrame#Card[card-role="minimal"] {
+    border-radius: 8px;
+}
+
+QFrame#Card QWidget {
+    background-color: transparent;
+}
+
+QFrame#Card QFrame#CardSeparator {
+    background: #ffffff;
+    min-height: 1px;
+    max-height: 1px;
+    border: none;
+}
+
+QLabel#CardTitlePrimary {
+    font-size: 24px;
     font-weight: 800;
+    color: #ffffff;
+    background-color: transparent;
+}
+
+QLabel#CardTitleSection {
+    font-size: 18px;
+    font-weight: 800;
+    color: #e5e7eb;
+    background-color: transparent;
+}
+
+QLabel#CardTitleSub {
+    font-size: 16px;
+    font-weight: 800;
+    color: #f3f4f6;
+    background-color: transparent;
+}
+
+QLabel#CardTitleSmall {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e5e7eb;
+    background-color: transparent;
 }
 
 QLabel#LeadersSeasonLabel {
@@ -217,33 +263,6 @@ QPushButton#LeadersActionButton:disabled {
     color: #4b5563;
 }
 
-QFrame#LeaderSection {
-    background-color: #252525;
-    border: 1px solid #20242d;
-    border-radius: 8px;
-    padding: 4px 6px 8px 6px;
-}
-
-QLabel#LeaderSectionTitle {
-    font-size: 18px;
-    font-weight: 800;
-    color: #e5e7eb;
-    margin-bottom: 4px;
-}
-
-QFrame#LeaderCard {
-    background-color: #252525;
-    border: 1px solid #20242d;
-    border-radius: 8px;
-    padding: 6px 8px;
-}
-
-QLabel#LeaderCardTitle {
-    font-weight: 800;
-    color: #f3f4f6;
-    font-size: 16px;
-}
-
 QLabel#LeaderEntry {
     color: #e5e7eb;
     font-size: 15px;
@@ -255,77 +274,10 @@ QLabel#LeaderEmptyLabel {
     color: #9ca3af;
 }
 
-/* Keep inner widgets transparent inside cards/sections to avoid striping */
-QFrame#SettingsCard QWidget,
-QFrame#SettingsSubCard QWidget,
-QFrame#LeaderSection QWidget,
-QFrame#StatePanel QWidget,
-QFrame#LeadersPanel QWidget {
-    background-color: transparent;
-}
-
-/* Override transparency rule for the terminal output */
-QFrame#SettingsCard QTextEdit#TerminalOutput,
-QFrame#SettingsSubCard QTextEdit#TerminalOutput {
-    background-color: #000000;
-}
-
-QFrame#SettingsCard QTextEdit#TerminalOutput QWidget,
-QFrame#SettingsSubCard QTextEdit#TerminalOutput QWidget {
-    background-color: #000000;
-}
-
 /* Settings page */
 QLabel#SettingsHeading {
     font-size: 22px;
     font-weight: 800;
-}
-
-/* Base panel card styling */
-QFrame#PanelCard,
-QFrame#SettingsCard,
-QFrame#SettingsSubCard,
-QFrame#LeaderSection,
-QFrame#LeaderCard,
-QFrame#LeadersPanel {
-    background-color: #252525;
-    border: 1px solid #20242d;
-    border-radius: 12px;
-}
-
-QFrame#PanelCard QWidget,
-QFrame#SettingsCard QWidget,
-QFrame#SettingsSubCard QWidget,
-QFrame#LeaderSection QWidget,
-QFrame#LeaderCard QWidget,
-QFrame#LeadersPanel QWidget {
-    background-color: transparent;
-}
-
-/* Re-assert separator styling after transparency rules */
-QFrame#PanelCard QFrame#PanelSeparator,
-QFrame#SettingsCard QFrame#PanelSeparator,
-QFrame#SettingsSubCard QFrame#PanelSeparator,
-QFrame#LeaderSection QFrame#PanelSeparator,
-QFrame#LeaderCard QFrame#PanelSeparator,
-QFrame#LeadersPanel QFrame#PanelSeparator {
-    background: #ffffff;
-    min-height: 1px;
-    max-height: 1px;
-    border: none;
-}
-
-QLabel#PanelCardTitle {
-    font-size: 26px;
-    font-weight: 800;
-    color: #ffffff;
-    background-color: transparent;
-}
-
-QLabel#SettingsCardTitle {
-    font-size: 16px;
-    font-weight: 800;
-    margin-bottom: 2px;
 }
 
 QLabel#SettingsLabel {
@@ -339,12 +291,6 @@ QLabel#SettingsCaption {
     font-size: 12px;
 }
 
-QFrame#SettingsSubCard {
-    background-color: #252525;
-    border: 1px solid #20242d;
-    border-radius: 10px;
-}
-
 QLabel#SettingsTableHeader {
     color: #e5e7eb;
     font-weight: 700;
@@ -354,9 +300,10 @@ QLabel#SettingsTableCell {
     color: #cbd5e1;
 }
 
-/* Let qdarktheme style checkboxes and combos; keep inputs/spinboxes custom */
-QLineEdit#SettingsInput,
-QSpinBox#SettingsSpinBox {
+/* Inputs */
+QLineEdit#AppLineEdit,
+QSpinBox#AppSpinBox,
+QComboBox#AppComboBox {
     background-color: #13171f;
     border: 1px solid #262a33;
     border-radius: 6px;
@@ -364,13 +311,13 @@ QSpinBox#SettingsSpinBox {
     color: #e5e7eb;
 }
 
-QSlider#SettingsSlider::groove:horizontal {
+QSlider#AppSlider::groove:horizontal {
     background: #1f2633;
     height: 6px;
     border-radius: 3px;
 }
 
-QSlider#SettingsSlider::handle:horizontal {
+QSlider#AppSlider::handle:horizontal {
     background: #9ca3af;
     border: 1px solid #262a33;
     width: 16px;
@@ -378,9 +325,15 @@ QSlider#SettingsSlider::handle:horizontal {
     border-radius: 8px;
 }
 
-QSlider#SettingsSlider::sub-page:horizontal {
+QSlider#AppSlider::sub-page:horizontal {
     background: #2563eb;
     border-radius: 3px;
+}
+
+QCheckBox#AppCheckbox {
+    color: #e5e7eb;
+    font-size: 13px;
+    font-weight: 600;
 }
 
 QFrame#ColorSwatch {
@@ -440,17 +393,29 @@ QWidget#page-settings QLabel#SettingsHeading {
     font-size: 22px;
 }
 
-QWidget#page-settings QLabel#SettingsCardTitle {
+QWidget#page-settings QLabel#CardTitlePrimary {
+    font-size: 24px;
+}
+
+QWidget#page-settings QLabel#CardTitleSection {
+    font-size: 18px;
+}
+
+QWidget#page-settings QLabel#CardTitleSub {
     font-size: 16px;
+}
+
+QWidget#page-settings QLabel#CardTitleSmall {
+    font-size: 13px;
 }
 
 QWidget#page-settings QLabel#SettingsLabel,
 QWidget#page-settings QLabel#SettingsTableHeader,
 QWidget#page-settings QLabel#SettingsTableCell,
-QWidget#page-settings QCheckBox#SettingsCheckbox,
-QWidget#page-settings QComboBox#SettingsCombo,
-QWidget#page-settings QLineEdit#SettingsInput,
-QWidget#page-settings QSpinBox#SettingsSpinBox,
+QWidget#page-settings QCheckBox#AppCheckbox,
+QWidget#page-settings QComboBox#AppComboBox,
+QWidget#page-settings QLineEdit#AppLineEdit,
+QWidget#page-settings QSpinBox#AppSpinBox,
 QWidget#page-settings QPushButton#PrimaryButton,
 QWidget#page-settings QPushButton#GhostButton {
     font-size: 13px;

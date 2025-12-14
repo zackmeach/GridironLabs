@@ -9,7 +9,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QFrame, QGridLayout, QHBoxLayout, QLabel, QPushButton, QVBoxLayout
 
 from gridironlabs.core.models import EntitySummary
-from gridironlabs.ui.widgets.panel_card import PanelCard
+from gridironlabs.ui.widgets.base_components import Card, TitleLabel
 
 
 @dataclass(frozen=True)
@@ -153,17 +153,17 @@ def _latest_numeric_season(players: Sequence[EntitySummary]) -> int | None:
     return max(seasons) if seasons else None
 
 
-class LeaderCard(PanelCard):
+class LeaderCard(Card):
     """Small card showing the top two entries for a stat."""
 
     def __init__(self, title: str, entries: Sequence[LeaderEntry]) -> None:
         super().__init__(
             title=title,
-            object_name="LeaderCard",
+            role="sub",
             margins=(10, 8, 10, 8),
             spacing=4,
             show_separator=False,
-            title_object_name="LeaderCardTitle",
+            title_object_name="CardTitleSub",
         )
         layout = self.body_layout
 
@@ -189,17 +189,17 @@ class LeaderCard(PanelCard):
         return f"{value:,.1f}"
 
 
-class LeaderSection(PanelCard):
+class LeaderSection(Card):
     """Column of stat cards within a category such as Passing or Defense."""
 
     def __init__(self, title: str, stats: Sequence[LeaderStat]) -> None:
         super().__init__(
             title=title,
-            object_name="LeaderSection",
+            role="section",
             margins=(10, 10, 10, 10),
             spacing=8,
             show_separator=True,
-            title_object_name="LeaderSectionTitle",
+            title_object_name="CardTitleSection",
         )
         layout = self.body_layout
 
@@ -209,13 +209,13 @@ class LeaderSection(PanelCard):
         layout.addStretch(1)
 
 
-class LeadersPanel(PanelCard):
+class LeadersPanel(Card):
     """Top-level panel that arranges stat groups on a grid."""
 
     def __init__(self, *, on_view_full: Callable[[], None] | None = None) -> None:
         super().__init__(
             title=None,
-            object_name="LeadersPanel",
+            role="primary",
             margins=(12, 12, 12, 12),
             spacing=10,
             show_separator=False,
@@ -225,8 +225,7 @@ class LeadersPanel(PanelCard):
         header.setSpacing(8)
         header.setContentsMargins(0, 0, 0, 0)
 
-        title_label = QLabel("League Leaders")
-        title_label.setObjectName("LeadersTitle")
+        title_label = TitleLabel("League Leaders", object_name="CardTitlePrimary")
         header.addWidget(title_label)
 
         self.season_label = QLabel()
@@ -247,7 +246,7 @@ class LeadersPanel(PanelCard):
         self.body_layout.addLayout(header)
 
         separator = QFrame()
-        separator.setObjectName("PanelSeparator")
+        separator.setObjectName("CardSeparator")
         separator.setFrameShape(QFrame.HLine)
         separator.setFrameShadow(QFrame.Plain)
         separator.setLineWidth(1)

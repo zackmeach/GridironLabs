@@ -6,20 +6,15 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Iterable
 
-from PySide6.QtCore import Qt, QTimer, QRect, QSize
-from PySide6.QtGui import QColor, QPainter, QPixmap, QTextCursor, QTextOption
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import QColor, QPixmap, QTextCursor, QTextOption
 from PySide6.QtWidgets import (
-    QCheckBox,
-    QComboBox,
     QFormLayout,
     QFrame,
     QHBoxLayout,
     QLabel,
-    QLineEdit,
     QMainWindow,
     QPushButton,
-    QSlider,
-    QSpinBox,
     QSizePolicy,
     QStackedWidget,
     QTextEdit,
@@ -35,7 +30,15 @@ from gridironlabs.data.schemas import SCHEMA_REGISTRY
 from gridironlabs.services.search import SearchService
 from gridironlabs.services.summary import SummaryService
 from gridironlabs.ui.widgets.navigation import NavigationBar
-from gridironlabs.ui.widgets.panel_card import PanelCard
+from gridironlabs.ui.widgets.base_components import (
+    AppCheckbox,
+    AppComboBox,
+    AppLineEdit,
+    AppSlider,
+    AppSpinBox,
+    AppSwitch,
+    Card,
+)
 from gridironlabs.ui.widgets.league_leaders import (
     LeaderboardData,
     LeadersPanel,
@@ -179,40 +182,6 @@ class PageContextBar(QFrame):
         self.stats_layout.addStretch(1)
 
 
-class ToggleSwitch(QCheckBox):
-    """Lightweight painted toggle for cosmetic on/off controls."""
-
-    def __init__(self, checked: bool = False) -> None:
-        super().__init__()
-        self.setChecked(checked)
-        self.setCursor(Qt.PointingHandCursor)
-        self.setObjectName("ToggleSwitch")
-        self.setFixedHeight(26)
-
-    def sizeHint(self) -> QSize:  # pragma: no cover - trivial UI
-        return QSize(46, 28)
-
-    def paintEvent(self, event) -> None:  # pragma: no cover - trivial UI
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-
-        track_rect = QRect(0, (self.height() - 22) // 2, 46, 22)
-        track_color = QColor("#7c3aed") if self.isChecked() else QColor("#1f2933")
-        if not self.isEnabled():
-            track_color = QColor("#111827")
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(track_color)
-        painter.drawRoundedRect(track_rect, 11, 11)
-
-        thumb_color = QColor("#f9fafc") if self.isEnabled() else QColor("#6b7280")
-        thumb_diameter = 16
-        thumb_x = track_rect.left() + 4 if not self.isChecked() else track_rect.right() - thumb_diameter - 3
-        thumb_rect = QRect(thumb_x, track_rect.top() + 3, thumb_diameter, thumb_diameter)
-        painter.setBrush(thumb_color)
-        painter.drawEllipse(thumb_rect)
-        painter.end()
-
-
 class SettingsPage(QWidget):
     """Cosmetic settings layout mirroring the shared mock."""
 
@@ -224,7 +193,7 @@ class SettingsPage(QWidget):
 
         self.player_option_checkboxes: list[QCheckBox] = []
         self.terminal_output: QTextEdit | None = None
-        self.test1_toggle: ToggleSwitch | None = None
+        self.test1_toggle: AppSwitch | None = None
 
         layout = QVBoxLayout(self)
         # Align top gap with the spacing between nav and context bar.
@@ -344,7 +313,7 @@ class SettingsPage(QWidget):
         test1_row.setSpacing(8)
         test1_row.addWidget(self._build_header_label("Test 1"))
         test1_row.addStretch(1)
-        self.test1_toggle = ToggleSwitch(checked=True)
+        self.test1_toggle = AppSwitch(checked=True)
         test1_row.addWidget(self.test1_toggle)
         layout.addLayout(test1_row)
 
@@ -424,15 +393,14 @@ class SettingsPage(QWidget):
         row.setSpacing(8)
         row.addWidget(self._build_header_label(text))
         row.addStretch(1)
-        row.addWidget(ToggleSwitch(checked))
+        row.addWidget(AppSwitch(checked))
         return row
 
     def _build_opacity_row(self) -> QHBoxLayout:
         row = QHBoxLayout()
         row.setSpacing(10)
         row.addWidget(self._build_header_label("Opacity"))
-        slider = QSlider(Qt.Horizontal)
-        slider.setObjectName("SettingsSlider")
+        slider = AppSlider(Qt.Horizontal)
         slider.setRange(0, 100)
         slider.setValue(60)
         value_label = QLabel(f"{slider.value()}%")
@@ -452,8 +420,7 @@ class SettingsPage(QWidget):
         swatch.setStyleSheet("background-color: #cd4d4d;")
         row.addWidget(swatch, 0, Qt.AlignLeft)
 
-        input_hex = QLineEdit("#CD4D4D")
-        input_hex.setObjectName("SettingsInput")
+        input_hex = AppLineEdit("#CD4D4D")
         input_hex.setMaxLength(7)
         input_hex.setFixedWidth(110)
         input_hex.returnPressed.connect(
@@ -467,8 +434,7 @@ class SettingsPage(QWidget):
         row = QHBoxLayout()
         row.setSpacing(10)
         row.addWidget(self._build_header_label("Cell Size"))
-        spin = QSpinBox()
-        spin.setObjectName("SettingsSpinBox")
+        spin = AppSpinBox()
         spin.setRange(1, 50)
         spin.setValue(1)
         spin.setSuffix(" px")
@@ -489,9 +455,9 @@ class SettingsPage(QWidget):
         return row
 
     def _build_last_update_table(self) -> QFrame:
-        frame = PanelCard(
+        frame = Card(
             title=None,
-            object_name="SettingsSubCard",
+            role="sub",
             margins=(10, 10, 10, 10),
             spacing=6,
             show_separator=False,
@@ -536,9 +502,8 @@ class SettingsPage(QWidget):
         row.addWidget(value, 0, Qt.AlignRight)
         return row
 
-    def _year_combo(self, *, default: int) -> QComboBox:
-        combo = QComboBox()
-        combo.setObjectName("SettingsCombo")
+    def _year_combo(self, *, default: int) -> AppComboBox:
+        combo = AppComboBox()
         current_year = datetime.now().year
         for year in range(1999, current_year + 1):
             combo.addItem(str(year))
@@ -547,34 +512,26 @@ class SettingsPage(QWidget):
         return combo
 
     def _checkbox_group(self, title: str, items: Iterable[str]) -> tuple[QFrame, list[QCheckBox]]:
-        container = QFrame()
-        container.setObjectName("SettingsSubCard")
-        layout = QVBoxLayout(container)
-        layout.setContentsMargins(10, 6, 10, 6)
-        layout.setSpacing(6)
+        container = Card(
+            title=title,
+            role="sub",
+            margins=(10, 6, 10, 6),
+            spacing=6,
+            show_separator=False,
+            title_object_name="CardTitleSmall",
+        )
+        layout = container.body_layout
 
-        header = QLabel(title)
-        header.setObjectName("SettingsLabel")
-        layout.addWidget(header)
-
-        checkboxes: list[QCheckBox] = []
+        checkboxes: list[AppCheckbox] = []
         for item in items:
-            cb = QCheckBox(item)
+            cb = AppCheckbox(item)
             cb.setChecked(True)
-            cb.setObjectName("SettingsCheckbox")
             layout.addWidget(cb)
             checkboxes.append(cb)
         return container, checkboxes
 
     def _card(self, title: str) -> tuple[QFrame, QVBoxLayout]:
-        frame = PanelCard(
-            title=title,
-            object_name="SettingsCard",
-            margins=(12, 12, 12, 12),
-            spacing=10,
-            show_separator=True,
-            title_object_name="SettingsCardTitle",
-        )
+        frame = Card(title=title, role="primary", margins=(12, 12, 12, 12), spacing=10, show_separator=True)
         return frame, frame.body_layout
 
     def _timestamp_text(self) -> str:
