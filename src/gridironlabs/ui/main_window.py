@@ -26,23 +26,21 @@ from gridironlabs.data.schemas import SCHEMA_REGISTRY
 from gridironlabs.services.search import SearchService
 from gridironlabs.services.summary import SummaryService
 from gridironlabs.ui.pages.settings_page import SettingsPage
+from gridironlabs.ui.pages.base_page import BasePage
+from gridironlabs.ui.style.tokens import GRID
 from gridironlabs.ui.widgets.navigation import NavigationBar
+from gridironlabs.ui.widgets.panel_card import PanelCard
 
 
-class HomePage(QWidget):
-    """Home page scaffold (content intentionally empty)."""
+class HomePage(BasePage):
+    """Home page scaffold for panel experimentation."""
 
     def __init__(self, title: str, subtitle: str) -> None:
-        super().__init__()
+        super().__init__(cols=GRID.cols, rows=12)
         self.setObjectName("page-home")
-
-        layout = QVBoxLayout(self)
-        # Remove top padding so the page hugs the context bar evenly.
-        layout.setContentsMargins(16, 0, 16, 16)
-        layout.setSpacing(12)
-        layout.addStretch(1)
-
         self._subtitle = subtitle
+        self.base_panel = PanelCard("Base Panel")
+        self.add_panel(self.base_panel, col=0, row=0, col_span=GRID.cols, row_span=12)
 
     def set_subtitle(self, text: str) -> None:
         self._subtitle = text

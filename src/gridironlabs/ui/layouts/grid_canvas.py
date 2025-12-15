@@ -190,6 +190,41 @@ class GridCanvas(QFrame):
 
 
 
+    def current_row_pitch_px(self) -> int | None:
+        """Return the current per-row pitch in pixels.
+
+        This is the distance from the top of row N to the top of row N+1. It is
+        derived from the live canvas size, the configured row count (if any), and
+        the current QGridLayout vertical spacing.
+        """
+
+        if self._rows is None:
+            return None
+
+        rect = self.contentsRect()
+        height = rect.height()
+        if height <= 0:
+            return None
+
+        gap = self._layout.verticalSpacing()
+        return max(1, round((height + gap) / self._rows))
+
+    def current_column_pitch_px(self) -> int | None:
+        """Return the current per-column pitch in pixels.
+
+        This is the distance from the left edge of column N to the left edge of
+        column N+1. It is derived from the live canvas size, the column count,
+        and the current QGridLayout horizontal spacing.
+        """
+
+        rect = self.contentsRect()
+        width = rect.width()
+        if width <= 0:
+            return None
+
+        gap = self._layout.horizontalSpacing()
+        return max(1, round((width + gap) / self._cols))
+
     def add_panel(
 
         self,
