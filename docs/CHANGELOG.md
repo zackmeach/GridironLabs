@@ -1,5 +1,11 @@
 # Changelog
 
+## 2025-12-15
+
+- Introduced a reusable UI framework: `BasePage` → `GridCanvas` → `PanelCard`, plus a configurable debug grid overlay.
+- Rebuilt the Settings page using the framework (Data Generation / UI Grid Layout / Test Cases / Debug Output panels).
+- Removed the legacy `PanelCard` compatibility wrapper and replaced it with a real `PanelCard` component.
+
 ## 2025-12-11
 
 - Added static Settings mock documentation and nomenclature.

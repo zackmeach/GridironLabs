@@ -39,17 +39,17 @@
 ┌──────────────────────────────┐
 │  UI (PySide6)                │
 │  - NavigationBar + Context   │
-│  - Home (Leaders grid)       │
-│  - Section placeholders      │
-│  - Settings mock (4/3/3)     │
+│  - Stacked pages             │
+│    - Settings: panel grid    │
+│    - Others: placeholders    │
 │  - Context bar 2x nav, holds │
 │    titles; no titles in body │
-│  - Nav/context/panels share  │
-│    surface color             │
+│  - Nav/context share surface │
+│    color                     │
 └──────────────────────────────┘
 ```
 
 Notes:
-- Context bar height is 1.5x nav and includes a leading icon slot.
-- Settings mock is cosmetic only; wiring comes later.
+- Context bar height is 2x nav and includes a leading icon slot.
+- Settings is the example page implemented with the Page → GridCanvas → PanelCard framework (including the debug grid overlay).
 

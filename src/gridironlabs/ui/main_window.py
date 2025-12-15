@@ -7,53 +7,30 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QColor, QPixmap, QTextCursor, QTextOption
+from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
-    QFormLayout,
     QFrame,
     QHBoxLayout,
     QLabel,
     QMainWindow,
-    QPushButton,
-    QSizePolicy,
     QStackedWidget,
-    QTextEdit,
     QVBoxLayout,
     QWidget,
 )
 
 from gridironlabs.core.config import AppConfig, AppPaths
 from gridironlabs.core.errors import DataValidationError, NotFoundError
-from gridironlabs.core.models import GameSummary, SearchResult
+from gridironlabs.core.models import GameSummary
 from gridironlabs.data.repository import ParquetSummaryRepository
 from gridironlabs.data.schemas import SCHEMA_REGISTRY
 from gridironlabs.services.search import SearchService
 from gridironlabs.services.summary import SummaryService
+from gridironlabs.ui.pages.settings_page import SettingsPage
 from gridironlabs.ui.widgets.navigation import NavigationBar
-from gridironlabs.ui.widgets.base_components import (
-    AppCheckbox,
-    AppComboBox,
-    AppLineEdit,
-    AppSlider,
-    AppSpinBox,
-    AppSwitch,
-    Card,
-)
-from gridironlabs.ui.widgets.league_leaders import (
-    LeaderboardData,
-    LeadersPanel,
-    build_leaderboard,
-)
-from gridironlabs.ui.widgets.state_panels import (
-    EmptyPanel,
-    ErrorPanel,
-    LoadingPanel,
-    StatusBanner,
-)
 
 
 class HomePage(QWidget):
-    """Home dashboard with league leaders grid."""
+    """Home page scaffold (content intentionally empty)."""
 
     def __init__(self, title: str, subtitle: str) -> None:
         super().__init__()
@@ -63,25 +40,20 @@ class HomePage(QWidget):
         # Remove top padding so the page hugs the context bar evenly.
         layout.setContentsMargins(16, 0, 16, 16)
         layout.setSpacing(12)
-
-        self.leaders_panel = LeadersPanel()
-        layout.addWidget(self.leaders_panel)
         layout.addStretch(1)
 
-        self.subtitle_label = QLabel(subtitle)
-        self.subtitle_label.setVisible(False)
+        self._subtitle = subtitle
 
     def set_subtitle(self, text: str) -> None:
-        self.subtitle_label.setText(text)
+        self._subtitle = text
 
-    def set_leaders(self, data: LeaderboardData | None) -> None:
-        if data is None:
-            data = LeaderboardData(groups=())
-        self.leaders_panel.set_data(data)
+    def set_leaders(self, data: Any | None) -> None:  # noqa: ARG002 - placeholder hook
+        """Placeholder hook for future home content."""
+        return
 
 
 class SectionPage(QWidget):
-    """Simple placeholder page with reusable state panels."""
+    """Section page scaffold (content intentionally empty)."""
 
     def __init__(self, title: str, subtitle: str, *, show_states: bool = True) -> None:
         super().__init__()
@@ -91,23 +63,11 @@ class SectionPage(QWidget):
         # Match the top gap to the nav-context spacing.
         layout.setContentsMargins(16, 0, 16, 16)
         layout.setSpacing(12)
-
-        self.subtitle_label = QLabel(subtitle)
-        self.subtitle_label.setVisible(False)
-
-        if show_states:
-            states_row = QHBoxLayout()
-            states_row.setSpacing(10)
-            states_row.addWidget(LoadingPanel("Loading stub content..."))
-            states_row.addWidget(EmptyPanel("No data yet. Connect to processed Parquet."))
-            states_row.addWidget(ErrorPanel("Errors will surface here."))
-            states_row.addStretch(1)
-            layout.addLayout(states_row)
-
+        self._subtitle = subtitle
         layout.addStretch(1)
 
     def set_subtitle(self, text: str) -> None:
-        self.subtitle_label.setText(text)
+        self._subtitle = text
 
 
 class PageContextBar(QFrame):
@@ -182,382 +142,8 @@ class PageContextBar(QFrame):
         self.stats_layout.addStretch(1)
 
 
-class SettingsPage(QWidget):
-    """Cosmetic settings layout mirroring the shared mock."""
-
-    def __init__(self, config: AppConfig, paths: AppPaths) -> None:
-        super().__init__()
-        self.setObjectName("page-settings")
-        self.config = config
-        self.paths = paths
-
-        self.player_option_checkboxes: list[QCheckBox] = []
-        self.terminal_output: QTextEdit | None = None
-        self.test1_toggle: AppSwitch | None = None
-
-        layout = QVBoxLayout(self)
-        # Align top gap with the spacing between nav and context bar.
-        layout.setContentsMargins(16, 0, 16, 16)
-        layout.setSpacing(12)
-
-        layout.addLayout(self._build_content_grid())
-        layout.addStretch(1)
-
-    def _build_header(self, paths: AppPaths) -> QHBoxLayout:
-        header = QHBoxLayout()
-        header.setSpacing(10)
-
-        logo = QLabel()
-        logo.setObjectName("SettingsLogo")
-        icon_path = Path(__file__).resolve().parent.parent / "resources" / "icons" / "main_logo.png"
-        if icon_path.exists():
-            pixmap = QPixmap(str(icon_path))
-            if not pixmap.isNull():
-                logo.setPixmap(pixmap.scaled(52, 52, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        logo.setFixedSize(60, 60)
-        logo.setAlignment(Qt.AlignCenter)
-
-        title = QLabel("GridironLabs Settings")
-        title.setObjectName("SettingsHeading")
-
-        header.addWidget(logo, 0, Qt.AlignLeft | Qt.AlignVCenter)
-        header.addWidget(title, 0, Qt.AlignLeft | Qt.AlignVCenter)
-        header.addStretch(1)
-        return header
-
-    def _build_content_grid(self) -> QHBoxLayout:
-        row = QHBoxLayout()
-        row.setSpacing(12)
-
-        data_card = self._build_data_generation_card()
-        data_card.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        row.addWidget(data_card, 4)
-
-        middle_container = QWidget()
-        middle_layout = QVBoxLayout(middle_container)
-        middle_layout.setContentsMargins(0, 0, 0, 0)
-        middle_layout.setSpacing(12)
-
-        ui_grid = self._build_ui_grid_card()
-        ui_grid.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        middle_layout.addWidget(ui_grid, 1)
-
-        test_cases = self._build_test_cases_card()
-        test_cases.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        middle_layout.addWidget(test_cases, 1)
-
-        row.addWidget(middle_container, 3)
-
-        debug_card = self._build_debug_output_card()
-        debug_card.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        row.addWidget(debug_card, 3)
-
-        return row
-
-    def _build_data_generation_card(self) -> QFrame:
-        card, layout = self._card("Data Generation")
-
-        content = QHBoxLayout()
-        content.setSpacing(12)
-
-        left = QVBoxLayout()
-        left.setSpacing(10)
-        left.addLayout(self._build_season_range_row())
-        left.addLayout(self._build_switch_row("Real Data", checked=True))
-        left.addLayout(self._build_switch_row("Pull NFLverse", checked=True))
-        left.addLayout(self._build_switch_row("Pull Pro-Football-Reference", checked=True))
-
-        generate_group, generate_checkboxes = self._checkbox_group(
-            "Generate Data", ["Generate Teams", "Generate Coaches", "Generate Players"]
-        )
-        player_types_group, player_checkboxes = self._checkbox_group(
-            "Player Types", ["Offense", "Defense", "Special Teams"]
-        )
-        self.player_option_checkboxes = player_checkboxes
-        if generate_checkboxes:
-            generate_checkboxes[-1].toggled.connect(self._set_player_option_enabled)
-            self._set_player_option_enabled(generate_checkboxes[-1].isChecked())
-
-        left.addWidget(generate_group)
-        left.addWidget(player_types_group)
-        left.addStretch(1)
-
-        right = QVBoxLayout()
-        right.setSpacing(8)
-        right.addWidget(self._build_last_update_table())
-        right.addLayout(self._build_total_row("Total Data Size", "35GB"))
-
-        generate_button = QPushButton("Generate Data")
-        generate_button.setObjectName("PrimaryButton")
-        generate_button.setMinimumHeight(40)
-        generate_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        right.addWidget(generate_button)
-
-        content.addLayout(left, 1)
-        content.addLayout(right, 1)
-        layout.addLayout(content)
-        return card
-
-    def _build_ui_grid_card(self) -> QFrame:
-        card, layout = self._card("UI Grid Layout")
-        layout.addLayout(self._build_switch_row("Enable Grid", checked=True))
-        layout.addLayout(self._build_opacity_row())
-        layout.addLayout(self._build_color_row())
-        layout.addLayout(self._build_cell_size_row())
-        layout.addStretch(1)
-        return card
-
-    def _build_test_cases_card(self) -> QFrame:
-        card, layout = self._card("Test Cases")
-        test1_row = QHBoxLayout()
-        test1_row.setSpacing(8)
-        test1_row.addWidget(self._build_header_label("Test 1"))
-        test1_row.addStretch(1)
-        self.test1_toggle = AppSwitch(checked=True)
-        test1_row.addWidget(self.test1_toggle)
-        layout.addLayout(test1_row)
-
-        layout.addLayout(self._build_switch_row("Test 2", checked=True))
-        layout.addLayout(self._build_switch_row("Test 3", checked=True))
-
-        button_row = QHBoxLayout()
-        button_row.addStretch(1)
-        execute_button = QPushButton("Execute Tests")
-        execute_button.setObjectName("GhostButton")
-        execute_button.setMinimumHeight(36)
-        execute_button.clicked.connect(self._run_test_cases)
-        button_row.addWidget(execute_button, 0, Qt.AlignRight)
-        layout.addLayout(button_row)
-        return card
-
-    def _build_debug_output_card(self) -> QFrame:
-        card, layout = self._card("Debug Output")
-        self.terminal_output = QTextEdit()
-        self.terminal_output.setObjectName("TerminalOutput")
-        self.terminal_output.setReadOnly(True)
-        self.terminal_output.setWordWrapMode(QTextOption.NoWrap)
-        self.terminal_output.clear()
-        # Force palette to black background regardless of parent transparency rules.
-        palette = self.terminal_output.palette()
-        palette.setColor(self.terminal_output.viewport().backgroundRole(), Qt.black)
-        palette.setColor(self.terminal_output.backgroundRole(), Qt.black)
-        palette.setColor(self.terminal_output.foregroundRole(), QColor("#e5e7eb"))
-        palette.setColor(self.terminal_output.viewport().foregroundRole(), QColor("#e5e7eb"))
-        self.terminal_output.setPalette(palette)
-        self.terminal_output.viewport().setAutoFillBackground(True)
-        self.terminal_output.moveCursor(QTextCursor.End)
-        self.terminal_output.ensureCursorVisible()
-        layout.addWidget(self.terminal_output)
-        return card
-
-    def _build_header_label(self, text: str) -> QLabel:
-        label = QLabel(text)
-        label.setObjectName("SettingsLabel")
-        return label
-
-    def _run_test_cases(self) -> None:
-        if self.test1_toggle and self.test1_toggle.isChecked():
-            self._simulate_terminal_output()
-
-    def _simulate_terminal_output(self) -> None:
-        """Emit fake but realistic terminal output for Test 1."""
-        if not self.terminal_output:
-            return
-
-        self.terminal_output.clear()
-
-        def append_line(line: str) -> None:
-            if not self.terminal_output:
-                return
-            cursor = self.terminal_output.textCursor()
-            cursor.movePosition(QTextCursor.End)
-            cursor.insertText(line + "\n")
-            self.terminal_output.setTextCursor(cursor)
-            self.terminal_output.ensureCursorVisible()
-
-        steps: list[tuple[int, str]] = [
-            (0, '> Running "Test 1" (integration)…'),
-            (300, "[INFO] Connected to mock datastore"),
-            (650, "[INFO] Seeding sample teams, coaches, and players…"),
-            (1050, "[WARN] Missing coach rating for SEA: defaulting to 50"),
-            (1400, "[INFO] Running summary pipeline (12 checks)…"),
-            (1850, "[PASS] Assertions passed (12/12) in 1.8s"),
-            (2200, '> Completed "Test 1".'),
-        ]
-
-        for delay_ms, line in steps:
-            QTimer.singleShot(delay_ms, lambda text=line: append_line(text))
-
-    def _build_switch_row(self, text: str, *, checked: bool = False) -> QHBoxLayout:
-        row = QHBoxLayout()
-        row.setSpacing(8)
-        row.addWidget(self._build_header_label(text))
-        row.addStretch(1)
-        row.addWidget(AppSwitch(checked))
-        return row
-
-    def _build_opacity_row(self) -> QHBoxLayout:
-        row = QHBoxLayout()
-        row.setSpacing(10)
-        row.addWidget(self._build_header_label("Opacity"))
-        slider = AppSlider(Qt.Horizontal)
-        slider.setRange(0, 100)
-        slider.setValue(60)
-        value_label = QLabel(f"{slider.value()}%")
-        value_label.setObjectName("SettingsLabel")
-        slider.valueChanged.connect(lambda value: value_label.setText(f"{value}%"))
-        row.addWidget(slider, 1)
-        row.addWidget(value_label)
-        return row
-
-    def _build_color_row(self) -> QHBoxLayout:
-        row = QHBoxLayout()
-        row.setSpacing(10)
-        row.addWidget(self._build_header_label("Color"))
-        swatch = QFrame()
-        swatch.setObjectName("ColorSwatch")
-        swatch.setFixedSize(42, 26)
-        swatch.setStyleSheet("background-color: #cd4d4d;")
-        row.addWidget(swatch, 0, Qt.AlignLeft)
-
-        input_hex = AppLineEdit("#CD4D4D")
-        input_hex.setMaxLength(7)
-        input_hex.setFixedWidth(110)
-        input_hex.returnPressed.connect(
-            lambda: self._apply_hex_color(swatch, input_hex)
-        )
-        row.addWidget(input_hex)
-        row.addStretch(1)
-        return row
-
-    def _build_cell_size_row(self) -> QHBoxLayout:
-        row = QHBoxLayout()
-        row.setSpacing(10)
-        row.addWidget(self._build_header_label("Cell Size"))
-        spin = AppSpinBox()
-        spin.setRange(1, 50)
-        spin.setValue(1)
-        spin.setSuffix(" px")
-        spin.setFixedWidth(90)
-        row.addWidget(spin)
-        row.addStretch(1)
-        return row
-
-    def _build_season_range_row(self) -> QHBoxLayout:
-        row = QHBoxLayout()
-        row.setSpacing(8)
-        row.addWidget(self._build_header_label("Season Range"))
-        start = self._year_combo(default=1999)
-        end = self._year_combo(default=datetime.now().year)
-        row.addWidget(start)
-        row.addWidget(end)
-        row.addStretch(1)
-        return row
-
-    def _build_last_update_table(self) -> QFrame:
-        frame = Card(
-            title=None,
-            role="sub",
-            margins=(10, 10, 10, 10),
-            spacing=6,
-            show_separator=False,
-        )
-        grid = QFormLayout()
-        grid.setContentsMargins(0, 0, 0, 0)
-        grid.setSpacing(6)
-        frame.body_layout.addLayout(grid)
-
-        header_row = QHBoxLayout()
-        header_row.setSpacing(8)
-        data_label = QLabel("Data Type")
-        data_label.setObjectName("SettingsTableHeader")
-        last_label = QLabel("Last Update")
-        last_label.setObjectName("SettingsTableHeader")
-        header_row.addWidget(data_label, 1)
-        header_row.addWidget(last_label, 1)
-        grid.addRow(header_row)
-
-        now_text = self._timestamp_text()
-        for data_type in ("Teams", "Coaches", "Players", "Offense", "Defense", "Spec Teams"):
-            row = QHBoxLayout()
-            row.setSpacing(8)
-            label = QLabel(data_type)
-            label.setObjectName("SettingsTableCell")
-            stamp = QLabel(now_text)
-            stamp.setObjectName("SettingsTableCell")
-            row.addWidget(label, 1)
-            row.addWidget(stamp, 1)
-            grid.addRow(row)
-        return frame
-
-    def _build_total_row(self, label_text: str, value_text: str) -> QHBoxLayout:
-        row = QHBoxLayout()
-        row.setSpacing(8)
-        label = QLabel(label_text)
-        label.setObjectName("SettingsCaption")
-        value = QLabel(value_text)
-        value.setObjectName("SettingsLabel")
-        row.addWidget(label)
-        row.addStretch(1)
-        row.addWidget(value, 0, Qt.AlignRight)
-        return row
-
-    def _year_combo(self, *, default: int) -> AppComboBox:
-        combo = AppComboBox()
-        current_year = datetime.now().year
-        for year in range(1999, current_year + 1):
-            combo.addItem(str(year))
-        combo.setCurrentText(str(default))
-        combo.setFixedWidth(96)
-        return combo
-
-    def _checkbox_group(self, title: str, items: Iterable[str]) -> tuple[QFrame, list[QCheckBox]]:
-        container = Card(
-            title=title,
-            role="sub",
-            margins=(10, 6, 10, 6),
-            spacing=6,
-            show_separator=False,
-            title_object_name="CardTitleSmall",
-        )
-        layout = container.body_layout
-
-        checkboxes: list[AppCheckbox] = []
-        for item in items:
-            cb = AppCheckbox(item)
-            cb.setChecked(True)
-            layout.addWidget(cb)
-            checkboxes.append(cb)
-        return container, checkboxes
-
-    def _card(self, title: str) -> tuple[QFrame, QVBoxLayout]:
-        frame = Card(title=title, role="primary", margins=(12, 12, 12, 12), spacing=10, show_separator=True)
-        return frame, frame.body_layout
-
-    def _timestamp_text(self) -> str:
-        return datetime.now().strftime("%b %d, %Y @ %I:%M%p").lower()
-
-    def _set_player_option_enabled(self, enabled: bool) -> None:
-        for checkbox in self.player_option_checkboxes:
-            checkbox.setEnabled(enabled)
-
-    def _apply_hex_color(self, swatch: QFrame, line_edit: QLineEdit) -> None:
-        value = self._normalize_hex(line_edit.text())
-        swatch.setStyleSheet(f"background-color: {value};")
-        line_edit.setText(value.upper())
-
-    @staticmethod
-    def _normalize_hex(text: str) -> str:
-        value = text.strip().lstrip("#")
-        if len(value) not in (3, 6) or any(ch not in "0123456789abcdefABCDEF" for ch in value):
-            return "#cd4d4d"
-        if len(value) == 3:
-            value = "".join(ch * 2 for ch in value)
-        return f"#{value.lower()}"
-
-
 class SearchResultsPage(QWidget):
-    """Placeholder search results view triggered from the top nav."""
+    """Search results page scaffold (content intentionally empty)."""
 
     def __init__(self) -> None:
         super().__init__()
@@ -567,47 +153,13 @@ class SearchResultsPage(QWidget):
         # Keep the vertical spacing consistent with the bar above.
         layout.setContentsMargins(16, 0, 16, 16)
         layout.setSpacing(12)
-
-        self.summary_label = QLabel("Type a query and press Enter.")
-        self.summary_label.setObjectName("PageSubtitle")
-        self.summary_label.setWordWrap(True)
-
-        layout.addWidget(self.summary_label)
-
-        placeholders = QHBoxLayout()
-        placeholders.setSpacing(10)
-        self.results_layout = QVBoxLayout()
-        self.results_layout.setSpacing(6)
-        placeholders.addLayout(self.results_layout, 3)
-        placeholders.addStretch(1)
-        layout.addLayout(placeholders)
         layout.addStretch(1)
 
     def set_query(self, query: str) -> None:
-        if query:
-            self.summary_label.setText(f'Showing results for "{query}".')
-        else:
-            self.summary_label.setText("Type a query and press Enter.")
+        return
 
-    def set_results(self, results: Iterable[SearchResult]) -> None:
-        for idx in reversed(range(self.results_layout.count())):
-            item = self.results_layout.takeAt(idx)
-            if widget := item.widget():
-                widget.setParent(None)
-
-        results = list(results)
-        if not results:
-            self.results_layout.addWidget(EmptyPanel("No matches yet."))
-            return
-
-        for hit in results:
-            label = QLabel(
-                f"{hit.entity_type.title()}: {hit.label} "
-                f"{'(team: ' + hit.context.get('team', '') + ')' if hit.context else ''}"
-            )
-            label.setObjectName("SearchResultRow")
-            self.results_layout.addWidget(label)
-        self.results_layout.addStretch(1)
+    def set_results(self, results: Iterable[Any]) -> None:  # noqa: ARG002 - placeholder hook
+        return
 
 
 class GridironLabsMainWindow(QMainWindow):
@@ -632,7 +184,6 @@ class GridironLabsMainWindow(QMainWindow):
         self.history: list[str] = []
         self.history_index = -1
         self.navigation_sections = ["home", "seasons", "teams", "players", "drafts", "history"]
-        self.home_page: HomePage | None = None
         self.context_payloads = self._build_context_payloads(
             players=0, teams=0, coaches=0, seasons_span="No seasons detected"
         )
@@ -712,7 +263,6 @@ class GridironLabsMainWindow(QMainWindow):
         for key, (title, subtitle) in definitions.items():
             if key == "home":
                 page = HomePage(title, subtitle)
-                self.home_page = page
             else:
                 page = SectionPage(title, subtitle)
             page.setObjectName(f"page-{key}")
@@ -739,9 +289,6 @@ class GridironLabsMainWindow(QMainWindow):
             )
 
             self._update_page_subtitles(players=players, teams=teams, coaches=coaches, seasons=season_span)
-            if self.home_page:
-                leaderboard = build_leaderboard(players)
-                self.home_page.set_leaders(leaderboard)
             matchups = self._build_upcoming_matchups(games, teams)
             self._start_matchup_cycle(matchups)
             self._refresh_context_payloads(

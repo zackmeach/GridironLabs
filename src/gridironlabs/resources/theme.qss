@@ -216,6 +216,24 @@ QFrame#Card QFrame#CardSeparator {
     border: none;
 }
 
+/* Panel cards (page panels) */
+QFrame#PanelCard {
+    background-color: #252525;
+    border: 1px solid #20242d;
+    border-radius: 12px;
+}
+
+QFrame#PanelCard QWidget {
+    background-color: transparent;
+}
+
+QFrame#PanelCard QFrame#PanelCardSeparator {
+    background: rgba(255, 255, 255, 0.25);
+    min-height: 1px;
+    max-height: 1px;
+    border: none;
+}
+
 QLabel#CardTitlePrimary {
     font-size: 24px;
     font-weight: 800;
@@ -298,6 +316,16 @@ QLabel#SettingsTableHeader {
 
 QLabel#SettingsTableCell {
     color: #cbd5e1;
+}
+
+QFrame#SettingsLastUpdate {
+    background-color: #1b1f29;
+    border: 1px solid #20242d;
+    border-radius: 10px;
+}
+
+QFrame#SettingsLastUpdate QWidget {
+    background-color: transparent;
 }
 
 /* Inputs */

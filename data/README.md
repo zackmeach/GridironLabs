@@ -10,5 +10,5 @@ Parquet-first storage layout:
 Keep provenance (source, timestamp, schema version) alongside each dataset.
 
 Notes:
-- If `data/processed` is empty, the app will start with an offline/banner warning and placeholder views.
+- If `data/processed` is empty, the app still boots; context stats will be zero and the matchup ticker may have no items.
 - Use `python scripts/generate_fake_nfl_data.py` to quickly seed players/teams/coaches/games Parquet for local UI testing.
