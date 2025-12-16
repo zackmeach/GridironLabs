@@ -27,9 +27,9 @@ class NFLReadPyAdapter:
     def fetch_teams(self) -> Iterable[EntitySummary]:
         if not self.enabled:
             return []
-        raise NotImplementedError
+        raise NotImplementedError("nflreadpy team integration will be implemented later.")
 
     def fetch_coaches(self) -> Iterable[EntitySummary]:
         if not self.enabled:
             return []
-        raise NotImplementedError
+        raise NotImplementedError("nflreadpy coach integration will be implemented later.")

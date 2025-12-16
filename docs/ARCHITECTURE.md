@@ -7,7 +7,7 @@ Gridiron Labs follows a layered desktop architecture built for offline-friendly 
 - **Core**: AppConfig/AppPaths, structured logging, shared domain models.
 - **Data**: Versioned Parquet schemas (players, teams, coaches, games), repository adapters for nflreadpy + PFR.
 - **Services**: Search and summary orchestration, ready for ranking/enrichment.
-- **UI**: PySide6 shell (nav + context bar + content stack). Page titles live only in the context bar. Pages are built with the Page → GridCanvas → PanelCard framework; Settings is the reference implementation.
+- **UI**: PySide6 shell (nav + context bar + content stack). Page titles live only in the context bar. Pages are built with the Page → GridCanvas → PanelCard framework (many pages are placeholders/scaffolds).
 - **Scripts**: Operational entrypoints for refresh and synthetic data.
 
 ## Data flow (current scaffold)

@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
-import importlib.util
 import sys
-from pathlib import Path
 from types import TracebackType
 from typing import Any
 
 from gridironlabs.core.config import AppConfig, AppPaths
 from gridironlabs.core.errors import MissingDependencyError
+from gridironlabs import resources as package_resources
 from gridironlabs.ui.main_window import GridironLabsMainWindow
 
 
@@ -41,24 +40,25 @@ class GridironLabsApplication:
 
     def _load_stylesheet(self) -> str:
         """Load the packaged QSS theme."""
-        resources_dir = Path(__file__).resolve().parent.parent / "resources"
-        preferred = resources_dir / f"{self.config.ui_theme}.qss"
-        fallback = resources_dir / "theme.qss"
-        theme_path = preferred if preferred.exists() else fallback
-        try:
-            return theme_path.read_text(encoding="utf-8")
-        except OSError:
-            if self.logger:
-                self.logger.warning(
-                    "Stylesheet missing; continuing with Qt defaults",
-                    extra={"path": str(theme_path)},
-                )
-            return ""
+        theme_name = str(self.config.ui_theme).strip() or "theme"
+        if not theme_name.endswith(".qss"):
+            theme_name = f"{theme_name}.qss"
 
-    @staticmethod
-    def _is_offline() -> bool:
-        """True when nflreadpy is unavailable; used to display the offline banner."""
-        return importlib.util.find_spec("nflreadpy") is None
+        candidates = (theme_name, "theme.qss")
+        for candidate in candidates:
+            try:
+                return package_resources.read_text(candidate, encoding="utf-8")
+            except FileNotFoundError:
+                continue
+            except OSError:
+                continue
+
+        if self.logger:
+            self.logger.warning(
+                "Stylesheet missing; continuing with Qt defaults",
+                extra={"candidates": list(candidates)},
+            )
+        return ""
 
     def run(self) -> int:
         try:
@@ -81,7 +81,6 @@ class GridironLabsApplication:
             config=self.config,
             paths=self.paths,
             logger=self.logger,
-            offline_mode=self._is_offline(),
         )
         window.showMaximized()
         return app.exec()

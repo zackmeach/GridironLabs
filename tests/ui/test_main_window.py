@@ -21,7 +21,6 @@ def test_top_nav_switches_pages(qtbot, monkeypatch, tmp_path):
         config=config,
         paths=paths,
         logger=logger,
-        offline_mode=True,
     )
     qtbot.addWidget(window)
     window.show()
@@ -49,7 +48,6 @@ def test_settings_button_opens_settings_page(qtbot, monkeypatch, tmp_path):
         config=config,
         paths=paths,
         logger=logger,
-        offline_mode=True,
     )
     qtbot.addWidget(window)
     window.show()

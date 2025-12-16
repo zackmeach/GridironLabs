@@ -34,3 +34,13 @@ class PfrScraper:
             raise MissingDependencyError("requests is required for scraping") from exc
         _ = requests  # Prevent unused-import linting until scraping is implemented.
         raise NotImplementedError("PFR scraping will be implemented later.")
+
+    def fetch_teams(self) -> Iterable[EntitySummary]:
+        if not self.enabled:
+            return []
+        raise NotImplementedError("PFR team scraping will be implemented later.")
+
+    def fetch_coaches(self) -> Iterable[EntitySummary]:
+        if not self.enabled:
+            return []
+        raise NotImplementedError("PFR coach scraping will be implemented later.")

@@ -1,14 +1,19 @@
+"""Small reusable UI primitives.
+
+These widgets enforce object names / properties so they pick up styling from the
+QSS theme (e.g. `Card`, `AppLineEdit`, `AppSwitch`).
+"""
+
 from __future__ import annotations
 
-from typing import Optional, Tuple
+from typing import Any
 
-from PySide6.QtCore import Qt, QSize, QRect
+from PySide6.QtCore import QRect, QSize, Qt
 from PySide6.QtGui import QColor, QPainter
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QFrame,
-    QHBoxLayout,
     QLabel,
     QLineEdit,
     QSlider,
@@ -38,10 +43,10 @@ class Card(QFrame):
 
     def __init__(
         self,
-        title: Optional[str] = None,
+        title: str | None = None,
         *,
         role: str = "primary",
-        margins: Tuple[int, int, int, int] = (12, 12, 12, 12),
+        margins: tuple[int, int, int, int] = (12, 12, 12, 12),
         spacing: int = 10,
         show_separator: bool = True,
         title_alignment: Qt.Alignment = Qt.AlignLeft | Qt.AlignTop,
@@ -94,7 +99,7 @@ class AppSwitch(QCheckBox):
     def sizeHint(self) -> QSize:  # pragma: no cover - trivial UI
         return QSize(46, 28)
 
-    def paintEvent(self, event) -> None:  # pragma: no cover - trivial UI
+    def paintEvent(self, event: Any) -> None:  # pragma: no cover - trivial UI
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
 

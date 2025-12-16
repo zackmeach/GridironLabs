@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 from PySide6.QtCore import QObject, Qt, Signal
 from PySide6.QtGui import QColor, QPainter, QPen
@@ -117,37 +118,37 @@ class GridOverlay(QWidget):
         self.setVisible(self._config.enabled)
         self.update()
 
-    def paintEvent(self, event) -> None:  # pragma: no cover - UI paint
+    def paintEvent(self, event: Any) -> None:  # pragma: no cover - UI paint
         if not self._config.enabled:
             return
-
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing, False)
-
-        color = QColor(self._config.color_hex)
-        color.setAlphaF(max(0.0, min(1.0, self._config.opacity)))
-        pen = QPen(color)
-        pen.setWidth(1)
-        painter.setPen(pen)
 
         w = self.width()
         h = self.height()
         if w <= 0 or h <= 0:
             return
 
-        # 24-col vertical grid.
-        for col in range(1, self._cols):
-            x = round((col / self._cols) * w)
-            painter.drawLine(x, 0, x, h)
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing, False)
+        try:
+            color = QColor(self._config.color_hex)
+            color.setAlphaF(max(0.0, min(1.0, self._config.opacity)))
+            pen = QPen(color)
+            pen.setWidth(1)
+            painter.setPen(pen)
 
-        # Horizontal pixel grid using the cell size.
-        step = max(6, int(self._config.cell_size))
-        y = step
-        while y < h:
-            painter.drawLine(0, y, w, y)
-            y += step
+            # 24-col vertical grid.
+            for col in range(1, self._cols):
+                x = round((col / self._cols) * w)
+                painter.drawLine(x, 0, x, h)
 
-        painter.end()
+            # Horizontal pixel grid using the cell size.
+            step = max(6, int(self._config.cell_size))
+            y = step
+            while y < h:
+                painter.drawLine(0, y, w, y)
+                y += step
+        finally:
+            painter.end()
 
 
 def _normalize_hex(text: str) -> str:

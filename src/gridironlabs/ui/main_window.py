@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from pathlib import Path
 from typing import Any, Iterable
 
 from PySide6.QtCore import Qt, QTimer
@@ -22,7 +21,7 @@ from gridironlabs.core.config import AppConfig, AppPaths
 from gridironlabs.core.errors import DataValidationError, NotFoundError
 from gridironlabs.core.models import GameSummary
 from gridironlabs.data.repository import ParquetSummaryRepository
-from gridironlabs.data.schemas import SCHEMA_REGISTRY
+from gridironlabs import resources as package_resources
 from gridironlabs.services.search import SearchService
 from gridironlabs.services.summary import SummaryService
 from gridironlabs.ui.pages.settings_page import SettingsPage
@@ -84,13 +83,17 @@ class PageContextBar(QFrame):
         self.icon_label.setObjectName("ContextBarIcon")
         self.icon_label.setFixedSize(56, 56)
         self.icon_label.setAlignment(Qt.AlignCenter)
-        icon_path = Path(__file__).resolve().parent.parent / "resources" / "icons" / "main_logo.png"
-        if icon_path.exists():
-            pixmap = QPixmap(str(icon_path))
-            if not pixmap.isNull():
-                self.icon_label.setPixmap(
-                    pixmap.scaled(self.icon_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-                )
+        try:
+            with package_resources.as_file("icons", "main_logo.png") as icon_path:
+                pixmap = QPixmap(str(icon_path))
+                if not pixmap.isNull():
+                    self.icon_label.setPixmap(
+                        pixmap.scaled(
+                            self.icon_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation
+                        )
+                    )
+        except FileNotFoundError:
+            pass
         layout.addWidget(self.icon_label, 0, Qt.AlignVCenter)
 
         content = QVBoxLayout()
@@ -164,13 +167,12 @@ class GridironLabsMainWindow(QMainWindow):
     """Main application shell with persistent navigation and stacked content."""
 
     def __init__(
-        self, *, config: AppConfig, paths: AppPaths, logger: Any, offline_mode: bool = False
+        self, *, config: AppConfig, paths: AppPaths, logger: Any
     ) -> None:
         super().__init__()
         self.config = config
         self.paths = paths
         self.logger = logger
-        self.offline_mode = offline_mode
         self.repository: ParquetSummaryRepository | None = None
         self.search_service: SearchService | None = None
         self.summary_service: SummaryService | None = None
@@ -245,7 +247,7 @@ class GridironLabsMainWindow(QMainWindow):
         container_layout.addWidget(content_frame)
         self.setCentralWidget(container)
 
-        self._bootstrap_data(container_layout)
+        self._bootstrap_data()
         self._navigate_to("home")
         self._update_history_buttons()
 
@@ -267,11 +269,11 @@ class GridironLabsMainWindow(QMainWindow):
             self.pages[key] = page
             self.content_stack.addWidget(page)
 
-    def _bootstrap_data(self, container_layout: QVBoxLayout) -> None:
+    def _bootstrap_data(self) -> None:
         try:
-            schema_key = f"players:{self.config.default_schema_version}"
-            schema_version = SCHEMA_REGISTRY.get(schema_key, SCHEMA_REGISTRY["players:v0"])
-            self.repository = ParquetSummaryRepository(self.paths.data_processed, schema_version)
+            self.repository = ParquetSummaryRepository(
+                self.paths.data_processed, schema_version=self.config.default_schema_version
+            )
             players = list(self.repository.iter_players())
             teams = list(self.repository.iter_teams())
             coaches = list(self.repository.iter_coaches())

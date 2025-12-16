@@ -40,7 +40,7 @@
 │  UI (PySide6)                │
 │  - NavigationBar + Context   │
 │  - Stacked pages             │
-│    - Settings: panel grid    │
+│    - Settings: scaffold      │
 │    - Others: placeholders    │
 │  - Context bar 2x nav, holds │
 │    titles; no titles in body │
@@ -51,5 +51,5 @@
 
 Notes:
 - Context bar height is 2x nav and includes a leading icon slot.
-- Settings is the example page implemented with the Page → GridCanvas → PanelCard framework (including the debug grid overlay).
+- Pages are built with the Page → GridCanvas → PanelCard framework; many pages are placeholders/scaffolds.
 

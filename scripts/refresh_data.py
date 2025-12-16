@@ -19,24 +19,26 @@ if str(SRC_PATH) not in sys.path:
 
 from gridironlabs.core.config import AppPaths, load_config
 from gridironlabs.data.repository import ParquetSummaryRepository
-from gridironlabs.data.schemas import SCHEMA_REGISTRY
 from gridironlabs.data.sources.nflreadpy_adapter import NFLReadPyAdapter
 from gridironlabs.data.sources.pfr_scraper import PfrScraper, ScrapeConfig
 
 
-def main() -> None:
+def main() -> int:
     paths = AppPaths.from_env()
     config = load_config(paths)
-    repo = ParquetSummaryRepository(
-        root=paths.data_processed,
-        schema_version=SCHEMA_REGISTRY["players:v0"],
-    )
+    repo = ParquetSummaryRepository(paths.data_processed, schema_version=config.default_schema_version)
     nfl_source = NFLReadPyAdapter(enabled=config.enable_scraping)
     pfr_source = PfrScraper(config=ScrapeConfig(), enabled=config.enable_scraping)
-    raise NotImplementedError(
-        "Wire data refresh flow: fetch, merge, validate, and persist Parquet tables."
+    print(
+        "Not implemented: wire data refresh flow (fetch, merge, validate, persist Parquet tables).\n"
+        f"- output: {paths.data_processed}\n"
+        f"- schema_version: {config.default_schema_version}\n"
+        f"- scraping_enabled: {config.enable_scraping}\n"
+        f"- adapters: {nfl_source.__class__.__name__}, {pfr_source.__class__.__name__}\n"
+        f"- repository: {repo.__class__.__name__}"
     )
+    return 1
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

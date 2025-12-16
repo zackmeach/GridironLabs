@@ -30,19 +30,19 @@ class _BaseStatePanel(QFrame):
 class LoadingPanel(_BaseStatePanel):
     def __init__(self, message: str = "Loading...") -> None:
         super().__init__("Loading", message)
-        self.setObjectName("LoadingPanel")
+        self.setProperty("state-kind", "loading")
 
 
 class EmptyPanel(_BaseStatePanel):
     def __init__(self, message: str = "No data yet") -> None:
         super().__init__("Empty", message)
-        self.setObjectName("EmptyPanel")
+        self.setProperty("state-kind", "empty")
 
 
 class ErrorPanel(_BaseStatePanel):
     def __init__(self, message: str = "Something went wrong") -> None:
         super().__init__("Error", message)
-        self.setObjectName("ErrorPanel")
+        self.setProperty("state-kind", "error")
 
 
 class StatusBanner(QFrame):

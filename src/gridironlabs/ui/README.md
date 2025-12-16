@@ -4,7 +4,7 @@ PySide6 desktop shell pieces:
 
 - `app.py` — application bootstrapper for the desktop runtime.
 - `main_window.py` — maximized window with persistent top nav (includes rotating upcoming-week matchup ticker pulled from `games.parquet`), a context bar under the nav (2x nav height) that holds the page title/subtitle/stats (titles are not repeated in the body), and stacked pages.
-- `pages/` — page implementations. `settings_page.py` is the reference implementation for the Page → GridCanvas → PanelCard framework.
+- `pages/` — page implementations (many are placeholders/scaffolds).
 - `layouts/` — layout helpers (e.g. `GridCanvas`).
 - `overlays/` — overlay widgets (e.g. debug grid overlay).
 - `style/` — Python-side tokens used by widgets/layout defaults.
@@ -12,7 +12,7 @@ PySide6 desktop shell pieces:
 - `resources` (../resources) — dark theme QSS and future assets.
 
 Settings page note:
-- Settings is the example page demonstrating panel placement and the configurable debug grid overlay.
+- Settings is currently a minimal scaffold page (built on `BasePage` + `GridCanvas`) that can be expanded with real settings panels.
 
 Running the UI locally:
 - Ensure the venv is active (`source .venv/bin/activate` or `.\\.venv\\Scripts\\activate` on Windows).
