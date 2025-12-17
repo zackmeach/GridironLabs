@@ -6,6 +6,9 @@
 - Simplified Settings back to a minimal scaffold page.
 - Hardened Parquet repository parsing (normalized optional fields, parsed ratings/stats, added schema-based column checks).
 - Refreshed documentation to match current scaffolds and data dictionary fields.
+- Fixed `PanelCard` header layout: forced title to top-left and grouped separator directly beneath it (preventing layout drift).
+- Corrected `PanelCard` header visibility check to use `isHidden()` instead of `isVisible()` (fixing headers hidden during initialization).
+- Added `set_link()` to `PanelCard` to support optional top-right link text (e.g. "View All").
 
 ## 2025-12-15
 
