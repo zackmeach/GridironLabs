@@ -25,28 +25,44 @@ from gridironlabs import resources as package_resources
 from gridironlabs.services.search import SearchService
 from gridironlabs.services.summary import SummaryService
 from gridironlabs.ui.pages.settings_page import SettingsPage
+from gridironlabs.ui.pages.team_page import TeamSummaryPage
+from gridironlabs.ui.pages.player_page import PlayerSummaryPage
 from gridironlabs.ui.pages.base_page import BasePage
 from gridironlabs.ui.style.tokens import GRID
 from gridironlabs.ui.widgets.navigation import NavigationBar
 from gridironlabs.ui.widgets.panel_card import PanelCard
+from gridironlabs.ui.widgets.standings import HomeStandingsPanel
+from gridironlabs.ui.widgets.league_leaders import LeadersPanel, build_leaderboard
 
 
 class HomePage(BasePage):
     """Home page scaffold for panel experimentation."""
 
-    def __init__(self, title: str, subtitle: str) -> None:
+    def __init__(
+        self, 
+        title: str, 
+        subtitle: str, 
+        on_team_click: Callable[[str], None] | None = None,
+        on_player_click: Callable[[str], None] | None = None
+    ) -> None:
         super().__init__(cols=GRID.cols, rows=12)
         self.setObjectName("page-home")
         self._subtitle = subtitle
-        self.base_panel = PanelCard("Base Panel")
-        self.add_panel(self.base_panel, col=0, row=0, col_span=GRID.cols, row_span=12)
+        self.base_panel = HomeStandingsPanel(on_team_click=on_team_click)
+        self.add_panel(self.base_panel, col=0, row=0, col_span=GRID.cols, row_span=4)
+
+        self.leaders_panel = LeadersPanel(
+            on_player_click=on_player_click
+        )
+        self.add_panel(self.leaders_panel, col=0, row=4, col_span=GRID.cols, row_span=6)
 
     def set_subtitle(self, text: str) -> None:
         self._subtitle = text
 
-    def set_leaders(self, data: Any | None) -> None:  # noqa: ARG002 - placeholder hook
-        """Placeholder hook for future home content."""
-        return
+    def set_leaders(self, data: Any | None) -> None:
+        """Populate the league leaders panel."""
+        if data:
+            self.leaders_panel.set_data(data)
 
 
 class SectionPage(QWidget):
@@ -243,6 +259,14 @@ class GridironLabsMainWindow(QMainWindow):
         self.content_stack.addWidget(self.search_page)
         self.pages["search"] = self.search_page
 
+        self.team_summary_page = TeamSummaryPage()
+        self.content_stack.addWidget(self.team_summary_page)
+        self.pages["team-summary"] = self.team_summary_page
+
+        self.player_summary_page = PlayerSummaryPage()
+        self.content_stack.addWidget(self.player_summary_page)
+        self.pages["player-summary"] = self.player_summary_page
+
         content_layout.addWidget(self.content_stack)
         container_layout.addWidget(content_frame)
         self.setCentralWidget(container)
@@ -262,7 +286,12 @@ class GridironLabsMainWindow(QMainWindow):
         }
         for key, (title, subtitle) in definitions.items():
             if key == "home":
-                page = HomePage(title, subtitle)
+                page = HomePage(
+                    title, 
+                    subtitle, 
+                    on_team_click=self._on_team_selected,
+                    on_player_click=self._on_player_selected
+                )
             else:
                 page = SectionPage(title, subtitle)
             page.setObjectName(f"page-{key}")
@@ -282,6 +311,11 @@ class GridironLabsMainWindow(QMainWindow):
             self.summary_service = SummaryService(repository=self.repository)
             self.search_service = SearchService(repository=self.repository)
             self.search_service.build_index()
+
+            leaderboard = build_leaderboard(players)
+            home_page = self.pages.get("home")
+            if isinstance(home_page, HomePage):
+                home_page.set_leaders(leaderboard)
 
             seasons = {p.era for p in players if p.era} | {t.era for t in teams if t.era}
             season_span = (
@@ -466,6 +500,18 @@ class GridironLabsMainWindow(QMainWindow):
         if self.logger:
             self.logger.info("Settings opened")
         self._navigate_to("settings")
+
+    def _on_team_selected(self, team_name: str) -> None:
+        if self.logger:
+            self.logger.info("Team selected", extra={"team": team_name})
+        self.team_summary_page.set_team(team_name)
+        self._navigate_to("team-summary")
+
+    def _on_player_selected(self, player_name: str) -> None:
+        if self.logger:
+            self.logger.info("Player selected", extra={"player": player_name})
+        self.player_summary_page.set_player(player_name)
+        self._navigate_to("player-summary")
 
     def _build_upcoming_matchups(
         self, games: Iterable[GameSummary], teams: Iterable[Any]

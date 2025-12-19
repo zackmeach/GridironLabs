@@ -7,6 +7,8 @@ This project uses a reusable **Page → GridCanvas → PanelCard** pattern for b
 - **Page (BasePage)**: owns the content region below the context bar.
 - **GridCanvas**: a 24-column grid used to place panels by `(col, row, col_span, row_span)`.
 - **PanelCard**: consistent panel chrome (optional header title, optional header-right actions, separator, padded body).
+  - The header stack is isolated from the body to ensure consistent layout regardless of content.
+
 - **GridOverlay**: an optional debug overlay for the grid canvas, controlled by a `GridOverlayConfig`.
 
 ## Create a new page
@@ -56,5 +58,10 @@ config.set_cell_size(28)
 
 ## Reference implementation
 
-- **Settings** is a minimal scaffold page implemented with this framework:
-  - `src/gridironlabs/ui/pages/settings_page.py`
+- **HomePage** implements the dashboard using several framework components:
+  - `HomeStandingsPanel`: A custom panel for conference/division standings.
+  - `LeadersPanel`: A 3-column category grid for league leaders.
+- **SettingsPage** uses the framework to host:
+  - `DataGenerationPanel`: A dedicated panel for synthetic data pipeline controls.
+- **Entity Pages**:
+  - `TeamSummaryPage` and `PlayerSummaryPage` serve as summary scaffolds for detail views.

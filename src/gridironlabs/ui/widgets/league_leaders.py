@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Callable, Iterable, Mapping, Sequence
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QFrame, QGridLayout, QHBoxLayout, QLabel, QPushButton, QVBoxLayout
+from PySide6.QtWidgets import QFrame, QGridLayout, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
 from gridironlabs.core.models import EntitySummary
 from gridironlabs.ui.widgets.base_components import Card, TitleLabel
@@ -47,15 +47,9 @@ _CATEGORY_DEFINITIONS: Sequence[tuple[str, Sequence[tuple[str, str, bool]]]] = (
         ),
     ),
     (
-        "Rushing",
-        (
-            ("Yards", "rushing_yards", False),
-            ("Touchdowns", "rushing_tds", False),
-        ),
-    ),
-    (
         "Receiving",
         (
+            ("Receptions", "receptions", False),
             ("Yards", "receiving_yards", False),
             ("Touchdowns", "receiving_tds", False),
         ),
@@ -64,16 +58,24 @@ _CATEGORY_DEFINITIONS: Sequence[tuple[str, Sequence[tuple[str, str, bool]]]] = (
         "Defense",
         (
             ("Tackles", "tackles", False),
+            ("Tackles For Loss", "tackles_for_loss", False),
             ("Sacks", "sacks", False),
             ("Forced Fumbles", "forced_fumbles", False),
             ("Interceptions", "def_interceptions", False),
         ),
     ),
     (
+        "Rushing",
+        (
+            ("Yards", "rushing_yards", False),
+            ("Touchdowns", "rushing_tds", False),
+        ),
+    ),
+    (
         "Kicking & Punting",
         (
             ("FGs Made", "field_goals_made", False),
-            ("Punts", "punts", False),
+            ("Punt Yards", "punt_yards", False),
         ),
     ),
 )
@@ -156,27 +158,77 @@ def _latest_numeric_season(players: Sequence[EntitySummary]) -> int | None:
 class LeaderCard(Card):
     """Small card showing the top two entries for a stat."""
 
-    def __init__(self, title: str, entries: Sequence[LeaderEntry]) -> None:
+    def __init__(
+        self, 
+        title: str, 
+        entries: Sequence[LeaderEntry],
+        on_player_click: Callable[[str], None] | None = None
+    ) -> None:
         super().__init__(
             title=title,
             role="sub",
-            margins=(10, 8, 10, 8),
-            spacing=4,
+            margins=(12, 10, 12, 10),
+            spacing=8,
             show_separator=False,
             title_object_name="CardTitleSub",
         )
+        self.setStyleSheet("""
+            QWidget { 
+                background-color: #1a1c20; 
+                border-radius: 4px;
+            }
+            QLabel#CardTitleSub {
+                color: #e5e7eb;
+                font-weight: bold;
+                background-color: transparent;
+            }
+        """)
         layout = self.body_layout
+        
+        # Grid for entries - 2 columns for side-by-side
+        grid = QGridLayout()
+        grid.setContentsMargins(0, 0, 0, 0)
+        grid.setHorizontalSpacing(16)
+        
+        for idx, entry in enumerate(entries):
+            container = QWidget()
+            container.setStyleSheet("background-color: transparent;")
+            row_layout = QHBoxLayout(container)
+            row_layout.setContentsMargins(0, 0, 0, 0)
+            row_layout.setSpacing(4)
 
-        for idx, entry in enumerate(entries, start=1):
-            label = QLabel(self._format_entry(idx, entry))
-            label.setObjectName("LeaderEntry")
-            label.setWordWrap(True)
-            layout.addWidget(label)
+            # Player Button (Rank + Name)
+            player_btn = QPushButton(f"{idx+1}. {entry.name}")
+            player_btn.setObjectName("LeaderPlayerButton")
+            player_btn.setFlat(True)
+            player_btn.setCursor(Qt.PointingHandCursor)
+            player_btn.setStyleSheet("""
+                QPushButton {
+                    color: #e5e7eb; 
+                    border: none; 
+                    padding: 0; 
+                    text-align: left; 
+                    font-size: 15px;
+                    background-color: transparent;
+                }
+                QPushButton:hover {
+                    color: #3b82f6;
+                }
+            """)
+            if on_player_click:
+                player_btn.clicked.connect(lambda _, p=entry.name: on_player_click(p))
+            row_layout.addWidget(player_btn)
 
-    def _format_entry(self, rank: int, entry: LeaderEntry) -> str:
-        value_text = self._format_value(entry.value)
-        team_text = f" [{entry.team}]" if entry.team else ""
-        return f"{rank}. {entry.name}{team_text} ({value_text})"
+            # Value Label
+            value_text = self._format_value(entry.value)
+            value_label = QLabel(f"({value_text})")
+            value_label.setStyleSheet("color: #9ca3af; font-size: 15px; background-color: transparent;")
+            row_layout.addWidget(value_label)
+            row_layout.addStretch(1)
+
+            grid.addWidget(container, 0, idx)
+
+        layout.addLayout(grid)
 
     @staticmethod
     def _format_value(value: float) -> str:
@@ -189,30 +241,45 @@ class LeaderCard(Card):
         return f"{value:,.1f}"
 
 
-class LeaderSection(Card):
-    """Column of stat cards within a category such as Passing or Defense."""
+class LeaderSection(QWidget):
+    """A category column (e.g., Passing) containing multiple stat cards."""
 
-    def __init__(self, title: str, stats: Sequence[LeaderStat]) -> None:
-        super().__init__(
-            title=title,
-            role="section",
-            margins=(10, 10, 10, 10),
-            spacing=8,
-            show_separator=True,
-            title_object_name="CardTitleSection",
-        )
-        layout = self.body_layout
+    def __init__(
+        self, 
+        title: str, 
+        stats: Sequence[LeaderStat],
+        on_player_click: Callable[[str], None] | None = None
+    ) -> None:
+        super().__init__()
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(12)
+
+        # Header Label (Passing, Receiving, etc.)
+        header = QLabel(title)
+        header.setObjectName("CardTitleSection")
+        header.setStyleSheet("font-size: 18px; font-weight: bold; color: #e5e7eb;")
+        layout.addWidget(header)
 
         for stat in stats:
-            layout.addWidget(LeaderCard(stat.label, stat.entries))
+            layout.addWidget(LeaderCard(
+                stat.label, 
+                stat.entries, 
+                on_player_click=on_player_click
+            ))
 
         layout.addStretch(1)
 
 
 class LeadersPanel(Card):
-    """Top-level panel that arranges stat groups on a grid."""
+    """Top-level panel that arranges stat groups into 3 columns."""
 
-    def __init__(self, *, on_view_full: Callable[[], None] | None = None) -> None:
+    def __init__(
+        self, 
+        *, 
+        on_view_full: Callable[[], None] | None = None,
+        on_player_click: Callable[[str], None] | None = None
+    ) -> None:
         super().__init__(
             title=None,
             role="primary",
@@ -220,6 +287,7 @@ class LeadersPanel(Card):
             spacing=10,
             show_separator=False,
         )
+        self.on_player_click = on_player_click
 
         header = QHBoxLayout()
         header.setSpacing(8)
@@ -252,15 +320,11 @@ class LeadersPanel(Card):
         separator.setLineWidth(1)
         self.body_layout.addWidget(separator)
 
-        self.grid = QGridLayout()
-        self.grid.setContentsMargins(0, 4, 0, 0)
-        self.grid.setHorizontalSpacing(14)
-        self.grid.setVerticalSpacing(14)
-        # Give the first two columns a bit more weight to mirror the reference.
-        self.grid.setColumnStretch(0, 2)
-        self.grid.setColumnStretch(1, 2)
-        self.grid.setColumnStretch(2, 2)
-        self.body_layout.addLayout(self.grid)
+        # Content area with 3 columns
+        self.content_layout = QHBoxLayout()
+        self.content_layout.setContentsMargins(0, 8, 0, 0)
+        self.content_layout.setSpacing(20)
+        self.body_layout.addLayout(self.content_layout)
 
         self.empty_label = QLabel("No leaderboard data available.")
         self.empty_label.setObjectName("LeaderEmptyLabel")
@@ -269,7 +333,7 @@ class LeadersPanel(Card):
         self.body_layout.addStretch(1)
 
     def set_data(self, data: LeaderboardData) -> None:
-        self._clear_grid()
+        self._clear_content()
         has_groups = bool(data.groups)
         self.empty_label.setVisible(not has_groups)
         self.season_label.setVisible(bool(data.season_label))
@@ -279,39 +343,43 @@ class LeadersPanel(Card):
         if not has_groups:
             return
 
-        # Preferred layout to mimic the reference visual: first row Passing/Receiving/Defense,
-        # second row Rushing/Kicking & Punting.
-        preferred_positions: dict[str, tuple[int, int]] = {
-            "Passing": (0, 0),
-            "Receiving": (0, 1),
-            "Defense": (0, 2),
-            "Rushing": (1, 0),
-            "Kicking & Punting": (1, 1),
-        }
-
-        placed = set()
+        # Map groups into 3 columns
+        # Col 1: Passing, Rushing
+        # Col 2: Receiving, Kicking & Punting
+        # Col 3: Defense
+        column_groups: list[list[LeaderGroup]] = [[], [], []]
+        
         for group in data.groups:
-            pos = preferred_positions.get(group.title)
-            if pos is None:
-                continue
-            row, col = pos
-            section = LeaderSection(group.title, group.stats)
-            self.grid.addWidget(section, row, col)
-            placed.add(group.title)
+            if group.title in ("Passing", "Rushing"):
+                column_groups[0].append(group)
+            elif group.title in ("Receiving", "Kicking & Punting"):
+                column_groups[1].append(group)
+            elif group.title == "Defense":
+                column_groups[2].append(group)
+            else:
+                # Distribution logic for any extra categories
+                shortest_col = min(range(3), key=lambda i: len(column_groups[i]))
+                column_groups[shortest_col].append(group)
 
-        # Fallback for any groups not mapped above.
-        remaining = [g for g in data.groups if g.title not in placed]
-        if remaining:
-            start_index = self.grid.count()
-            cols = 3
-            for idx, group in enumerate(remaining, start=start_index):
-                row = idx // cols
-                col = idx % cols
-                section = LeaderSection(group.title, group.stats)
-                self.grid.addWidget(section, row, col)
+        for col_idx in range(3):
+            col_container = QWidget()
+            col_layout = QVBoxLayout(col_container)
+            col_layout.setContentsMargins(0, 0, 0, 0)
+            col_layout.setSpacing(24) # Space between categories in a column
+            
+            for group in column_groups[col_idx]:
+                section = LeaderSection(
+                    group.title, 
+                    group.stats, 
+                    on_player_click=self.on_player_click
+                )
+                col_layout.addWidget(section)
+            
+            col_layout.addStretch(1)
+            self.content_layout.addWidget(col_container, 1)
 
-    def _clear_grid(self) -> None:
-        while self.grid.count():
-            item = self.grid.takeAt(0)
+    def _clear_content(self) -> None:
+        while self.content_layout.count():
+            item = self.content_layout.takeAt(0)
             if widget := item.widget():
                 widget.setParent(None)

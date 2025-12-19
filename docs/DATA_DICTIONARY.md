@@ -13,7 +13,7 @@ These tables are consumed by `gridironlabs.data.repository.ParquetSummaryReposit
 - **team** (str): team abbreviation (e.g., `GB`)
 - **era** (str): season label (currently stringified year, e.g., `2025`)
 - **ratings** (struct/map): `overall`, `athleticism`, `technical`, `intangibles`, `potential` (0–100)
-- **stats** (struct/map): numeric stat keys (examples: `passing_yards`, `rushing_yards`, `tackles`, `sacks`)
+- **stats** (struct/map): numeric stat keys (examples: `passing_yards`, `passing_tds`, `interceptions`, `rushing_yards`, `rushing_tds`, `receptions`, `receiving_yards`, `receiving_tds`, `tackles`, `tackles_for_loss`, `sacks`, `forced_fumbles`, `def_interceptions`, `field_goals_made`, `punts`, `punt_yards`)
 
 **Optional common metadata (when present):** `entity_type`, `schema_version`, `source`, `updated_at`
 

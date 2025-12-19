@@ -1,5 +1,16 @@
 # Changelog
 
+## 2025-12-18
+
+- Implemented entity navigation: team names and player names in the UI (standings, leaders) are now clickable and navigate to dedicated summary pages.
+- Introduced `TeamSummaryPage` and `PlayerSummaryPage` as dedicated entity detail views.
+- Refactored `LeadersPanel` to a 3-column category layout matching the reference visual (Passing/Rushing, Receiving/Kicking, Defense).
+- Enhanced `HomeStandingsPanel` with dark-themed division blocks to match the `LeadersPanel` styling.
+- Added `DataGenerationPanel` to the Settings page to centralize synthetic data controls.
+- Improved synthetic data generation: added `receptions`, `tackles_for_loss`, and `punt_yards` to the player dataset.
+- Increased header and link font sizes in `theme.qss` for better legibility (OOTP-style hierarchy).
+- Isolated `PanelCard` header stack from the body layout to ensure consistent positioning and prevent drift.
+
 ## 2025-12-16
 
 - Cleaned up UI scaffolding and QSS selector alignment (state panels now inherit `StatePanel` styling).

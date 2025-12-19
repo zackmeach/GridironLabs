@@ -374,14 +374,17 @@ def player_stats(position: str, rng: random.Random) -> dict[str, float]:
         "interceptions": 0.0,
         "rushing_yards": 0.0,
         "rushing_tds": 0.0,
+        "receptions": 0.0,
         "receiving_yards": 0.0,
         "receiving_tds": 0.0,
         "tackles": 0.0,
+        "tackles_for_loss": 0.0,
         "sacks": 0.0,
         "forced_fumbles": 0.0,
         "def_interceptions": 0.0,
         "field_goals_made": 0.0,
         "punts": 0.0,
+        "punt_yards": 0.0,
     }
     pos = position.upper()
     if pos == "QB":
@@ -393,30 +396,37 @@ def player_stats(position: str, rng: random.Random) -> dict[str, float]:
     elif pos in {"RB", "FB"}:
         base["rushing_yards"] = clamp(rng.normalvariate(980, 320), 50, 2000)
         base["rushing_tds"] = clamp(rng.normalvariate(8, 4), 0, 25)
+        base["receptions"] = clamp(rng.normalvariate(40, 20), 0, 110)
         base["receiving_yards"] = clamp(rng.normalvariate(310, 180), 0, 900)
         base["receiving_tds"] = clamp(rng.normalvariate(2, 2), 0, 10)
     elif pos == "WR":
+        base["receptions"] = clamp(rng.normalvariate(85, 25), 5, 150)
         base["receiving_yards"] = clamp(rng.normalvariate(1050, 350), 100, 2200)
         base["receiving_tds"] = clamp(rng.normalvariate(7, 3), 0, 20)
     elif pos == "TE":
+        base["receptions"] = clamp(rng.normalvariate(65, 20), 5, 120)
         base["receiving_yards"] = clamp(rng.normalvariate(720, 220), 80, 1500)
         base["receiving_tds"] = clamp(rng.normalvariate(6, 3), 0, 18)
     elif pos in {"CB", "S", "SAF", "DB"}:
         base["tackles"] = clamp(rng.normalvariate(70, 25), 10, 160)
+        base["tackles_for_loss"] = clamp(rng.normalvariate(2, 2), 0, 10)
         base["def_interceptions"] = clamp(rng.normalvariate(2.5, 2.5), 0, 12)
         base["forced_fumbles"] = clamp(rng.normalvariate(1.0, 1.2), 0, 8)
     elif pos in {"LB", "ILB", "OLB", "MLB"}:
         base["tackles"] = clamp(rng.normalvariate(105, 25), 20, 180)
+        base["tackles_for_loss"] = clamp(rng.normalvariate(12, 6), 0, 30)
         base["sacks"] = clamp(rng.normalvariate(4, 3), 0, 20)
         base["forced_fumbles"] = clamp(rng.normalvariate(1.5, 1.2), 0, 8)
     elif pos in {"DE", "DT", "NT", "DL"}:
         base["tackles"] = clamp(rng.normalvariate(55, 15), 10, 120)
+        base["tackles_for_loss"] = clamp(rng.normalvariate(10, 5), 0, 25)
         base["sacks"] = clamp(rng.normalvariate(6, 4), 0, 22)
         base["forced_fumbles"] = clamp(rng.normalvariate(1.0, 0.8), 0, 6)
     elif pos in {"K"}:
         base["field_goals_made"] = clamp(rng.normalvariate(25, 6), 10, 45)
     elif pos in {"P"}:
         base["punts"] = clamp(rng.normalvariate(70, 15), 30, 120)
+        base["punt_yards"] = base["punts"] * clamp(rng.normalvariate(45, 3), 35, 55)
     return {k: round(v, 2) if isinstance(v, float) else v for k, v in base.items()}
 
 

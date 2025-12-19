@@ -21,7 +21,12 @@ from gridironlabs.ui.widgets.base_components import TitleLabel
 
 
 class PanelCard(QFrame):
-    """Reusable panel card shell with header + body."""
+    """Reusable panel card shell with header + body.
+    
+    The header stack (title, link, actions, separator) is structurally isolated 
+    from the body layout. This ensures consistent positioning and prevents layout 
+    drift regardless of what content is placed in the body or if the body is empty.
+    """
 
     def __init__(
         self,
@@ -77,7 +82,7 @@ class PanelCard(QFrame):
         self.link_button.setObjectName("PanelCardLink")
         self.link_button.setCursor(Qt.PointingHandCursor)
         # Pin link to top right
-        header_layout.addWidget(self.link_button, 0, Qt.AlignRight | Qt.AlignTop)
+        header_layout.addWidget(self.link_button, 0, Qt.AlignRight | Qt.AlignVCenter)
 
         self._actions_host = QWidget(self._header_row)
         self._actions_host.setObjectName("PanelCardHeaderActions")

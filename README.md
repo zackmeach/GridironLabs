@@ -12,8 +12,9 @@ OOTP26-inspired NFL analytics explorer built with PySide6. This repository ships
   `pip install pyside6 polars`
 - (Optional) Generate synthetic Parquet so the UI has data (players/teams/coaches/games with schedules and scores): `python scripts/generate_fake_nfl_data.py`
 - Launch the desktop shell: `python -m gridironlabs.main`, the `gridironlabs` console script, or `python main.py`.
-- You should see a dark-themed shell with a persistent top nav (cycling upcoming matchups from `games.parquet`), a 2x-height context bar, and stacked pages. Pages are built with the Page → GridCanvas → PanelCard framework; most pages are still placeholders/scaffolds.
-- If `data/processed` is empty, the app still boots; context stats will be zero and the matchup ticker may have no items. Seed Parquet with `python scripts/generate_fake_nfl_data.py` if you want matchups to cycle in the top nav.
+- You should see a dark-themed shell with a persistent top nav (cycling upcoming matchups from `games.parquet`), a 2x-height context bar, and stacked pages. Home dashboard features conference/division standings and a 3-column league leaders grid.
+- Click on team names or player names in the home dashboard to navigate to dedicated summary detail pages.
+- If `data/processed` is empty, the app still boots; context stats will be zero and the matchup ticker may have no items. Seed Parquet with `python scripts/generate_fake_nfl_data.py` if you want matchups and leaders to appear.
 - Run smoke tests (includes pytest-qt UI check): `pytest`
 
 ## Architecture
