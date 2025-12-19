@@ -49,7 +49,6 @@ class HomeStandingsPanel(PanelCard):
         # Conference Header (e.g., AFC)
         header_label = QLabel(title)
         header_label.setObjectName("CardTitleSection")
-        header_label.setStyleSheet("font-size: 24px; font-weight: 800; color: #e5e7eb; margin-bottom: 4px;")
         header_label.setAlignment(Qt.AlignLeft)
         layout.addWidget(header_label)
 
@@ -88,7 +87,7 @@ class HomeStandingsPanel(PanelCard):
             # Division Title
             div_label = QLabel(f"{title} {div}")
             div_label.setObjectName("CardTitleSub")
-            div_label.setStyleSheet("color: #e5e7eb; font-size: 18px; font-weight: bold; background-color: transparent;")
+            div_label.setAlignment(Qt.AlignLeft)
             div_layout.addWidget(div_label)
 
             # Team Grid (4 columns)

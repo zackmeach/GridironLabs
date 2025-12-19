@@ -9,7 +9,8 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QFrame, QGridLayout, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
 from gridironlabs.core.models import EntitySummary
-from gridironlabs.ui.widgets.base_components import Card, TitleLabel
+from gridironlabs.ui.widgets.base_components import Card
+from gridironlabs.ui.widgets.panel_card import PanelCard
 
 
 @dataclass(frozen=True)
@@ -271,7 +272,7 @@ class LeaderSection(QWidget):
         layout.addStretch(1)
 
 
-class LeadersPanel(Card):
+class LeadersPanel(PanelCard):
     """Top-level panel that arranges stat groups into 3 columns."""
 
     def __init__(
@@ -281,44 +282,14 @@ class LeadersPanel(Card):
         on_player_click: Callable[[str], None] | None = None
     ) -> None:
         super().__init__(
-            title=None,
-            role="primary",
+            title="League Leaders",
+            link_text="View Full Standings",
+            on_link_click=on_view_full,
             margins=(12, 12, 12, 12),
             spacing=10,
-            show_separator=False,
+            show_separator=True,
         )
         self.on_player_click = on_player_click
-
-        header = QHBoxLayout()
-        header.setSpacing(8)
-        header.setContentsMargins(0, 0, 0, 0)
-
-        title_label = TitleLabel("League Leaders", object_name="CardTitlePrimary")
-        header.addWidget(title_label)
-
-        self.season_label = QLabel()
-        self.season_label.setObjectName("LeadersSeasonLabel")
-        self.season_label.setVisible(False)
-        header.addWidget(self.season_label)
-        header.addStretch(1)
-
-        action = QPushButton("View Full Standings")
-        action.setObjectName("LeadersActionButton")
-        action.setFlat(True)
-        action.setCursor(Qt.PointingHandCursor)
-        if on_view_full:
-            action.clicked.connect(on_view_full)
-        else:
-            action.setEnabled(False)
-        header.addWidget(action, 0, Qt.AlignRight)
-        self.body_layout.addLayout(header)
-
-        separator = QFrame()
-        separator.setObjectName("CardSeparator")
-        separator.setFrameShape(QFrame.HLine)
-        separator.setFrameShadow(QFrame.Plain)
-        separator.setLineWidth(1)
-        self.body_layout.addWidget(separator)
 
         # Content area with 3 columns
         self.content_layout = QHBoxLayout()
@@ -336,9 +307,12 @@ class LeadersPanel(Card):
         self._clear_content()
         has_groups = bool(data.groups)
         self.empty_label.setVisible(not has_groups)
-        self.season_label.setVisible(bool(data.season_label))
+        
+        # Standardized title with season info appended
+        title = "League Leaders"
         if data.season_label:
-            self.season_label.setText(f"• {data.season_label}")
+            title += f" • {data.season_label}"
+        self.set_title(title)
 
         if not has_groups:
             return

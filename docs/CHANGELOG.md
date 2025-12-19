@@ -9,7 +9,8 @@
 - Added `DataGenerationPanel` to the Settings page to centralize synthetic data controls.
 - Improved synthetic data generation: added `receptions`, `tackles_for_loss`, and `punt_yards` to the player dataset.
 - Increased header and link font sizes in `theme.qss` for better legibility (OOTP-style hierarchy).
-- Isolated `PanelCard` header stack from the body layout to ensure consistent positioning and prevent drift.
+- Isolated `PanelCard` header stack from the body layout and strictly enforced a Title (Left) / Link (Right) / Separator (Below) structure.
+- Removed `header_actions` support from `PanelCard` to maintain project-wide visual consistency.
 
 ## 2025-12-16
 

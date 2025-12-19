@@ -281,19 +281,6 @@ QLabel#LeadersSeasonLabel {
     margin-left: 6px;
 }
 
-QPushButton#LeadersActionButton {
-    color: #7db1ff;
-    border: none;
-    font-weight: 700;
-    font-size: 14px;
-    padding: 0 6px;
-    text-decoration: underline;
-}
-
-QPushButton#LeadersActionButton:disabled {
-    color: #4b5563;
-}
-
 QLabel#LeaderEntry {
     color: #e5e7eb;
     font-size: 15px;

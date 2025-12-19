@@ -13,7 +13,7 @@ Current UI primitives and screens (cosmetic unless noted):
 - **BasePage** — reusable page base that owns a `GridCanvas` for panel placement.
 - **GridCanvas** — 24-column content grid; panels are placed by `(col, row, col_span, row_span)`.
 - **GridOverlay / GridOverlayConfig** — optional debug overlay for the grid (toggle, opacity, color, cell size).
-- **PanelCard** — consistent panel chrome (title, header actions, separator, padded body).
+- **PanelCard** — consistent panel chrome (title top-left, link top-right, separator below, padded body).
 - **SettingsPage** — hosts the `DataGenerationPanel` and other configuration views.
 - **HomeStandingsPanel** — conference/division standings with clickable team navigation.
 - **LeadersPanel** — 3-column league leaders grid with clickable player/team navigation.

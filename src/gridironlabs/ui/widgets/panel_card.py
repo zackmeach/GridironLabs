@@ -34,7 +34,6 @@ class PanelCard(QFrame):
         *,
         link_text: str | None = None,
         on_link_click: Callable[[], None] | None = None,
-        header_actions: QWidget | None = None,
         show_header: bool = True,
         show_separator: bool = True,
         margins: tuple[int, int, int, int] = SPACING.panel_padding,
@@ -84,13 +83,6 @@ class PanelCard(QFrame):
         # Pin link to top right
         header_layout.addWidget(self.link_button, 0, Qt.AlignRight | Qt.AlignVCenter)
 
-        self._actions_host = QWidget(self._header_row)
-        self._actions_host.setObjectName("PanelCardHeaderActions")
-        self._actions_layout = QHBoxLayout(self._actions_host)
-        self._actions_layout.setContentsMargins(0, 0, 0, 0)
-        self._actions_layout.setSpacing(8)
-        header_layout.addWidget(self._actions_host, 0, Qt.AlignRight | Qt.AlignTop)
-
         header_stack_layout.addWidget(self._header_row)
 
         self._separator = QFrame(self._header_stack)
@@ -111,7 +103,6 @@ class PanelCard(QFrame):
 
         self.set_title(title)
         self.set_link(link_text, on_link_click)
-        self.set_header_actions(header_actions)
         self._sync_header_visibility()
 
     def set_title(self, title: str | None) -> None:
@@ -141,20 +132,6 @@ class PanelCard(QFrame):
                 self.link_button.clicked.connect(on_click)
         self._sync_header_visibility()
 
-    def set_header_actions(self, widget: QWidget | None) -> None:
-        """Replace the header-right actions widget."""
-
-        while self._actions_layout.count():
-            item = self._actions_layout.takeAt(0)
-            if w := item.widget():
-                w.setParent(None)
-
-        if widget is not None:
-            widget.setParent(self._actions_host)
-            self._actions_layout.addWidget(widget)
-
-        self._sync_header_visibility()
-
     def set_header_visible(self, visible: bool) -> None:
         self._header_enabled = bool(visible)
         self._sync_header_visibility()
@@ -175,12 +152,11 @@ class PanelCard(QFrame):
         self.body_layout.addWidget(widget)
 
     def _sync_header_visibility(self) -> None:
-        has_actions = self._actions_layout.count() > 0
         has_link = not self.link_button.isHidden()
         # `isVisible()` returns False until ancestors are shown, which would hide
         # the header permanently during construction. Use `isHidden()` instead.
         has_title = (not self.title_label.isHidden()) and bool(self.title_label.text().strip())
-        show_header = self._header_enabled and (has_title or has_actions or has_link)
+        show_header = self._header_enabled and (has_title or has_link)
 
         self._header_stack.setVisible(show_header)
         self._separator.setVisible(show_header and self._separator_enabled)

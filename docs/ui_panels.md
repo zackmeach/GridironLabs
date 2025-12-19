@@ -6,8 +6,8 @@ This project uses a reusable **Page → GridCanvas → PanelCard** pattern for b
 
 - **Page (BasePage)**: owns the content region below the context bar.
 - **GridCanvas**: a 24-column grid used to place panels by `(col, row, col_span, row_span)`.
-- **PanelCard**: consistent panel chrome (optional header title, optional header-right actions, separator, padded body).
-  - The header stack is isolated from the body to ensure consistent layout regardless of content.
+- **PanelCard**: consistent panel chrome (title pinned top-left, link pinned top-right, and a white separator below).
+  - The header stack is strictly limited to Title and Link to ensure project-wide visual consistency.
 
 - **GridOverlay**: an optional debug overlay for the grid canvas, controlled by a `GridOverlayConfig`.
 
