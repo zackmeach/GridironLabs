@@ -1,5 +1,19 @@
 # Changelog
 
+## 2025-12-28
+
+- Added `SchedulePanel` to the home page:
+  - Displays a scrollable list of league games (upcoming or recent).
+  - Positioned on the right side (spanning last 4 columns) and full vertical height.
+  - Implemented `GameCard` using the standard `Card` component for consistent styling.
+- Automated Team Logo extraction:
+  - Updated `EntitySummary` model and `teams.parquet` schema to support `logo_url` and `logo_path`.
+  - Implemented `fetch_teams` in `NFLReadPyAdapter` to download logos to `data/external/logos/`.
+- Refactored `PanelCard` architecture:
+  - Moved `PanelCard` to `base_components.py` as the single parent class for all containers.
+  - `Card` and `_BaseStatePanel` now inherit from `PanelCard`, enforcing a unified UI contract.
+  - Removed duplicated/fragmented panel implementations.
+
 ## 2025-12-18
 
 - Implemented entity navigation: team names and player names in the UI (standings, leaders) are now clickable and navigate to dedicated summary pages.

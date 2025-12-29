@@ -19,13 +19,15 @@ These tables are consumed by `gridironlabs.data.repository.ParquetSummaryReposit
 
 ## teams.parquet
 
-**Required columns (v0):** `id`, `name`, `era`, `ratings`, `stats`
+**Required columns (v0):** `id`, `name`, `era`, `ratings`, `stats`, `logo_url`, `logo_path`
 
 - **id** (str): stable team identifier
 - **name** (str): display name (e.g., `Green Bay Packers`)
 - **era** (str): season label (currently stringified year)
 - **ratings** (struct/map): includes `overall` plus any additional team rating facets
 - **stats** (struct/map): standings/efficiency metrics (examples: `wins`, `losses`, `points_for`, `points_against`)
+- **logo_url** (str | null): Source URL for the team logo (e.g., from nflreadpy/ESPN).
+- **logo_path** (str | null): Local path to the cached logo image (e.g., `data/external/logos/GB.png`).
 
 **Optional common metadata (when present):** `team` (abbr), `entity_type`, `schema_version`, `source`, `updated_at`
 

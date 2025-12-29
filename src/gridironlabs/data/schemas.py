@@ -24,7 +24,7 @@ SCHEMA_REGISTRY: Mapping[str, SchemaVersion] = {
     "teams:v0": SchemaVersion(
         name="teams",
         version="v0",
-        fields=("id", "name", "era", "ratings", "stats"),
+        fields=("id", "name", "era", "ratings", "stats", "logo_url", "logo_path"),
         checksum=None,
     ),
     "coaches:v0": SchemaVersion(

@@ -7,7 +7,7 @@ from typing import Callable
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QFrame, QGridLayout, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
-from gridironlabs.ui.widgets.panel_card import PanelCard
+from gridironlabs.ui.widgets.base_components import PanelCard
 
 
 class HomeStandingsPanel(PanelCard):

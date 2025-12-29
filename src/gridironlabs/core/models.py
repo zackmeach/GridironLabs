@@ -29,6 +29,8 @@ class EntitySummary:
     schema_version: str | None = None
     source: str | None = None
     updated_at: date | None = None
+    logo_url: str | None = None
+    logo_path: str | None = None
 
 
 @dataclass(frozen=True)

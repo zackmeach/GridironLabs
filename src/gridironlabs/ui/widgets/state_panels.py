@@ -5,26 +5,28 @@ from __future__ import annotations
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout
 
 
-class _BaseStatePanel(QFrame):
+from gridironlabs.ui.widgets.base_components import Card
+
+
+class _BaseStatePanel(Card):
     """Shared styling wrapper for placeholder states."""
 
     def __init__(self, title: str, message: str) -> None:
-        super().__init__()
+        super().__init__(
+            title=title,
+            role="placeholder",
+            margins=(12, 10, 12, 10),
+            spacing=6,
+            show_separator=False,
+            title_object_name="StateTitle",
+        )
         self.setObjectName("StatePanel")
-        self.setFrameShape(QFrame.StyledPanel)
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(12, 10, 12, 10)
-        layout.setSpacing(6)
-
-        title_label = QLabel(title)
-        title_label.setObjectName("StateTitle")
         message_label = QLabel(message)
         message_label.setObjectName("StateSubtitle")
         message_label.setWordWrap(True)
 
-        layout.addWidget(title_label)
-        layout.addWidget(message_label)
+        self.body_layout.addWidget(message_label)
 
 
 class LoadingPanel(_BaseStatePanel):

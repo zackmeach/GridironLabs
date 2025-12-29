@@ -191,6 +191,8 @@ class ParquetSummaryRepository:
             era = self._normalize_text(row.get("era"))
             team = self._normalize_text(row.get("team"))
             position = self._normalize_text(row.get("position"))
+            logo_url = self._normalize_text(row.get("logo_url"))
+            logo_path = self._normalize_text(row.get("logo_path"))
             schema_version = (
                 self._normalize_text(row.get("schema_version")) or self.schema_version
             )
@@ -209,6 +211,8 @@ class ParquetSummaryRepository:
                     schema_version=schema_version,
                     source=source,
                     updated_at=self._normalize_date(row.get("updated_at")),
+                    logo_url=logo_url,
+                    logo_path=logo_path,
                 )
             )
 

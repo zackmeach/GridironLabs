@@ -4,7 +4,7 @@ import os
 sys.path.insert(0, os.path.abspath('src'))
 
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout
-from gridironlabs.ui.widgets.panel_card import PanelCard
+from gridironlabs.ui.widgets.base_components import PanelCard
 from gridironlabs.ui.style.tokens import SPACING
 
 def inspect_card_layout():

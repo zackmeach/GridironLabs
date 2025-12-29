@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from PySide6.QtWidgets import QLabel, QVBoxLayout, QPushButton
-from gridironlabs.ui.widgets.panel_card import PanelCard
+from gridironlabs.ui.widgets.base_components import PanelCard
 
 
 class DataGenerationPanel(PanelCard):

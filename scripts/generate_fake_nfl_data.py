@@ -543,6 +543,8 @@ def generate_teams(
                 "updated_at": today,
                 "team": abbr,
                 "season": season,
+                "logo_url": None,
+                "logo_path": None,
             }
             summary[(season, abbr)] = {
                 "overall": rating["overall"],

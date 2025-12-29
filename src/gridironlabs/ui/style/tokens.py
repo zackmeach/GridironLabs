@@ -44,7 +44,7 @@ class RadiusTokens:
 class GridTokens:
     """Defaults for the page content grid and its debug overlay."""
 
-    cols: int = 24
+    cols: int = 36
     debug_enabled: bool = False
     debug_opacity: float = 0.18
     debug_cell_size: int = 28

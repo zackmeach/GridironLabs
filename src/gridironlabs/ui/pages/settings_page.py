@@ -35,8 +35,8 @@ class SettingsPage(BasePage):
         # Data Generation Panel
         self.data_gen_panel = DataGenerationPanel()
         
-        # Add to grid: 1/2 horizontal (12/24 cols), full vertical (12/12 rows)
-        self.add_panel(self.data_gen_panel, col=0, row=0, col_span=12, row_span=12)
+        # Add to grid: 1/2 horizontal (18/36 cols), full vertical (12/12 rows)
+        self.add_panel(self.data_gen_panel, col=0, row=0, col_span=18, row_span=12)
 
 
 __all__ = ["SettingsPage"]

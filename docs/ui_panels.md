@@ -5,7 +5,7 @@ This project uses a reusable **Page → GridCanvas → PanelCard** pattern for b
 ## Concepts
 
 - **Page (BasePage)**: owns the content region below the context bar.
-- **GridCanvas**: a 24-column grid used to place panels by `(col, row, col_span, row_span)`.
+- **GridCanvas**: a 36-column grid used to place panels by `(col, row, col_span, row_span)`.
 - **PanelCard**: consistent panel chrome (title pinned top-left, link pinned top-right, and a white separator below).
   - The header stack is strictly limited to Title and Link to ensure project-wide visual consistency.
 
@@ -59,8 +59,9 @@ config.set_cell_size(28)
 ## Reference implementation
 
 - **HomePage** implements the dashboard using several framework components:
-  - `HomeStandingsPanel`: A custom panel for conference/division standings.
-  - `LeadersPanel`: A 3-column category grid for league leaders.
+  - `HomeStandingsPanel`: A custom panel for conference/division standings (Left).
+  - `LeadersPanel`: A 3-column category grid for league leaders (Left).
+  - `SchedulePanel`: A vertical scrollable list of recent/upcoming games (Right).
 - **SettingsPage** uses the framework to host:
   - `DataGenerationPanel`: A dedicated panel for synthetic data pipeline controls.
 - **Entity Pages**:

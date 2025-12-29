@@ -9,8 +9,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QFrame, QGridLayout, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
 from gridironlabs.core.models import EntitySummary
-from gridironlabs.ui.widgets.base_components import Card
-from gridironlabs.ui.widgets.panel_card import PanelCard
+from gridironlabs.ui.widgets.base_components import Card, PanelCard
 
 
 @dataclass(frozen=True)
