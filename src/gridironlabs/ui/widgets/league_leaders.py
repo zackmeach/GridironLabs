@@ -9,7 +9,8 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QFrame, QGridLayout, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
 from gridironlabs.core.models import EntitySummary
-from gridironlabs.ui.widgets.base_components import Card, PanelCard
+from gridironlabs.ui.panels import PanelChrome
+from gridironlabs.ui.widgets.panel_card import Card
 
 
 @dataclass(frozen=True)
@@ -271,7 +272,7 @@ class LeaderSection(QWidget):
         layout.addStretch(1)
 
 
-class LeadersPanel(PanelCard):
+class LeadersPanel(PanelChrome):
     """Top-level panel that arranges stat groups into 3 columns."""
 
     def __init__(

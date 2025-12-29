@@ -7,10 +7,10 @@ from typing import Callable
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QFrame, QGridLayout, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
-from gridironlabs.ui.widgets.base_components import PanelCard
+from gridironlabs.ui.panels import PanelChrome
 
 
-class HomeStandingsPanel(PanelCard):
+class HomeStandingsPanel(PanelChrome):
     """League standings summary panel for the home page."""
 
     def __init__(

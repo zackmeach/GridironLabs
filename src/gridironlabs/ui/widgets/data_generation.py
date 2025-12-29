@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from PySide6.QtWidgets import QLabel, QVBoxLayout, QPushButton
-from gridironlabs.ui.widgets.base_components import PanelCard
+from gridironlabs.ui.panels import PanelChrome
 
 
-class DataGenerationPanel(PanelCard):
+class DataGenerationPanel(PanelChrome):
     """Panel for configuring and triggering synthetic data generation."""
 
     def __init__(self) -> None:

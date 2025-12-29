@@ -1,20 +1,22 @@
 # UI Panels Framework
 
-This project uses a reusable **Page → GridCanvas → PanelCard** pattern for building screens.
+This project uses a reusable **Page → GridCanvas → PanelChrome** pattern for building screens.
 
 ## Concepts
 
 - **Page (BasePage)**: owns the content region below the context bar.
 - **GridCanvas**: a 36-column grid used to place panels by `(col, row, col_span, row_span)`.
-- **PanelCard**: consistent panel chrome (title pinned top-left, link pinned top-right, and a white separator below).
-  - The header stack is strictly limited to Title and Link to ensure project-wide visual consistency.
+- **PanelChrome**: the forward-looking panel shell for page panels.
+  - Today it is a compatibility wrapper over the legacy `PanelCard` (no behavior/visual change).
+  - It exists so call sites can migrate now, while the OOTP-style slot-based bars (multi-row header + sort/section bars + footer)
+    are implemented incrementally.
 
 - **GridOverlay**: an optional debug overlay for the grid canvas, controlled by a `GridOverlayConfig`.
 
 ## Create a new page
 
 1) Create a page class that inherits `BasePage`.
-2) Create `PanelCard` instances (or small panel subclasses).
+2) Create `PanelChrome` instances (or small panel subclasses).
 3) Place panels on the grid with `add_panel(...)`.
 
 Example:
@@ -24,7 +26,7 @@ from PySide6.QtWidgets import QLabel
 
 from gridironlabs.ui.overlays.grid_overlay import GridOverlayConfig
 from gridironlabs.ui.pages.base_page import BasePage
-from gridironlabs.ui.widgets.panel_card import PanelCard
+from gridironlabs.ui.panels import PanelChrome
 
 
 class MyPage(BasePage):
@@ -32,12 +34,18 @@ class MyPage(BasePage):
         super().__init__(cols=24, rows=12, overlay_config=overlay_config)
         self.setObjectName("page-my")
 
-        panel = PanelCard("My Panel")
+        panel = PanelChrome("My Panel")
         panel.body_layout.addWidget(QLabel("Hello"))
 
         # Place at col 0..11 (half width), row 0..5 (half height)
         self.add_panel(panel, col=0, row=0, col_span=12, row_span=6)
 ```
+
+## Where the OOTP-style panel work lives
+
+- **Design contract**: see the repo root `recommendation.txt` (metrics, semantics, persistence, composition rules).
+- **New panel system**: `gridironlabs.ui.panels` (starting with `PanelChrome`).
+- **Legacy chrome**: `gridironlabs.ui.widgets.panel_card` (`PanelCard`, `Card`) retained for compatibility until the migration completes.
 
 ## Enable the debug grid overlay
 

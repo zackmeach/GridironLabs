@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
 )
 
 from gridironlabs.core.models import GameSummary, EntitySummary
-from gridironlabs.ui.widgets.base_components import PanelCard
+from gridironlabs.ui.panels import PanelChrome
 
 
 class GameRow(QFrame):
@@ -161,7 +161,7 @@ class GameRow(QFrame):
         layout.addWidget(right_container, 1)
 
 
-class SchedulePanel(PanelCard):
+class SchedulePanel(PanelChrome):
     """Panel displaying a list of upcoming or recent games with navigation."""
 
     def __init__(

@@ -51,5 +51,5 @@
 
 Notes:
 - Context bar height is 2x nav and includes a leading icon slot.
-- Pages are built with the Page → GridCanvas → PanelCard framework; many pages are placeholders/scaffolds.
+- Pages are built with the Page → GridCanvas → PanelChrome framework; many pages are placeholders/scaffolds.
 

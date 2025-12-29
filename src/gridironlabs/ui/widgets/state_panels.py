@@ -5,7 +5,7 @@ from __future__ import annotations
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout
 
 
-from gridironlabs.ui.widgets.base_components import Card
+from gridironlabs.ui.widgets.panel_card import Card
 
 
 class _BaseStatePanel(Card):

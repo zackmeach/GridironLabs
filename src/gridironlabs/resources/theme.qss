@@ -217,17 +217,20 @@ QFrame#Card QFrame#CardSeparator {
 }
 
 /* Panel cards (page panels) */
-QFrame#PanelCard {
+QFrame#PanelCard,
+QFrame#PanelChrome {
     background-color: #252525;
     border: 1px solid #20242d;
     border-radius: 12px;
 }
 
-QFrame#PanelCard QWidget {
+QFrame#PanelCard QWidget,
+QFrame#PanelChrome QWidget {
     background-color: transparent;
 }
 
-QFrame#PanelCard QFrame#PanelCardSeparator {
+QFrame#PanelCard QFrame#PanelCardSeparator,
+QFrame#PanelChrome QFrame#PanelCardSeparator {
     background: rgba(255, 255, 255, 0.25);
     min-height: 1px;
     max-height: 1px;

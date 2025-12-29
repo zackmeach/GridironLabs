@@ -13,14 +13,16 @@ Current UI primitives and screens (cosmetic unless noted):
 - **BasePage** — reusable page base that owns a `GridCanvas` for panel placement.
 - **GridCanvas** — 24-column content grid; panels are placed by `(col, row, col_span, row_span)`.
 - **GridOverlay / GridOverlayConfig** — optional debug overlay for the grid (toggle, opacity, color, cell size).
-- **PanelCard** — consistent panel chrome (title top-left, link top-right, separator below, padded body).
+- **PanelChrome** — forward-looking page panel shell (OOTP-style panel system entrypoint).
+  - Currently a compatibility wrapper over legacy `PanelCard` while the new slot-based bars are implemented incrementally.
+- **PanelCard** — legacy panel chrome retained for compatibility (`gridironlabs.ui.widgets.panel_card`).
 - **SettingsPage** — hosts the `DataGenerationPanel` and other configuration views.
 - **HomeStandingsPanel** — conference/division standings with clickable team navigation.
 - **LeadersPanel** — 3-column league leaders grid with clickable player/team navigation.
   - **LeaderSection** — category column (Passing, Receiving, Defense, Rushing, Kicking & Punting) using its own title style.
   - **LeaderCard** — stat card listing top entries with its own title style and clickable player/team links.
 - **DataGenerationPanel** — centralized controls for synthetic data generation in Settings.
-- **Card** — reusable card shell with optional title, enforced chrome, and a `card-role` property for variants.
+- **Card** — legacy reusable card shell with optional title, enforced chrome, and a `card-role` property for variants.
 
 Supporting assets:
 

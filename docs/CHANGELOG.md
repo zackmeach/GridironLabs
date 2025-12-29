@@ -10,6 +10,9 @@
   - Week/date header text increased (24px) and row spacing increased (12px) for readability.
 - Logo refresh workflow:
   - `scripts/refresh_data.py` now downloads team logos (via `NFLReadPyAdapter.fetch_teams`) and enriches `data/processed/teams.parquet` with `logo_path` / `logo_url` so the UI can render local images.
+- Panel system prep (no visual/behavior change yet):
+  - Introduced `PanelChrome` (`gridironlabs.ui.panels`) as the forward-looking page panel entrypoint (currently a compatibility wrapper).
+  - Moved legacy `PanelCard` / `Card` into `gridironlabs.ui.widgets.panel_card` and updated docs/imports accordingly.
 
 ## 2025-12-28
 

@@ -4,13 +4,13 @@ import os
 sys.path.insert(0, os.path.abspath('src'))
 
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout
-from gridironlabs.ui.widgets.base_components import PanelCard
+from gridironlabs.ui.panels import PanelChrome
 from gridironlabs.ui.style.tokens import SPACING
 
 def inspect_card_layout():
     app = QApplication.instance() or QApplication(sys.argv)
     
-    card = PanelCard("test CaRd")
+    card = PanelChrome("test CaRd")
     card.resize(400, 300)
     card.show()
     app.processEvents()

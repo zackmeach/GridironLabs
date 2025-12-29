@@ -30,7 +30,6 @@ from gridironlabs.ui.pages.player_page import PlayerSummaryPage
 from gridironlabs.ui.pages.base_page import BasePage
 from gridironlabs.ui.style.tokens import GRID
 from gridironlabs.ui.widgets.navigation import NavigationBar
-from gridironlabs.ui.widgets.base_components import PanelCard
 from gridironlabs.ui.widgets.standings import HomeStandingsPanel
 from gridironlabs.ui.widgets.league_leaders import LeadersPanel, build_leaderboard
 from gridironlabs.ui.widgets.schedule import SchedulePanel
