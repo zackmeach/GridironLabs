@@ -14,6 +14,10 @@
   - `Card` and `_BaseStatePanel` now inherit from `PanelCard`, enforcing a unified UI contract.
   - Removed duplicated/fragmented panel implementations.
 
+## 2025-12-19
+
+- Documented current runtime behavior across README/architecture files (nav history, search handling, matchup ticker bootstrapping, and Parquet repository normalization/caching details).
+
 ## 2025-12-18
 
 - Implemented entity navigation: team names and player names in the UI (standings, leaders) are now clickable and navigate to dedicated summary pages.
