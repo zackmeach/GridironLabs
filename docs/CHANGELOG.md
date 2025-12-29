@@ -1,11 +1,21 @@
 # Changelog
 
+## 2025-12-29
+
+- Home dashboard layout:
+  - `SchedulePanel` spans 10 columns on the right; `HomeStandingsPanel` + `LeadersPanel` consume the remaining width.
+- `SchedulePanel` UX polish:
+  - Team names render as full names, include team logos, and are clickable (navigates to `TeamSummaryPage`).
+  - Scrollbars are hidden while scrolling remains enabled.
+  - Week/date header text increased (24px) and row spacing increased (12px) for readability.
+- Logo refresh workflow:
+  - `scripts/refresh_data.py` now downloads team logos (via `NFLReadPyAdapter.fetch_teams`) and enriches `data/processed/teams.parquet` with `logo_path` / `logo_url` so the UI can render local images.
+
 ## 2025-12-28
 
 - Added `SchedulePanel` to the home page:
   - Displays a scrollable list of league games (upcoming or recent).
-  - Positioned on the right side (spanning last 4 columns) and full vertical height.
-  - Implemented `GameCard` using the standard `Card` component for consistent styling.
+  - Positioned on the right side and full vertical height.
 - Automated Team Logo extraction:
   - Updated `EntitySummary` model and `teams.parquet` schema to support `logo_url` and `logo_path`.
   - Implemented `fetch_teams` in `NFLReadPyAdapter` to download logos to `data/external/logos/`.

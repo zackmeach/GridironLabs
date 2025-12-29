@@ -25,6 +25,8 @@ Normalization/validation ──► Parquet schemas ──► data/processed
 ParquetSummaryRepository (players/teams/coaches/games) ──► Services (summary, search) ──► UI views
 ```
 
+Note: `scripts/refresh_data.py` is currently a **partial refresh** focused on downloading team logos and enriching `data/processed/teams.parquet` with `logo_path` / `logo_url`. Full end-to-end ingestion (fetch/merge/validate/write for all tables) is still scaffolded.
+
 ## Runtime bootstrap
 
 1. Resolve paths via `AppPaths.from_env` and load `.env` overrides (directories are created if missing).

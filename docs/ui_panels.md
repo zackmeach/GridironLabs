@@ -62,6 +62,9 @@ config.set_cell_size(28)
   - `HomeStandingsPanel`: A custom panel for conference/division standings (Left).
   - `LeadersPanel`: A 3-column category grid for league leaders (Left).
   - `SchedulePanel`: A vertical scrollable list of recent/upcoming games (Right).
+    - Includes team logos and full team names.
+    - Team names are clickable and navigate to the team summary page.
+    - Scrollbars are hidden (scrolling remains enabled).
 - **SettingsPage** uses the framework to host:
   - `DataGenerationPanel`: A dedicated panel for synthetic data pipeline controls.
 - **Entity Pages**:

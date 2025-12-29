@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Iterable
 
 from gridironlabs.core.errors import MissingDependencyError
 from gridironlabs.core.models import EntitySummary
+
+logger = logging.getLogger(__name__)
 
 
 class NFLReadPyAdapter:
@@ -36,17 +39,28 @@ class NFLReadPyAdapter:
         from gridironlabs.core.config import AppPaths
 
         paths = AppPaths.from_env()
-        logo_dir = paths.data_root / "external" / "logos"
+        logo_dir = paths.data_external / "logos"
         logo_dir.mkdir(parents=True, exist_ok=True)
 
         try:
             df = nflreadpy.load_teams()
-        except Exception:
+        except Exception as exc:
             # If nflreadpy fails (network, etc.), return empty
+            logger.warning("Failed to load teams from nflreadpy: %s", exc)
             return []
 
         summaries = []
-        for row in df.to_dict(orient="records"):
+        # Polars or Pandas compatibility: 
+        # nflreadpy typically returns a polars DataFrame in newer versions or pandas in older.
+        # Check type to be safe.
+        import polars as pl
+        if isinstance(df, pl.DataFrame):
+            records = df.to_dicts()
+        else:
+            # Assume pandas
+            records = df.to_dict(orient="records")
+
+        for row in records:
             abbr = row.get("team_abbr")
             url = row.get("team_logo_espn")
             name = row.get("team_name")
@@ -60,9 +74,10 @@ class NFLReadPyAdapter:
                     resp = requests.get(url, timeout=10)
                     if resp.status_code == 200:
                         local_path.write_bytes(resp.content)
-                except Exception:
-                    # Log error but continue
-                    pass
+                    else:
+                        logger.warning("Failed to download logo for %s (status %d)", abbr, resp.status_code)
+                except Exception as exc:
+                    logger.warning("Error downloading logo for %s: %s", abbr, exc)
 
             summaries.append(
                 EntitySummary(

@@ -52,18 +52,18 @@ class HomePage(BasePage):
         
         # Standings: Left side (spanning to the gap before schedule)
         self.base_panel = HomeStandingsPanel(on_team_click=on_team_click)
-        self.add_panel(self.base_panel, col=0, row=0, col_span=24, row_span=5)
+        self.add_panel(self.base_panel, col=0, row=0, col_span=26, row_span=5)
 
         # Leaders: Left side, below standings
         self.leaders_panel = LeadersPanel(
             on_player_click=on_player_click
         )
-        self.add_panel(self.leaders_panel, col=0, row=5, col_span=24, row_span=7)
+        self.add_panel(self.leaders_panel, col=0, row=5, col_span=26, row_span=7)
 
-        # Schedule: Right side (12 cols wide), full height
-        self.schedule_panel = SchedulePanel(title="League Schedule")
-        # Start at col 24 (leaving 1 col gap if main is 23 wide) to 36
-        self.add_panel(self.schedule_panel, col=24, row=0, col_span=12, row_span=12)
+        # Schedule: Right side (10 cols wide), full height
+        self.schedule_panel = SchedulePanel(title="League Schedule", on_team_click=on_team_click)
+        # Start at col 26 to 36
+        self.add_panel(self.schedule_panel, col=26, row=0, col_span=10, row_span=12)
 
     def set_subtitle(self, text: str) -> None:
         self._subtitle = text
@@ -73,9 +73,9 @@ class HomePage(BasePage):
         if data:
             self.leaders_panel.set_data(data)
 
-    def set_games(self, games: Iterable[Any]) -> None:
+    def set_games(self, games: Iterable[Any], teams: Iterable[Any]) -> None:
         """Populate the schedule panel."""
-        self.schedule_panel.set_games(games)
+        self.schedule_panel.set_data(games, teams)
 
 
 class SectionPage(QWidget):
@@ -329,7 +329,7 @@ class GridironLabsMainWindow(QMainWindow):
             home_page = self.pages.get("home")
             if isinstance(home_page, HomePage):
                 home_page.set_leaders(leaderboard)
-                home_page.set_games(games)
+                home_page.set_games(games, teams)
 
             seasons = {p.era for p in players if p.era} | {t.era for t in teams if t.era}
             season_span = (
@@ -516,9 +516,27 @@ class GridironLabsMainWindow(QMainWindow):
         self._navigate_to("settings")
 
     def _on_team_selected(self, team_name: str) -> None:
+        # Accept either full team name ("Kansas City Chiefs") or abbreviation ("KC").
+        # Some UI surfaces may fall back to abbreviations if the team lookup is unavailable.
+        resolved_name = team_name
+        if self.repository:
+            try:
+                teams = list(self.repository.iter_teams())
+                match = next(
+                    (
+                        t
+                        for t in teams
+                        if (t.name == team_name) or (t.team and t.team == team_name)
+                    ),
+                    None,
+                )
+                if match:
+                    resolved_name = match.name
+            except Exception:
+                pass
         if self.logger:
-            self.logger.info("Team selected", extra={"team": team_name})
-        self.team_summary_page.set_team(team_name)
+            self.logger.info("Team selected", extra={"team": resolved_name, "raw_team": team_name})
+        self.team_summary_page.set_team(resolved_name)
         self._navigate_to("team-summary")
 
     def _on_player_selected(self, player_name: str) -> None:

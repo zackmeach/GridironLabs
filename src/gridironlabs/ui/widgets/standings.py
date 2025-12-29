@@ -88,6 +88,9 @@ class HomeStandingsPanel(PanelCard):
             div_label = QLabel(f"{title} {div}")
             div_label.setObjectName("CardTitleSub")
             div_label.setAlignment(Qt.AlignLeft)
+            # Match the division header font size to the team rows (15px).
+            # We set an explicit style here to override the global theme.qss CardTitleSub size.
+            div_label.setStyleSheet("font-size: 15px; font-weight: 800; color: #f3f4f6;")
             div_layout.addWidget(div_label)
 
             # Team Grid (4 columns)
