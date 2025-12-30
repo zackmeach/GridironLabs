@@ -6,10 +6,9 @@ This project uses a reusable **Page → GridCanvas → PanelChrome** pattern for
 
 - **Page (BasePage)**: owns the content region below the context bar.
 - **GridCanvas**: a 36-column grid used to place panels by `(col, row, col_span, row_span)`.
-- **PanelChrome**: the forward-looking panel shell for page panels.
-  - Today it is a compatibility wrapper over the legacy `PanelCard` (no behavior/visual change).
-  - It exists so call sites can migrate now, while the OOTP-style slot-based bars (multi-row header + sort/section bars + footer)
-    are implemented incrementally.
+- **PanelChrome**: the page-panel container used on the grid.
+  - Currently implemented as a **minimal box** with the panel background color and a single `body_layout`.
+  - The richer OOTP-style chrome (slot-based bars, section bars, etc.) will be built on top of this later.
 
 - **GridOverlay**: an optional debug overlay for the grid canvas, controlled by a `GridOverlayConfig`.
 
@@ -34,7 +33,7 @@ class MyPage(BasePage):
         super().__init__(cols=24, rows=12, overlay_config=overlay_config)
         self.setObjectName("page-my")
 
-        panel = PanelChrome("My Panel")
+        panel = PanelChrome()
         panel.body_layout.addWidget(QLabel("Hello"))
 
         # Place at col 0..11 (half width), row 0..5 (half height)
@@ -45,7 +44,7 @@ class MyPage(BasePage):
 
 - **Design contract**: see the repo root `recommendation.txt` (metrics, semantics, persistence, composition rules).
 - **New panel system**: `gridironlabs.ui.panels` (starting with `PanelChrome`).
-- **Legacy chrome**: `gridironlabs.ui.widgets.panel_card` (`PanelCard`, `Card`) retained for compatibility until the migration completes.
+- **Implementation detail**: a temporary legacy implementation is retained internally for compatibility until the migration completes.
 
 ## Enable the debug grid overlay
 
@@ -66,14 +65,7 @@ config.set_cell_size(28)
 
 ## Reference implementation
 
-- **HomePage** implements the dashboard using several framework components:
-  - `HomeStandingsPanel`: A custom panel for conference/division standings (Left).
-  - `LeadersPanel`: A 3-column category grid for league leaders (Left).
-  - `SchedulePanel`: A vertical scrollable list of recent/upcoming games (Right).
-    - Includes team logos and full team names.
-    - Team names are clickable and navigate to the team summary page.
-    - Scrollbars are hidden (scrolling remains enabled).
-- **SettingsPage** uses the framework to host:
-  - `DataGenerationPanel`: A dedicated panel for synthetic data pipeline controls.
+- **HomePage** is intentionally a blank scaffold while the new panel system is implemented.
+- **SettingsPage** is intentionally a blank scaffold while the new panel system is implemented.
 - **Entity Pages**:
   - `TeamSummaryPage` and `PlayerSummaryPage` serve as summary scaffolds for detail views.

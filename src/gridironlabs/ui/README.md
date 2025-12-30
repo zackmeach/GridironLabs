@@ -8,8 +8,8 @@ PySide6 desktop shell pieces:
 - `layouts/` — layout helpers (e.g. `GridCanvas`).
 - `overlays/` — overlay widgets (e.g. debug grid overlay).
 - `style/` — Python-side tokens used by widgets/layout defaults.
-- `panels/` — OOTP-style panel system scaffolding (slot-based bars, semantics, persistence). `PanelChrome` is the forward-looking page panel entrypoint (currently a compatibility wrapper).
-- `widgets/` — reusable widgets (navigation bar, legacy panel cards, state banners, optional panels like `league_leaders.py`). Home dashboard wiring uses `HomeStandingsPanel` + `LeadersPanel` for clickable team/player navigation, and a matchup ticker built from the latest-season games.
+- `panels/` — panel system scaffolding. `PanelChrome` is currently a minimal panel box (background + `body_layout`) used on the grid; richer chrome/bars will be layered on later.
+- `widgets/` — reusable widgets (navigation bar, legacy panel cards, state banners).
 - `resources` (../resources) — dark theme QSS and future assets.
 
 Settings page note:

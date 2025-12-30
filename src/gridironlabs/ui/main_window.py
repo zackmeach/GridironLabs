@@ -28,11 +28,9 @@ from gridironlabs.ui.pages.settings_page import SettingsPage
 from gridironlabs.ui.pages.team_page import TeamSummaryPage
 from gridironlabs.ui.pages.player_page import PlayerSummaryPage
 from gridironlabs.ui.pages.base_page import BasePage
+from gridironlabs.ui.panels import PanelChrome
 from gridironlabs.ui.style.tokens import GRID
 from gridironlabs.ui.widgets.navigation import NavigationBar
-from gridironlabs.ui.widgets.standings import HomeStandingsPanel
-from gridironlabs.ui.widgets.league_leaders import LeadersPanel, build_leaderboard
-from gridironlabs.ui.widgets.schedule import SchedulePanel
 
 
 class HomePage(BasePage):
@@ -48,33 +46,13 @@ class HomePage(BasePage):
         super().__init__(cols=GRID.cols, rows=12)
         self.setObjectName("page-home")
         self._subtitle = subtitle
-        
-        # Standings: Left side (spanning to the gap before schedule)
-        self.base_panel = HomeStandingsPanel(on_team_click=on_team_click)
-        self.add_panel(self.base_panel, col=0, row=0, col_span=26, row_span=5)
 
-        # Leaders: Left side, below standings
-        self.leaders_panel = LeadersPanel(
-            on_player_click=on_player_click
-        )
-        self.add_panel(self.leaders_panel, col=0, row=5, col_span=26, row_span=7)
-
-        # Schedule: Right side (10 cols wide), full height
-        self.schedule_panel = SchedulePanel(title="League Schedule", on_team_click=on_team_click)
-        # Start at col 26 to 36
-        self.add_panel(self.schedule_panel, col=26, row=0, col_span=10, row_span=12)
+        # Minimal chrome box to start rebuilding the Home layout.
+        self.league_standings_panel = PanelChrome()
+        self.add_panel(self.league_standings_panel, col=0, row=0, col_span=26, row_span=5)
 
     def set_subtitle(self, text: str) -> None:
         self._subtitle = text
-
-    def set_leaders(self, data: Any | None) -> None:
-        """Populate the league leaders panel."""
-        if data:
-            self.leaders_panel.set_data(data)
-
-    def set_games(self, games: Iterable[Any], teams: Iterable[Any]) -> None:
-        """Populate the schedule panel."""
-        self.schedule_panel.set_data(games, teams)
 
 
 class SectionPage(QWidget):
@@ -323,12 +301,6 @@ class GridironLabsMainWindow(QMainWindow):
             self.summary_service = SummaryService(repository=self.repository)
             self.search_service = SearchService(repository=self.repository)
             self.search_service.build_index()
-
-            leaderboard = build_leaderboard(players)
-            home_page = self.pages.get("home")
-            if isinstance(home_page, HomePage):
-                home_page.set_leaders(leaderboard)
-                home_page.set_games(games, teams)
 
             seasons = {p.era for p in players if p.era} | {t.era for t in teams if t.era}
             season_span = (

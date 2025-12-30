@@ -186,72 +186,19 @@ QLabel#StatusText {
     font-weight: 600;
 }
 
-/* Unified card system */
-QFrame#Card {
-    background-color: #252525;
-    border: 1px solid #20242d;
-    border-radius: 12px;
-}
-
-QFrame#Card[card-role="sub"] {
-    border-radius: 10px;
-}
-
-QFrame#Card[card-role="section"] {
-    border-radius: 10px;
-}
-
-QFrame#Card[card-role="minimal"] {
-    border-radius: 8px;
-}
-
-QFrame#Card QWidget {
-    background-color: transparent;
-}
-
-QFrame#Card QFrame#CardSeparator {
-    background: #ffffff;
-    min-height: 1px;
-    max-height: 1px;
-    border: none;
-}
-
-/* Panel cards (page panels) */
-QFrame#PanelCard,
+/* Panel chrome (page panels) */
 QFrame#PanelChrome {
     background-color: #252525;
     border: 1px solid #20242d;
-    border-radius: 12px;
+    border-radius: 6px;
 }
 
-QFrame#PanelCard QWidget,
 QFrame#PanelChrome QWidget {
     background-color: transparent;
 }
 
-QFrame#PanelCard QFrame#PanelCardSeparator,
-QFrame#PanelChrome QFrame#PanelCardSeparator {
-    background: rgba(255, 255, 255, 0.25);
-    min-height: 1px;
-    max-height: 1px;
-    border: none;
-}
-
-QPushButton#PanelCardLink {
-    color: #7db1ff;
-    border: none;
-    font-weight: 600;
-    font-size: 18px;
-    padding: 0 4px;
-    text-align: right;
-}
-
-QPushButton#PanelCardLink:hover {
-    text-decoration: underline;
-}
-
 QLabel#CardTitlePrimary {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 800;
     color: #ffffff;
     background-color: transparent;

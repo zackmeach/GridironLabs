@@ -3,8 +3,7 @@
 These widgets enforce object names / properties so they pick up styling from the
 QSS theme (e.g. `AppLineEdit`, `AppSwitch`).
 
-Legacy panel chrome (`PanelCard`, `Card`) lives in `gridironlabs.ui.widgets.panel_card`.
-The forward-looking OOTP-style panel entrypoint is `gridironlabs.ui.panels.PanelChrome`.
+Page panel chrome lives in `gridironlabs.ui.panels.PanelChrome`.
 """
 
 from __future__ import annotations

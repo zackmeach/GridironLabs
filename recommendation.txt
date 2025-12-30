@@ -6,6 +6,11 @@ Purpose
 Define an “OOTP-style” panel system that stays consistent across many screens by making the panel structure,
 sizing, semantics, and persistence explicit (so the UI can’t slowly drift screen-by-screen).
 
+Current implementation note
+---------------------------
+`PanelChrome` in the codebase is currently a minimal container (panel background + `body_layout` only).
+This document describes the target contract the implementation will grow toward.
+
 Non-goals
 ---------
 - Pixel-perfect recreation of OOTP.
