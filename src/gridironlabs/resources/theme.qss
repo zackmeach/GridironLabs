@@ -186,15 +186,78 @@ QLabel#StatusText {
     font-weight: 600;
 }
 
-/* Panel chrome (page panels) */
+/* --- OOTP-style Panel Chrome --- */
+
+/* Panel Container */
 QFrame#PanelChrome {
     background-color: #252525;
     border: 1px solid #20242d;
-    border-radius: 6px;
+    border-radius: 4px; /* Slightly tighter radius */
 }
 
 QFrame#PanelChrome QWidget {
     background-color: transparent;
+}
+
+/* Panel Body */
+QFrame#PanelBody {
+    background-color: transparent; /* Let container bg show through or set specific */
+}
+
+/* Common Bar Styling */
+QFrame[barRole="primary"],
+QFrame[barRole="secondary"],
+QFrame[barRole="tertiary"],
+QFrame[barRole="footer"] {
+    border-bottom: 1px solid #20242d;
+    background-color: #2a2f3a; /* Default bar bg, slightly lighter than panel bg */
+}
+
+/* Primary Header (Title) */
+QFrame#PrimaryHeaderBar {
+    background-color: #2e3440; 
+    min-height: 28px;
+    max-height: 28px;
+    padding: 0px 8px;
+}
+
+QLabel#PanelTitle {
+    font-size: 14px;
+    font-weight: 700;
+    color: #f3f4f6;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Secondary Header (Filters) */
+QFrame#SecondaryHeaderBar {
+    background-color: #2a2f3a;
+    min-height: 24px;
+    max-height: 24px;
+    padding: 0px 8px;
+}
+
+/* Tertiary Header (Sort/Columns) */
+QFrame#TertiaryHeaderBar {
+    background-color: #252a33;
+    min-height: 22px;
+    max-height: 22px;
+    padding: 0px 8px;
+}
+
+/* Footer */
+QFrame#FooterBar {
+    background-color: #2a2f3a;
+    border-top: 1px solid #20242d;
+    border-bottom: none;
+    min-height: 18px;
+    max-height: 18px;
+    padding: 0px 8px;
+}
+
+QLabel#FooterMetaLabel {
+    font-size: 11px;
+    color: #9ca3af;
 }
 
 QLabel#CardTitlePrimary {

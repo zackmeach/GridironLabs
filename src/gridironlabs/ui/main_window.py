@@ -48,7 +48,23 @@ class HomePage(BasePage):
         self._subtitle = subtitle
 
         # Minimal chrome box to start rebuilding the Home layout.
-        self.league_standings_panel = PanelChrome()
+        self.league_standings_panel = PanelChrome(title="LEAGUE STANDINGS")
+        
+        # Configure the chrome to look like a full OOTP panel
+        self.league_standings_panel.show_secondary_header(True)
+        self.league_standings_panel.show_tertiary_header(True)
+        self.league_standings_panel.set_footer_text("View: Standard Standings | 32 Teams")
+
+        # Add some dummy controls to the bars to demonstrate layout
+        # (In a real implementation, these would be proper widgets/filters)
+        filter_label = QLabel("FILTER: ALL CONFERENCES")
+        filter_label.setStyleSheet("color: #9ca3af; font-weight: 700;")
+        self.league_standings_panel.header_secondary.add_left(filter_label)
+
+        sort_label = QLabel("TEAM    W    L    PCT    GB    L10    STRK")
+        sort_label.setStyleSheet("color: #9ca3af; font-family: monospace; font-weight: 700;")
+        self.league_standings_panel.header_tertiary.add_left(sort_label)
+
         self.add_panel(self.league_standings_panel, col=0, row=0, col_span=26, row_span=5)
 
     def set_subtitle(self, text: str) -> None:
