@@ -11,6 +11,7 @@ from .standard_bars import (
     PrimaryHeaderBar,
     SecondaryHeaderBar,
     TertiaryHeaderBar,
+    SectionBar,
     FooterBar,
 )
 
@@ -19,5 +20,6 @@ __all__: list[str] = [
     "PrimaryHeaderBar",
     "SecondaryHeaderBar",
     "TertiaryHeaderBar",
+    "SectionBar",
     "FooterBar",
 ]

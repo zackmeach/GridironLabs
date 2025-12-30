@@ -7,8 +7,15 @@ This project uses a reusable **Page → GridCanvas → PanelChrome** pattern for
 - **Page (BasePage)**: owns the content region below the context bar.
 - **GridCanvas**: a 36-column grid used to place panels by `(col, row, col_span, row_span)`.
 - **PanelChrome**: the page-panel container used on the grid.
-  - Currently implemented as a **minimal box** with the panel background color and a single `body_layout`.
-  - The richer OOTP-style chrome (slot-based bars, section bars, etc.) will be built on top of this later.
+  - Implemented as an **OOTP-style vertical stack**:
+    - Primary header (title + actions)
+    - Secondary header (optional controls)
+    - Tertiary header (optional column semantics / sort row)
+    - Body (content)
+    - Footer (optional meta)
+  - Body content should be managed via the `PanelChrome` API (`set_body`, `add_body`, `clear_body`).
+  - For table-like surfaces, prefer `PanelChrome(..., panel_variant="table")` so body padding defaults to 0 (rows align tightly under the header).
+  - If you need a one-off override, use `set_body_padding(...)`.
 
 - **GridOverlay**: an optional debug overlay for the grid canvas, controlled by a `GridOverlayConfig`.
 
@@ -30,14 +37,14 @@ from gridironlabs.ui.panels import PanelChrome
 
 class MyPage(BasePage):
     def __init__(self, *, overlay_config: GridOverlayConfig | None = None) -> None:
-        super().__init__(cols=24, rows=12, overlay_config=overlay_config)
+        super().__init__(cols=36, rows=12, overlay_config=overlay_config)
         self.setObjectName("page-my")
 
-        panel = PanelChrome()
-        panel.body_layout.addWidget(QLabel("Hello"))
+        panel = PanelChrome(title="MY PANEL")
+        panel.set_body(QLabel("Hello"))
 
         # Place at col 0..11 (half width), row 0..5 (half height)
-        self.add_panel(panel, col=0, row=0, col_span=12, row_span=6)
+        self.add_panel(panel, col=0, row=0, col_span=18, row_span=6)
 ```
 
 ## Where the OOTP-style panel work lives
@@ -45,6 +52,11 @@ class MyPage(BasePage):
 - **Design contract**: see the repo root `recommendation.txt` (metrics, semantics, persistence, composition rules).
 - **New panel system**: `gridironlabs.ui.panels` (starting with `PanelChrome`).
 - **Implementation detail**: a temporary legacy implementation is retained internally for compatibility until the migration completes.
+
+## Scroll behavior (no visible scrollbars)
+
+The UI theme hides scrollbars globally (0px width/height) while keeping scroll functionality (wheel/trackpad/keys).
+For `QScrollArea` widgets, keep scroll policies as `AsNeeded` so scrolling remains enabled.
 
 ## Enable the debug grid overlay
 
@@ -65,7 +77,7 @@ config.set_cell_size(28)
 
 ## Reference implementation
 
-- **HomePage** is intentionally a blank scaffold while the new panel system is implemented.
+- **HomePage** includes a League Standings scaffold panel as a reference surface for the chrome + dense rows.
 - **SettingsPage** is intentionally a blank scaffold while the new panel system is implemented.
 - **Entity Pages**:
   - `TeamSummaryPage` and `PlayerSummaryPage` serve as summary scaffolds for detail views.

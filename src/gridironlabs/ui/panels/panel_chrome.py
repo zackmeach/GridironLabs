@@ -21,6 +21,7 @@ from gridironlabs.ui.panels.bars.standard_bars import (
     TertiaryHeaderBar,
     FooterBar,
 )
+from gridironlabs.ui.style.tokens import SPACING
 
 
 class PanelChrome(QFrame):
@@ -35,14 +36,21 @@ class PanelChrome(QFrame):
     - Footer (Meta)
     """
 
-    def __init__(self, title: str | None = None) -> None:
+    def __init__(
+        self,
+        title: str | None = None,
+        *,
+        panel_variant: str = "card",
+        body_padding: tuple[int, int, int, int] | None = None,
+    ) -> None:
         super().__init__()
         self.setObjectName("PanelChrome")
+        self.setProperty("panelVariant", panel_variant)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         # Root layout (Vertical stack)
         self._layout = QVBoxLayout(self)
-        self._layout.setContentsMargins(1, 1, 1, 1) # Border thickness space
+        self._layout.setContentsMargins(0, 0, 0, 0) # Managed by QSS borders
         self._layout.setSpacing(0)
 
         # 1. Headers (lazy loaded or optional, but we'll instantiate for structure)
@@ -63,9 +71,17 @@ class PanelChrome(QFrame):
         # 2. Body Container
         self.body_frame = QFrame()
         self.body_frame.setObjectName("PanelBody")
-        self.body_layout = QVBoxLayout(self.body_frame)
-        self.body_layout.setContentsMargins(12, 12, 12, 12) # Standard padding
-        self.body_layout.setSpacing(0)
+        self._body_layout = QVBoxLayout(self.body_frame)
+        resolved_padding: tuple[int, int, int, int]
+        if body_padding is not None:
+            resolved_padding = body_padding
+        elif panel_variant == "table":
+            resolved_padding = (0, 0, 0, 0)
+        else:
+            resolved_padding = SPACING.panel_padding
+
+        self._body_layout.setContentsMargins(*resolved_padding)
+        self._body_layout.setSpacing(0)
         
         self._layout.addWidget(self.body_frame, 1) # Stretch factor 1
 
@@ -92,3 +108,23 @@ class PanelChrome(QFrame):
     def set_footer_text(self, text: str) -> None:
         self.footer.set_meta(text)
         self.footer.setVisible(bool(text))
+
+    def set_body(self, widget: QWidget) -> None:
+        """Replace body content with a single widget."""
+        self.clear_body()
+        self._body_layout.addWidget(widget)
+
+    def clear_body(self) -> None:
+        """Remove all body content."""
+        while self._body_layout.count():
+            item = self._body_layout.takeAt(0)
+            if w := item.widget():
+                w.setParent(None)
+
+    def add_body(self, widget: QWidget, stretch: int = 0) -> None:
+        """Add a widget to the body layout."""
+        self._body_layout.addWidget(widget, stretch)
+
+    def set_body_padding(self, left: int, top: int, right: int, bottom: int) -> None:
+        """Override the body layout padding (useful for table-like panels)."""
+        self._body_layout.setContentsMargins(int(left), int(top), int(right), int(bottom))

@@ -1,5 +1,13 @@
 # Changelog
 
+## 2025-12-30
+
+- OOTP-style panel chrome + standings scaffold:
+  - `PanelChrome` now implements the multi-row header/body/footer chrome and provides an opinionated body API (`set_body`, `add_body`, `set_body_padding`).
+  - Added `SectionBar` for in-body section headers/dividers.
+  - Home page now includes a League Standings scaffold panel with division sections, aligned columns, and team logos.
+  - Scrollbars are hidden globally (0px) while scrolling remains enabled (wheel/trackpad/keys).
+
 ## 2025-12-29
 
 - Home dashboard layout:

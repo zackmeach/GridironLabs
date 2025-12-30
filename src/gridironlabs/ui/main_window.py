@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Iterable
+from typing import Any, Iterable, Callable
 
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QPixmap
@@ -31,6 +31,7 @@ from gridironlabs.ui.pages.base_page import BasePage
 from gridironlabs.ui.panels import PanelChrome
 from gridironlabs.ui.style.tokens import GRID
 from gridironlabs.ui.widgets.navigation import NavigationBar
+from gridironlabs.ui.widgets.standings import LeagueStandingsWidget, StandingsHeaderRow
 
 
 class HomePage(BasePage):
@@ -46,26 +47,83 @@ class HomePage(BasePage):
         super().__init__(cols=GRID.cols, rows=12)
         self.setObjectName("page-home")
         self._subtitle = subtitle
+        self._on_team_click = on_team_click
+        self._on_player_click = on_player_click
 
         # Minimal chrome box to start rebuilding the Home layout.
-        self.league_standings_panel = PanelChrome(title="LEAGUE STANDINGS")
+        self.league_standings_panel = PanelChrome(title="LEAGUE STANDINGS", panel_variant="table")
         
         # Configure the chrome to look like a full OOTP panel
-        self.league_standings_panel.show_secondary_header(True)
+        self.league_standings_panel.show_secondary_header(False)
         self.league_standings_panel.show_tertiary_header(True)
         self.league_standings_panel.set_footer_text("View: Standard Standings | 32 Teams")
 
-        # Add some dummy controls to the bars to demonstrate layout
-        # (In a real implementation, these would be proper widgets/filters)
-        filter_label = QLabel("FILTER: ALL CONFERENCES")
-        filter_label.setStyleSheet("color: #9ca3af; font-weight: 700;")
-        self.league_standings_panel.header_secondary.add_left(filter_label)
+        # Column headers (use a real layout so it aligns with row columns)
+        self.league_standings_panel.header_tertiary.add_left(StandingsHeaderRow())
 
-        sort_label = QLabel("TEAM    W    L    PCT    GB    L10    STRK")
-        sort_label.setStyleSheet("color: #9ca3af; font-family: monospace; font-weight: 700;")
-        self.league_standings_panel.header_tertiary.add_left(sort_label)
+        # Content: Scrollable list of divisions
+        self.standings_widget = LeagueStandingsWidget(on_team_click=self._on_team_click)
+        self.league_standings_panel.set_body(self.standings_widget)
 
-        self.add_panel(self.league_standings_panel, col=0, row=0, col_span=26, row_span=5)
+        # Dummy data
+        self.standings_widget.add_division("AFC EAST", [
+            ("1st", "Buffalo Bills", "11", "6", ".647", "-"),
+            ("2nd", "Miami Dolphins", "9", "8", ".529", "2.0"),
+            ("3rd", "New York Jets", "7", "10", ".412", "4.0"),
+            ("4th", "New England Patriots", "4", "13", ".235", "7.0"),
+        ])
+        
+        self.standings_widget.add_division("AFC NORTH", [
+            ("1st", "Baltimore Ravens", "13", "4", ".765", "-"),
+            ("2nd", "Cleveland Browns", "11", "6", ".647", "2.0"),
+            ("3rd", "Pittsburgh Steelers", "10", "7", ".588", "3.0"),
+            ("4th", "Cincinnati Bengals", "9", "8", ".529", "4.0"),
+        ])
+        
+        self.standings_widget.add_division("AFC SOUTH", [
+            ("1st", "Houston Texans", "10", "7", ".588", "-"),
+            ("2nd", "Jacksonville Jaguars", "9", "8", ".529", "1.0"),
+            ("3rd", "Indianapolis Colts", "9", "8", ".529", "1.0"),
+            ("4th", "Tennessee Titans", "6", "11", ".353", "4.0"),
+        ])
+
+        self.standings_widget.add_division("AFC WEST", [
+            ("1st", "Kansas City Chiefs", "12", "5", ".706", "-"),
+            ("2nd", "Denver Broncos", "10", "7", ".588", "2.0"),
+            ("3rd", "Las Vegas Raiders", "8", "9", ".471", "4.0"),
+            ("4th", "Los Angeles Chargers", "7", "10", ".412", "5.0"),
+        ])
+
+        self.standings_widget.add_division("NFC EAST", [
+            ("1st", "Dallas Cowboys", "12", "5", ".706", "-"),
+            ("2nd", "Philadelphia Eagles", "11", "6", ".647", "1.0"),
+            ("3rd", "New York Giants", "7", "10", ".412", "5.0"),
+            ("4th", "Washington Commanders", "5", "12", ".294", "7.0"),
+        ])
+
+        self.standings_widget.add_division("NFC NORTH", [
+            ("1st", "Green Bay Packers", "11", "6", ".647", "-"),
+            ("2nd", "Minnesota Vikings", "10", "7", ".588", "1.0"),
+            ("3rd", "Detroit Lions", "9", "8", ".529", "2.0"),
+            ("4th", "Chicago Bears", "6", "11", ".353", "5.0"),
+        ])
+
+        self.standings_widget.add_division("NFC SOUTH", [
+            ("1st", "New Orleans Saints", "10", "7", ".588", "-"),
+            ("2nd", "Tampa Bay Buccaneers", "9", "8", ".529", "1.0"),
+            ("3rd", "Atlanta Falcons", "8", "9", ".471", "2.0"),
+            ("4th", "Carolina Panthers", "4", "13", ".235", "6.0"),
+        ])
+
+        self.standings_widget.add_division("NFC WEST", [
+            ("1st", "San Francisco 49ers", "13", "4", ".765", "-"),
+            ("2nd", "Seattle Seahawks", "10", "7", ".588", "3.0"),
+            ("3rd", "Los Angeles Rams", "9", "8", ".529", "4.0"),
+            ("4th", "Arizona Cardinals", "5", "12", ".294", "8.0"),
+        ])
+
+        # Extend to bottom of the page grid and reduce width by half.
+        self.add_panel(self.league_standings_panel, col=0, row=0, col_span=13, row_span=12)
 
     def set_subtitle(self, text: str) -> None:
         self._subtitle = text

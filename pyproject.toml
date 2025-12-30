@@ -54,3 +54,6 @@ ignore_missing_imports = true
  [tool.pytest.ini_options]
  pythonpath = ["src"]
  testpaths = ["tests"]
+markers = [
+  "qt: tests that require a Qt event loop (pytest-qt)",
+]

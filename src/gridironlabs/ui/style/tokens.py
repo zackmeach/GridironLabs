@@ -37,7 +37,7 @@ class SpacingTokens:
 class RadiusTokens:
     """Corner radii for common containers."""
 
-    panel_radius: int = 12
+    panel_radius: int = 4
 
 
 @dataclass(frozen=True)

@@ -3,7 +3,40 @@ QWidget {
     background-color: #0f1115;
     color: #e5e7eb;
     font-family: "Roboto Condensed", "Inter", "Segoe UI", sans-serif;
-    font-size: 13px;
+    font-size: 17px;
+}
+
+/* Scrollbars
+   - Default: keep platform scrollbars (important for QTableView / high-row-count tables).
+   - OOTP-style variant: hide scrollbars visually while keeping scrolling enabled. */
+
+QAbstractScrollArea[scrollVariant="hidden"] QScrollBar:vertical,
+QAbstractScrollArea[scrollVariant="hidden"] QScrollBar:horizontal {
+    background: transparent;
+}
+
+QAbstractScrollArea[scrollVariant="hidden"] QScrollBar:vertical {
+    width: 0px;
+    margin: 0px;
+}
+
+QAbstractScrollArea[scrollVariant="hidden"] QScrollBar:horizontal {
+    height: 0px;
+    margin: 0px;
+}
+
+QAbstractScrollArea[scrollVariant="hidden"] QScrollBar::handle:vertical,
+QAbstractScrollArea[scrollVariant="hidden"] QScrollBar::handle:horizontal,
+QAbstractScrollArea[scrollVariant="hidden"] QScrollBar::add-line,
+QAbstractScrollArea[scrollVariant="hidden"] QScrollBar::sub-line,
+QAbstractScrollArea[scrollVariant="hidden"] QScrollBar::add-page,
+QAbstractScrollArea[scrollVariant="hidden"] QScrollBar::sub-page {
+    background: transparent;
+    border: none;
+}
+
+QAbstractScrollArea[scrollVariant="hidden"]::corner {
+    background: transparent;
 }
 
 #GridironLabsMainWindow {
@@ -13,7 +46,7 @@ QWidget {
 #TopNavigationBar {
     background-color: #252525;
     border-bottom: 1px solid #262a33;
-    font-size: 28px;
+    font-size: 32px;
 }
 
 QToolButton#NavIconButton {
@@ -23,7 +56,7 @@ QToolButton#NavIconButton {
     padding: 6px 10px;
     border-radius: 6px;
     font-weight: 700;
-    font-size: 28px;
+    font-size: 32px;
 }
 
 QToolButton#NavIconButton:hover {
@@ -42,7 +75,7 @@ QPushButton#NavSectionButton {
     padding: 8px 12px;
     border-radius: 6px;
     font-weight: 700;
-    font-size: 28px;
+    font-size: 32px;
 }
 
 QPushButton#NavSectionButton:hover {
@@ -62,7 +95,7 @@ QLineEdit#TopNavSearch {
     padding: 7px 12px;
     border-radius: 6px;
     selection-background-color: #2563eb;
-    font-size: 28px;
+    font-size: 32px;
 }
 
 QPushButton#SettingsButton {
@@ -73,7 +106,7 @@ QPushButton#SettingsButton {
     border: 1px solid #262a33;
     text-transform: uppercase;
     font-weight: 700;
-    font-size: 28px;
+    font-size: 32px;
 }
 
 QPushButton#SettingsButton:hover {
@@ -89,7 +122,7 @@ QFrame#ContextStrip {
 QLabel#ContextLabel {
     color: #cbd5e1;
     padding: 4px 8px;
-    font-size: 28px;
+    font-size: 32px;
 }
 
 QLabel#TickerLabel {
@@ -107,13 +140,13 @@ QFrame#PageContextBar {
 }
 
 QLabel#ContextBarTitle {
-    font-size: 17px;
+    font-size: 21px;
     font-weight: 800;
 }
 
 QLabel#ContextBarSubtitle {
     color: #cbd5e1;
-    font-size: 13px;
+    font-size: 17px;
 }
 
 QLabel#ContextBarIcon {
@@ -135,25 +168,25 @@ QFrame#ContextBarStat {
 
 QLabel#ContextBarStatLabel {
     color: #9ca3af;
-    font-size: 12px;
+    font-size: 16px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 QLabel#ContextBarStatValue {
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 800;
     color: #e5e7eb;
 }
 
 QLabel#PageTitle {
-    font-size: 18px;
+    font-size: 22px;
     font-weight: 700;
 }
 
 QLabel#PageSubtitle {
     color: #cbd5e1;
-    font-size: 13px;
+    font-size: 17px;
 }
 
 QFrame#StatePanel {
@@ -213,16 +246,33 @@ QFrame[barRole="footer"] {
     background-color: #2a2f3a; /* Default bar bg, slightly lighter than panel bg */
 }
 
+/* Section Bar (In-Body) */
+QFrame[barRole="section"] {
+    background-color: #2a2f3a;
+    border-top: 1px solid #d97706; /* Gold/Amber */
+    border-bottom: 1px solid #d97706;
+    min-height: 26px; /* Increased from 22px */
+    max-height: 26px;
+    padding: 0px 8px;
+}
+
+QLabel#SectionTitle {
+    font-size: 18px; /* Match PanelTitle */
+    font-weight: 700;
+    color: #f3f4f6;
+    text-transform: uppercase;
+}
+
 /* Primary Header (Title) */
 QFrame#PrimaryHeaderBar {
     background-color: #2e3440; 
-    min-height: 28px;
-    max-height: 28px;
+    min-height: 32px; /* Increased from 28px */
+    max-height: 32px;
     padding: 0px 8px;
 }
 
 QLabel#PanelTitle {
-    font-size: 14px;
+    font-size: 18px;
     font-weight: 700;
     color: #f3f4f6;
     text-transform: uppercase;
@@ -232,16 +282,16 @@ QLabel#PanelTitle {
 /* Secondary Header (Filters) */
 QFrame#SecondaryHeaderBar {
     background-color: #2a2f3a;
-    min-height: 24px;
-    max-height: 24px;
+    min-height: 28px; /* Increased from 24px */
+    max-height: 28px;
     padding: 0px 8px;
 }
 
 /* Tertiary Header (Sort/Columns) */
 QFrame#TertiaryHeaderBar {
     background-color: #252a33;
-    min-height: 22px;
-    max-height: 22px;
+    min-height: 26px; /* Increased from 22px */
+    max-height: 26px;
     padding: 0px 8px;
 }
 
@@ -250,39 +300,70 @@ QFrame#FooterBar {
     background-color: #2a2f3a;
     border-top: 1px solid #20242d;
     border-bottom: none;
-    min-height: 18px;
-    max-height: 18px;
+    min-height: 20px; /* Increased from 18px to fit 15px text */
+    max-height: 20px;
     padding: 0px 8px;
 }
 
 QLabel#FooterMetaLabel {
-    font-size: 11px;
+    font-size: 15px;
     color: #9ca3af;
 }
 
+/* Dummy Labels (Home Page Demo) */
+QLabel#FilterLabel {
+    color: #9ca3af;
+    font-weight: 700;
+    font-size: 18px; /* Match main title */
+}
+
+QLabel#SortLabel {
+    color: #9ca3af;
+    font-weight: 700;
+    font-size: 18px; /* Match main title */
+}
+
+/* Ensure the column header row matches the panel title typography (only color differs). */
+QFrame#TertiaryHeaderBar QLabel {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+QFrame#StandingsHeaderRow {
+    /* keep consistent row rhythm with data rows */
+    border-bottom: 1px solid #1c1f27;
+}
+
+QLabel#StandingsHeaderCell {
+    color: #9ca3af;
+    font-family: "Roboto Condensed", sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+}
+
 QLabel#CardTitlePrimary {
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 800;
     color: #ffffff;
     background-color: transparent;
 }
 
 QLabel#CardTitleSection {
-    font-size: 24px;
+    font-size: 28px;
     font-weight: 800;
     color: #e5e7eb;
     background-color: transparent;
 }
 
 QLabel#CardTitleSub {
-    font-size: 22px;
+    font-size: 26px;
     font-weight: 800;
     color: #f3f4f6;
     background-color: transparent;
 }
 
 QLabel#CardTitleSmall {
-    font-size: 13px;
+    font-size: 17px;
     font-weight: 600;
     color: #e5e7eb;
     background-color: transparent;
@@ -290,13 +371,13 @@ QLabel#CardTitleSmall {
 
 QLabel#LeadersSeasonLabel {
     color: #9ca3af;
-    font-size: 12px;
+    font-size: 16px;
     margin-left: 6px;
 }
 
 QLabel#LeaderEntry {
     color: #e5e7eb;
-    font-size: 15px;
+    font-size: 19px;
     font-weight: 600;
     margin-top: 3px;
 }
@@ -307,19 +388,19 @@ QLabel#LeaderEmptyLabel {
 
 /* Settings page */
 QLabel#SettingsHeading {
-    font-size: 22px;
+    font-size: 26px;
     font-weight: 800;
 }
 
 QLabel#SettingsLabel {
     color: #e5e7eb;
-    font-size: 13px;
+    font-size: 17px;
     font-weight: 600;
 }
 
 QLabel#SettingsCaption {
     color: #9ca3af;
-    font-size: 12px;
+    font-size: 16px;
 }
 
 QLabel#SettingsTableHeader {
@@ -373,7 +454,7 @@ QSlider#AppSlider::sub-page:horizontal {
 
 QCheckBox#AppCheckbox {
     color: #e5e7eb;
-    font-size: 13px;
+    font-size: 17px;
     font-weight: 600;
 }
 
@@ -416,7 +497,7 @@ QTextEdit#TerminalOutput {
     border-radius: 10px;
     color: #e5e7eb;
     font-family: "JetBrains Mono", "Consolas", monospace;
-    font-size: 12px;
+    font-size: 16px;
     padding: 10px;
 }
 
@@ -427,27 +508,27 @@ QTextEdit#TerminalOutput QWidget {
 
 /* Settings page typography scaling */
 QWidget#page-settings {
-    font-size: 13px;
+    font-size: 17px;
 }
 
 QWidget#page-settings QLabel#SettingsHeading {
-    font-size: 22px;
+    font-size: 26px;
 }
 
 QWidget#page-settings QLabel#CardTitlePrimary {
-    font-size: 24px;
+    font-size: 28px;
 }
 
 QWidget#page-settings QLabel#CardTitleSection {
-    font-size: 18px;
+    font-size: 22px;
 }
 
 QWidget#page-settings QLabel#CardTitleSub {
-    font-size: 16px;
+    font-size: 20px;
 }
 
 QWidget#page-settings QLabel#CardTitleSmall {
-    font-size: 13px;
+    font-size: 17px;
 }
 
 QWidget#page-settings QLabel#SettingsLabel,
@@ -459,13 +540,48 @@ QWidget#page-settings QLineEdit#AppLineEdit,
 QWidget#page-settings QSpinBox#AppSpinBox,
 QWidget#page-settings QPushButton#PrimaryButton,
 QWidget#page-settings QPushButton#GhostButton {
-    font-size: 13px;
+    font-size: 17px;
 }
 
 QWidget#page-settings QLabel#SettingsCaption {
-    font-size: 12px;
+    font-size: 16px;
 }
 
 QWidget#page-settings QTextEdit#TerminalOutput {
-    font-size: 12px;
+    font-size: 16px;
+}
+
+/* Standings Specifics */
+
+QFrame#StandingsRow {
+    border-bottom: 1px solid #1c1f27;
+}
+
+QFrame#StandingsRow:hover {
+    background-color: #2c3140;
+}
+
+QLabel#StandingsCell {
+    color: #cbd5e1;
+    font-family: "Roboto Condensed", sans-serif;
+    font-size: 18px; /* Match main title */
+    font-weight: 700;
+}
+
+QLabel#StandingsTeamCell {
+    color: #e5e7eb;
+    font-weight: 700;
+    font-size: 18px; /* Match main title */
+}
+
+QLabel#StandingsTeamLogo {
+    background-color: transparent;
+}
+
+/* Scroll area transparency */
+QWidget#LeagueStandingsWidget, 
+QWidget#StandingsContent,
+QScrollArea[scrollVariant="hidden"] {
+    background-color: transparent;
+    border: none;
 }

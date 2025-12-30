@@ -1,6 +1,6 @@
 """Page content grid canvas.
 
-This is a thin wrapper around a 24-column QGridLayout that provides a stable API
+This is a thin wrapper around a 36-column QGridLayout that provides a stable API
 for placing panel widgets by grid coordinates.
 
 Grid units are discrete (col/row integers); the debug overlay is optional and is

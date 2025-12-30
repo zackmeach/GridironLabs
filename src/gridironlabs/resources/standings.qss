@@ -1,0 +1,32 @@
+/* ... existing styles ... */
+
+/* Standings Specifics */
+
+QFrame#StandingsRow {
+    border-bottom: 1px solid #1c1f27;
+}
+
+QFrame#StandingsRow:hover {
+    background-color: #2c3140;
+}
+
+QLabel#StandingsCell {
+    color: #cbd5e1;
+    font-family: "Roboto Condensed", sans-serif;
+    font-size: 15px;
+}
+
+QLabel#StandingsTeamCell {
+    color: #e5e7eb;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+/* Scroll area transparency */
+QWidget#LeagueStandingsWidget, 
+QWidget#StandingsContent,
+QScrollArea {
+    background-color: transparent;
+    border: none;
+}
+

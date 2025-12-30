@@ -8,7 +8,7 @@ PySide6 desktop shell pieces:
 - `layouts/` — layout helpers (e.g. `GridCanvas`).
 - `overlays/` — overlay widgets (e.g. debug grid overlay).
 - `style/` — Python-side tokens used by widgets/layout defaults.
-- `panels/` — panel system scaffolding. `PanelChrome` is currently a minimal panel box (background + `body_layout`) used on the grid; richer chrome/bars will be layered on later.
+- `panels/` — OOTP-style panel chrome primitives. `PanelChrome` provides optional header bars (primary/secondary/tertiary), a body region (managed via `set_body` / `add_body`), and an optional footer. Bar widgets live in `panels/bars/`.
 - `widgets/` — reusable widgets (navigation bar, legacy panel cards, state banners).
 - `resources` (../resources) — dark theme QSS and future assets.
 
