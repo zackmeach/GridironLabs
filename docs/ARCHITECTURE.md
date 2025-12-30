@@ -27,6 +27,8 @@ ParquetSummaryRepository (players/teams/coaches/games) ──► Services (summa
 
 Note: `scripts/refresh_data.py` is currently a **partial refresh** focused on downloading team logos and enriching `data/processed/teams.parquet` with `logo_path` / `logo_url`. Full end-to-end ingestion (fetch/merge/validate/write for all tables) is still scaffolded.
 
+UI note: table-like list surfaces (e.g. League Standings) load logos from `data/external/logos/` and cache scaled pixmaps in-process; scrollbar hiding is opt-in per surface via `scrollVariant="hidden"` (not global).
+
 ## Runtime bootstrap
 
 1. Resolve paths via `AppPaths.from_env` and load `.env` overrides (directories are created if missing).

@@ -3,10 +3,12 @@
 ## 2025-12-30
 
 - OOTP-style panel chrome + standings scaffold:
-  - `PanelChrome` now implements the multi-row header/body/footer chrome and provides an opinionated body API (`set_body`, `add_body`, `set_body_padding`).
+  - `PanelChrome` implements the multi-row header/body/footer chrome and provides an opinionated body API (`set_body`, `add_body`, `clear_body`).
+  - Added `panel_variant="table"` for table-like panels (defaults body padding to 0 so headers/rows align without boilerplate).
   - Added `SectionBar` for in-body section headers/dividers.
-  - Home page now includes a League Standings scaffold panel with division sections, aligned columns, and team logos.
-  - Scrollbars are hidden globally (0px) while scrolling remains enabled (wheel/trackpad/keys).
+  - Home page includes a League Standings reference panel with division sections, a shared ColumnSpec for header/rows, clickable rows (navigates to team page), and cached team logos.
+  - Scrollbar hiding is now **scoped** via `scrollVariant="hidden"` (default platform scrollbars remain available for future QTableView surfaces).
+  - Added pytest-qt coverage for panel invariants (bar visibility rules, table variant padding, standings click navigation).
 
 ## 2025-12-29
 
@@ -22,10 +24,10 @@
   - Introduced `PanelChrome` (`gridironlabs.ui.panels`) as the forward-looking page panel entrypoint.
   - Moved legacy panel chrome into a dedicated module and updated docs/imports accordingly.
 
-## 2025-12-30
+## 2025-12-30 (earlier)
 
-- Reset UI page bodies to scaffolds:
-  - Removed the demo Home dashboard panels (standings/leaders/schedule) and the Settings demo panel so panel work can restart on the new system cleanly.
+- Reset UI page bodies to scaffolds (pre-panel-chrome rollout):
+  - Removed the demo Home dashboard panels (standings/leaders/schedule) and the Settings demo panel so the new panel system could be implemented cleanly.
 
 ## 2025-12-28
 

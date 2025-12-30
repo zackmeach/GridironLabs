@@ -55,8 +55,17 @@ class MyPage(BasePage):
 
 ## Scroll behavior (no visible scrollbars)
 
-The UI theme hides scrollbars globally (0px width/height) while keeping scroll functionality (wheel/trackpad/keys).
-For `QScrollArea` widgets, keep scroll policies as `AsNeeded` so scrolling remains enabled.
+The theme supports an OOTP-style “no visible scrollbars” mode without forcing it globally.
+
+- **Default**: platform scrollbars remain available (important for future `QTableView` / large tables).
+- **OOTP-style hidden scrollbars**: set `scrollVariant="hidden"` on a specific `QAbstractScrollArea` (e.g. a `QScrollArea`), and keep scroll policies as `AsNeeded` so scrolling stays enabled (wheel/trackpad/keys).
+
+Example:
+
+```python
+scroll_area.setProperty("scrollVariant", "hidden")
+scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+```
 
 ## Enable the debug grid overlay
 
