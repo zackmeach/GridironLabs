@@ -47,6 +47,172 @@ class MyPage(BasePage):
         self.add_panel(panel, col=0, row=0, col_span=18, row_span=6)
 ```
 
+## Panel cookbook (agent checklist)
+
+This section is intentionally written so an independent agent can add a new panel (e.g. “Player Leaderboards”) without drifting from the OOTP-style contract.
+
+### 1) Decide what you’re building (where code should live)
+
+- **Page composition** (layout + wiring): `src/gridironlabs/ui/pages/*` (or `ui/main_window.py` for the current HomePage reference surface).
+- **Reusable panel bodies** (tables/lists/forms): `src/gridironlabs/ui/widgets/*`.
+  - Example reference: `src/gridironlabs/ui/widgets/standings.py`
+- **Panel primitives only** (chrome + bars): `src/gridironlabs/ui/panels/*`.
+  - Do **not** build “feature panels” here unless it’s a reusable archetype primitive.
+- **Assets** (logos/icons helpers): `src/gridironlabs/ui/assets/*`.
+  - Example reference: `src/gridironlabs/ui/assets/logos.py`
+- **Styling**: `src/gridironlabs/resources/theme.qss` (avoid inline `setStyleSheet`).
+
+### 2) Choose a panel variant (density + padding)
+
+- Use `PanelChrome(..., panel_variant="table")` for dense, table-like surfaces (standings, leaderboards, lists).
+  - Body padding defaults to 0 so content aligns tightly under header bars.
+- Use `panel_variant="card"` for padded, “card content” panels (forms, summaries, text blocks).
+
+### 3) Build the chrome first, then the body
+
+- **Primary header**: title on the left, optional actions on the right.
+  - Use `panel.add_header_action(widget)` for right-side actions.
+- **Secondary header** (filters/paging): add widgets to `panel.header_secondary.add_left/add_right(...)`.
+- **Tertiary header** (column semantics / sort row): add widgets to `panel.header_tertiary.add_left/add_right(...)`.
+- **Important invariant**: don’t manually manage bar visibility in most cases.
+  - Bars auto-show when you add content, and `clear()` hides empty bars.
+  - If you need to rebuild filters/actions dynamically, use:
+    - `panel.header_secondary.clear()`
+    - `panel.header_tertiary.clear()`
+
+### 4) Table/list surfaces: use a shared ColumnSpec (no drift)
+
+If your body renders rows aligned under a header row, define one shared column spec list and generate both header cells and row cells from it.
+
+Reference implementation:
+- `STANDINGS_COLUMNS` in `src/gridironlabs/ui/widgets/standings.py`
+
+### 5) Styling rules (avoid drift)
+
+- **Do not** call `setStyleSheet(...)` on panel archetype widgets.
+- Set `objectName` / dynamic properties and style once in QSS.
+- Keep typography/density consistent with the existing panel selectors (see `theme.qss`).
+
+### 6) Scrolling rules (OOTP feel without breaking future tables)
+
+- Default: keep platform scrollbars.
+- For OOTP-style “no visible scrollbars” on a specific list/table surface:
+  - set `scrollVariant="hidden"` on the `QAbstractScrollArea`
+  - keep scroll policies `AsNeeded` so scrolling remains enabled
+
+### 7) Interactivity rules (rows should be actionable)
+
+- Prefer passing callbacks from the Page into the body widget (e.g. `on_player_click`, `on_team_click`).
+- Make row widgets the click target (set child labels `WA_TransparentForMouseEvents=True` so clicks hit the row).
+
+### 8) Testing expectations (keep invariants enforced)
+
+- Add/extend pytest-qt tests when introducing new UI invariants or click navigation.
+- Reference tests:
+  - `tests/ui/test_panel_system.py`
+
+## Example: Player Leaderboards panel (agent-safe skeleton)
+
+This example shows the intended file split and API usage (chrome + ColumnSpec + scroll variant + click callbacks).
+
+```python
+# src/gridironlabs/ui/widgets/player_leaderboards.py
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Callable
+
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QScrollArea, QVBoxLayout, QWidget
+
+
+@dataclass(frozen=True)
+class ColumnSpec:
+    key: str
+    label: str
+    width: int
+    alignment: Qt.Alignment
+
+
+LEADERBOARD_COLUMNS: tuple[ColumnSpec, ...] = (
+    ColumnSpec("rank", "#", 40, Qt.AlignRight | Qt.AlignVCenter),
+    ColumnSpec("name", "PLAYER", 240, Qt.AlignLeft | Qt.AlignVCenter),
+    ColumnSpec("value", "YDS", 80, Qt.AlignRight | Qt.AlignVCenter),
+)
+
+
+class PlayerLeaderboardsHeaderRow(QFrame):
+    def __init__(self) -> None:
+        super().__init__()
+        self.setObjectName("PlayerLeaderboardsHeaderRow")
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)  # bar padding controls inset
+        layout.setSpacing(4)
+
+        for col in LEADERBOARD_COLUMNS:
+            cell = QLabel(col.label)
+            cell.setObjectName("PlayerLeaderboardsHeaderCell")
+            cell.setFixedWidth(col.width)
+            cell.setAlignment(col.alignment)
+            layout.addWidget(cell)
+        layout.addStretch(1)
+
+
+class PlayerLeaderboardsWidget(QFrame):
+    def __init__(self, *, on_player_click: Callable[[str], None] | None = None) -> None:
+        super().__init__()
+        self.setObjectName("PlayerLeaderboardsWidget")
+        self._on_player_click = on_player_click
+
+        self.scroll = QScrollArea(self)
+        self.scroll.setProperty("scrollVariant", "hidden")
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setFrameShape(QFrame.NoFrame)
+        self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+
+        self.content = QWidget()
+        self.content.setObjectName("PlayerLeaderboardsContent")
+        self.content_layout = QVBoxLayout(self.content)
+        self.content_layout.setContentsMargins(0, 0, 0, 0)
+        self.content_layout.setSpacing(0)
+        self.scroll.setWidget(self.content)
+
+        root = QVBoxLayout(self)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.addWidget(self.scroll)
+
+    def add_row(self, *, player_name: str, value: str, rank: str) -> None:
+        # In real code: create a row widget with hover + click -> self._on_player_click(player_name)
+        row = QLabel(f"{rank}  {player_name}  {value}")
+        row.setObjectName("PlayerLeaderboardsRow")
+        self.content_layout.addWidget(row)
+```
+
+```python
+# Page composition (example): add the panel to a Page/HomePage
+from PySide6.QtWidgets import QLabel
+
+from gridironlabs.ui.panels import PanelChrome
+from gridironlabs.ui.widgets.player_leaderboards import (
+    PlayerLeaderboardsHeaderRow,
+    PlayerLeaderboardsWidget,
+)
+
+panel = PanelChrome(title="PLAYER LEADERBOARDS", panel_variant="table")
+
+# Optional: filters/paging in secondary header (auto-shows)
+panel.header_secondary.add_left(QLabel("SEASON: 2025"))
+
+# Column semantics in tertiary header
+panel.header_tertiary.add_left(PlayerLeaderboardsHeaderRow())
+
+body = PlayerLeaderboardsWidget(on_player_click=self._on_player_click)
+panel.set_body(body)
+
+body.add_row(rank="1", player_name="Player A", value="5,123")
+body.add_row(rank="2", player_name="Player B", value="4,980")
+```
+
 ## Where the OOTP-style panel work lives
 
 - **Design contract**: see the repo root `recommendation.txt` (metrics, semantics, persistence, composition rules).
@@ -86,7 +252,7 @@ config.set_cell_size(28)
 
 ## Reference implementation
 
-- **HomePage** includes a League Standings scaffold panel as a reference surface for the chrome + dense rows.
+- **HomePage** includes a League Standings reference panel as a reference surface for the chrome + dense rows.
 - **SettingsPage** is intentionally a blank scaffold while the new panel system is implemented.
 - **Entity Pages**:
   - `TeamSummaryPage` and `PlayerSummaryPage` serve as summary scaffolds for detail views.
