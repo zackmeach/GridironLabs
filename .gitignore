@@ -198,6 +198,9 @@ Thumbs.db
 # Ruff stuff:
 .ruff_cache/
 
+# Local generated data (regenerate via scripts; do not commit)
+data/processed/*.parquet
+
 # PyPI configuration file
 .pypirc
 
