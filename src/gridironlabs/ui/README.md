@@ -20,6 +20,8 @@ Running the UI locally:
 - Ensure the venv is active (`source .venv/bin/activate` or `.\\.venv\\Scripts\\activate` on Windows).
 - Dependencies: `pip install -e .[dev]`; on Windows you may need `pip install pyside6 polars` if not already present.
 - If `data/processed` is empty or validation fails, the app still boots; context stats will reflect zero/validation status and the matchup ticker may have no items. Seed Parquet with `python scripts/generate_fake_nfl_data.py` if you want matchups to cycle in the top nav and summary pages to populate.
+- Home dashboard note:
+  - The **League Leaders** panel includes an OOTP-style filter row (conference/division/team) powered by a static mapping. Age/rookie is scaffolded but disabled until player metadata is available.
 
 Scrolling note:
 - The theme supports OOTP-style hidden scrollbars **per-surface** via `scrollVariant="hidden"` on `QAbstractScrollArea` (default platform scrollbars remain enabled for future large-table pages).

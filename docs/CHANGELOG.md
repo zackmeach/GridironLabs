@@ -16,6 +16,7 @@
   - Added **League Leaders** panel next to League Standings with category sections (PASSING/RUSHING/RECEIVING/KICKING/DEFENSE).
   - Category stat headers are clickable and re-rank leaders **best-to-worst** (no ascending toggle); defensive category shows 12 rows and offensive categories show 5.
   - Leaders stat headers now render inside the category bar row; numeric columns are right-aligned and column widths are normalized across categories for clean alignment.
+  - Added an OOTP-style filter row under League Leaders (conference/division/team). Age/rookie is scaffolded but disabled until player age metadata is available.
 - Scroll UX hardening:
   - Added `MicroScrollGuard` to suppress accidental 1px “micro-scroll” on locked surfaces while restoring normal scrolling for meaningful overflow.
 - Synthetic data generator:

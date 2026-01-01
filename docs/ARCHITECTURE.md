@@ -29,6 +29,8 @@ Note: `scripts/refresh_data.py` is currently a **partial refresh** focused on do
 
 UI note: table-like list surfaces (e.g. League Standings, League Leaders) load logos from `data/external/logos/` and cache scaled pixmaps in-process; scrollbar hiding is opt-in per surface via `scrollVariant="hidden"` (not global). For “locked surface” panels, `MicroScrollGuard` suppresses accidental 1px micro-scroll caused by rounding/border mismatches.
 
+Leaders filtering note: the Home **League Leaders** panel includes an OOTP-style filter row. Conference/division/team filters are powered by a static mapping (`src/gridironlabs/core/nfl_structure.py`) so filters work even before the ingestion pipeline provides explicit conference/division fields. Age/rookie remains scaffolded until player metadata is added.
+
 ## Runtime bootstrap
 
 1. Resolve paths via `AppPaths.from_env` and load `.env` overrides (directories are created if missing).

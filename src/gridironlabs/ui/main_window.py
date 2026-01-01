@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
 
 from gridironlabs.core.config import AppConfig, AppPaths
 from gridironlabs.core.errors import DataValidationError, NotFoundError
+from gridironlabs.core.models import EntitySummary
 from gridironlabs.core.models import GameSummary
 from gridironlabs.data.repository import ParquetSummaryRepository
 from gridironlabs import resources as package_resources
@@ -33,6 +34,7 @@ from gridironlabs.ui.style.tokens import GRID
 from gridironlabs.ui.widgets.navigation import NavigationBar
 from gridironlabs.ui.widgets.standings import LeagueStandingsWidget, StandingsHeaderRow
 from gridironlabs.ui.widgets.leaders import LeagueLeadersWidget
+from gridironlabs.ui.widgets.leaders_filters import LeadersFilterBar, LeadersFilters
 
 
 class HomePage(BasePage):
@@ -50,6 +52,13 @@ class HomePage(BasePage):
         self._subtitle = subtitle
         self._on_team_click = on_team_click
         self._on_player_click = on_player_click
+        self._all_players: list[EntitySummary] = []
+        self._leaders_filters = LeadersFilters(
+            age_key="all",
+            conference=None,
+            division=None,
+            team_abbr=None,
+        )
 
         # Minimal chrome box to start rebuilding the Home layout.
         self.league_standings_panel = PanelChrome(title="LEAGUE STANDINGS", panel_variant="table")
@@ -128,9 +137,12 @@ class HomePage(BasePage):
 
         # League leaders panel (wider to accommodate 7 stat columns).
         self.league_leaders_panel = PanelChrome(title="LEAGUE LEADERS", panel_variant="table")
-        self.league_leaders_panel.show_secondary_header(False)
+        self.league_leaders_panel.show_secondary_header(True)
         self.league_leaders_panel.show_tertiary_header(False)
         self.league_leaders_panel.set_footer_text("Tip: Click a stat to re-rank (best-to-worst).")
+
+        self.leaders_filter_bar = LeadersFilterBar(on_change=self._on_leaders_filters_changed)
+        self.league_leaders_panel.header_secondary.add_left(self.leaders_filter_bar)
 
         self.leaders_widget = LeagueLeadersWidget(on_player_click=self._on_player_click)
         self.league_leaders_panel.set_body(self.leaders_widget)
@@ -142,8 +154,56 @@ class HomePage(BasePage):
 
     def set_players(self, players: list) -> None:
         """Provide player summaries to the leaders widget after data bootstrap."""
-        if hasattr(self, "leaders_widget"):
-            self.leaders_widget.set_players(players)
+        # Normalize to expected model type; repository returns EntitySummary but callers may pass list[Any].
+        self._all_players = [p for p in players if isinstance(p, EntitySummary)]
+        self._refresh_leaders()
+
+    def _on_leaders_filters_changed(self, filters: LeadersFilters) -> None:
+        self._leaders_filters = filters
+        self._refresh_leaders()
+
+    def _refresh_leaders(self) -> None:
+        if not hasattr(self, "leaders_widget"):
+            return
+        filtered = self._apply_leaders_filters(self._all_players, self._leaders_filters)
+        self.leaders_widget.set_players(filtered)
+        # Provide a clearer hint when no player dataset is loaded.
+        if not self._all_players:
+            self.league_leaders_panel.set_footer_text(
+                "No player data loaded. Generate data to populate leaders (e.g. run scripts/generate_fake_nfl_data.py)."
+            )
+        else:
+            self.league_leaders_panel.set_footer_text("Tip: Click a stat to re-rank (best-to-worst).")
+
+    @staticmethod
+    def _apply_leaders_filters(
+        players: list[EntitySummary],
+        filters: LeadersFilters,
+    ) -> list[EntitySummary]:
+        # Conference/division/team derived from static NFL mapping for now.
+        from gridironlabs.core.nfl_structure import team_info_for_abbr
+
+        def include(p: EntitySummary) -> bool:
+            team_abbr = p.team
+            info = team_info_for_abbr(team_abbr)
+
+            # Team filter: strict match if selected.
+            if filters.team_abbr:
+                return bool(team_abbr) and team_abbr.upper() == filters.team_abbr.upper()
+
+            # Conference/division: only enforce if we can resolve the team.
+            # If team can't be resolved, keep the player (prevents filtering everything out on unknown codes).
+            if info is None:
+                return True
+
+            if filters.conference and info.conference != filters.conference:
+                return False
+            if filters.division and info.division != filters.division:
+                return False
+
+            return True
+
+        return [p for p in players if include(p)]
 
 
 class SectionPage(QWidget):

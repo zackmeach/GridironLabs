@@ -80,6 +80,17 @@ This section is intentionally written so an independent agent can add a new pane
     - `panel.header_secondary.clear()`
     - `panel.header_tertiary.clear()`
 
+### Secondary header: OOTP-style filter rows
+
+The **secondary header** is the canonical place for OOTP-style filter rows. In most cases you can use compact `QComboBox`-style controls without extra labels (the selected text acts as the label), and optionally add tooltips for clarity.
+
+Reference implementation (Home → **League Leaders** filter row):
+- `src/gridironlabs/ui/widgets/leaders_filters.py` (`LeadersFilterBar`)
+- `src/gridironlabs/core/nfl_structure.py` (static team→conference/division mapping used for filtering)
+
+Notes:
+- Conference/division/team filtering is supported via the static NFL mapping.\n+- Age/rookie filters are scaffolded but disabled until player age metadata is added to the dataset.
+
 ### 4) Table/list surfaces: use a shared ColumnSpec (no drift)
 
 If your body renders rows aligned under a header row, define one shared column spec list and generate both header cells and row cells from it.
