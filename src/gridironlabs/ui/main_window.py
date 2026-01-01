@@ -32,6 +32,7 @@ from gridironlabs.ui.panels import PanelChrome
 from gridironlabs.ui.style.tokens import GRID
 from gridironlabs.ui.widgets.navigation import NavigationBar
 from gridironlabs.ui.widgets.standings import LeagueStandingsWidget, StandingsHeaderRow
+from gridironlabs.ui.widgets.leaders import LeagueLeadersWidget
 
 
 class HomePage(BasePage):
@@ -125,8 +126,24 @@ class HomePage(BasePage):
         # Extend to bottom of the page grid and reduce width by half.
         self.add_panel(self.league_standings_panel, col=0, row=0, col_span=13, row_span=12)
 
+        # League leaders panel (wider to accommodate 7 stat columns).
+        self.league_leaders_panel = PanelChrome(title="LEAGUE LEADERS", panel_variant="table")
+        self.league_leaders_panel.show_secondary_header(False)
+        self.league_leaders_panel.show_tertiary_header(False)
+        self.league_leaders_panel.set_footer_text("Tip: Click a stat to re-rank (best-to-worst).")
+
+        self.leaders_widget = LeagueLeadersWidget(on_player_click=self._on_player_click)
+        self.league_leaders_panel.set_body(self.leaders_widget)
+
+        self.add_panel(self.league_leaders_panel, col=13, row=0, col_span=23, row_span=12)
+
     def set_subtitle(self, text: str) -> None:
         self._subtitle = text
+
+    def set_players(self, players: list) -> None:
+        """Provide player summaries to the leaders widget after data bootstrap."""
+        if hasattr(self, "leaders_widget"):
+            self.leaders_widget.set_players(players)
 
 
 class SectionPage(QWidget):
@@ -382,6 +399,14 @@ class GridironLabsMainWindow(QMainWindow):
             )
 
             self._update_page_subtitles(players=players, teams=teams, coaches=coaches, seasons=season_span)
+
+            home_page = self.pages.get("home")
+            if home_page and hasattr(home_page, "set_players"):
+                try:
+                    home_page.set_players(players)
+                except Exception:
+                    pass
+
             matchups = self._build_upcoming_matchups(games, teams)
             self._start_matchup_cycle(matchups)
             self._refresh_context_payloads(

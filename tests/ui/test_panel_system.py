@@ -2,7 +2,7 @@ import logging
 
 import pytest
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QLabel
+from PySide6.QtWidgets import QLabel, QScrollArea, QVBoxLayout, QWidget
 
 from gridironlabs.core.config import AppPaths, load_config
 from gridironlabs.ui.main_window import GridironLabsMainWindow
@@ -10,6 +10,7 @@ from gridironlabs.ui.panels import PanelChrome
 from gridironlabs.ui.panels.bars.standard_bars import PrimaryHeaderBar, SecondaryHeaderBar
 from gridironlabs.ui.widgets.standings import StandingsRow
 from gridironlabs.ui.panels.bars.standard_bars import FooterBar, SectionBar
+from gridironlabs.ui.widgets.scroll_guard import MicroScrollGuard
 
 
 @pytest.mark.qt
@@ -79,6 +80,43 @@ def test_panelchrome_table_variant_defaults_to_zero_body_padding(qtbot):
     qtbot.addWidget(panel)
     margins = panel._body_layout.contentsMargins()  # noqa: SLF001 - test invariant
     assert (margins.left(), margins.top(), margins.right(), margins.bottom()) == (0, 0, 0, 0)
+
+
+@pytest.mark.qt
+def test_micro_scroll_guard_disables_1px_overflow_and_restores_for_real_overflow(qtbot):
+    scroll = QScrollArea()
+    qtbot.addWidget(scroll)
+    scroll.setWidgetResizable(True)
+    scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+
+    content = QWidget()
+    content.setLayout(QVBoxLayout())
+    scroll.setWidget(content)
+
+    MicroScrollGuard(scroll, threshold_px=1, normal_policy=Qt.ScrollBarAsNeeded)
+
+    scroll.resize(300, 200)
+    scroll.show()
+    qtbot.waitExposed(scroll)
+
+    viewport_h = scroll.viewport().height()
+
+    # Force a tiny 1px overflow.
+    content.setMinimumHeight(viewport_h + 1)
+    qtbot.waitUntil(lambda: scroll.verticalScrollBar().maximum() >= 1, timeout=1500)
+    qtbot.waitUntil(
+        lambda: scroll.verticalScrollBarPolicy() == Qt.ScrollBarAlwaysOff, timeout=1500
+    )
+    assert scroll.verticalScrollBar().value() == 0
+    assert not scroll.verticalScrollBar().isEnabled()
+
+    # Force meaningful overflow; policy should restore.
+    content.setMinimumHeight(viewport_h + 80)
+    qtbot.waitUntil(lambda: scroll.verticalScrollBar().maximum() > 1, timeout=1500)
+    qtbot.waitUntil(
+        lambda: scroll.verticalScrollBarPolicy() == Qt.ScrollBarAsNeeded, timeout=1500
+    )
+    assert scroll.verticalScrollBar().isEnabled()
 
 
 @pytest.mark.qt

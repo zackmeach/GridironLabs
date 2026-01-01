@@ -585,3 +585,50 @@ QScrollArea[scrollVariant="hidden"] {
     background-color: transparent;
     border: none;
 }
+
+/* Leaders Specifics */
+
+/* Leaders category bars: title on the left, clickable stat headers inside the bar. */
+QFrame[barRole="section"][leadersVariant="leaders"] QLabel#SectionTitle {
+    padding-right: 10px;
+}
+
+QLabel#LeadersBarStatHeader {
+    color: #9ca3af;
+    font-family: "Roboto Condensed", sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+QLabel#LeadersBarStatHeader[selected="true"] {
+    color: #e5e7eb;
+    border-left: 2px solid #d97706;
+    border-right: 2px solid #d97706;
+}
+
+QFrame#LeadersRow {
+    border-bottom: 1px solid #1c1f27;
+}
+
+QFrame#LeadersRow:hover {
+    background-color: #2c3140;
+}
+
+QLabel#LeadersCell,
+QLabel#LeadersCellRank,
+QLabel#LeadersCellPlayer {
+    color: #cbd5e1;
+    font-family: "Roboto Condensed", sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+QLabel#LeadersCellPlayer {
+    color: #e5e7eb;
+}
+
+QWidget#LeagueLeadersWidget,
+QWidget#LeadersContent {
+    background-color: transparent;
+    border: none;
+}

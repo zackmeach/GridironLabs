@@ -17,18 +17,102 @@ from typing import Iterable, Sequence
 from uuid import NAMESPACE_DNS, uuid5
 
 import polars as pl
-from rich.console import Console
-from rich.panel import Panel
-from rich.progress import (
-    BarColumn,
-    Progress,
-    SpinnerColumn,
-    TaskProgressColumn,
-    TextColumn,
-    TimeElapsedColumn,
-)
-from rich.table import Table
-from rich.theme import Theme
+
+# `rich` is optional. The generator should still run without it.
+try:  # pragma: no cover - depends on local environment
+    from rich.console import Console
+    from rich.panel import Panel
+    from rich.progress import (
+        BarColumn,
+        Progress,
+        SpinnerColumn,
+        TaskProgressColumn,
+        TextColumn,
+        TimeElapsedColumn,
+    )
+    from rich.table import Table
+    from rich.theme import Theme
+
+    RICH_AVAILABLE = True
+except Exception:  # pragma: no cover - fallback path
+    RICH_AVAILABLE = False
+
+    class Console:  # type: ignore[no-redef]
+        def __init__(self, *args, **kwargs) -> None:  # noqa: D401, ANN001
+            return
+
+        def print(self, *args, **kwargs) -> None:  # noqa: ANN001
+            # Best-effort: print without rich formatting.
+            text = " ".join(str(a) for a in args)
+            print(text)
+
+    class Theme:  # type: ignore[no-redef]
+        def __init__(self, *args, **kwargs) -> None:  # noqa: D401, ANN001
+            return
+
+    class Panel:  # type: ignore[no-redef]
+        @staticmethod
+        def fit(text: str, *args, **kwargs) -> str:  # noqa: D401, ANN001
+            return text
+
+    class Table:  # type: ignore[no-redef]
+        def __init__(self, title: str = "", expand: bool = False) -> None:  # noqa: FBT001, ARG002
+            self.title = title
+            self._rows: list[list[str]] = []
+
+        def add_column(self, *args, **kwargs) -> None:  # noqa: ANN001
+            return
+
+        def add_row(self, *cols: str) -> None:
+            self._rows.append([str(c) for c in cols])
+
+        def __str__(self) -> str:
+            lines = [self.title] if self.title else []
+            for row in self._rows:
+                lines.append(" | ".join(row))
+            return "\n".join(lines)
+
+    class Progress:  # type: ignore[no-redef]
+        def __init__(self, *args, **kwargs) -> None:  # noqa: ANN001
+            self._next_task_id = 1
+
+        def __enter__(self):  # noqa: ANN001
+            return self
+
+        def __exit__(self, exc_type, exc, tb) -> bool:  # noqa: ANN001
+            return False
+
+        def add_task(self, description: str, total=None):  # noqa: ANN001
+            task_id = self._next_task_id
+            self._next_task_id += 1
+            return task_id
+
+        def update(self, task_id, **kwargs) -> None:  # noqa: ANN001
+            return
+
+        def advance(self, task_id, advance: int = 1) -> None:  # noqa: ANN001
+            return
+
+    # Column stubs; only used as constructor args in rich mode.
+    class SpinnerColumn:  # type: ignore[no-redef]
+        def __init__(self, *args, **kwargs) -> None:  # noqa: ANN001
+            return
+
+    class TextColumn:  # type: ignore[no-redef]
+        def __init__(self, *args, **kwargs) -> None:  # noqa: ANN001
+            return
+
+    class BarColumn:  # type: ignore[no-redef]
+        def __init__(self, *args, **kwargs) -> None:  # noqa: ANN001
+            return
+
+    class TaskProgressColumn:  # type: ignore[no-redef]
+        def __init__(self, *args, **kwargs) -> None:  # noqa: ANN001
+            return
+
+    class TimeElapsedColumn:  # type: ignore[no-redef]
+        def __init__(self, *args, **kwargs) -> None:  # noqa: ANN001
+            return
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SRC_PATH = REPO_ROOT / "src"
@@ -366,68 +450,112 @@ def ratings_block(rng: random.Random, *, base: float | None = None) -> dict[str,
 
 
 def player_stats(position: str, rng: random.Random) -> dict[str, float]:
-    base = {
-        "games_played": rng.randint(8, 17),
-        "snaps": rng.randint(150, 1150),
-        "passing_yards": 0.0,
-        "passing_tds": 0.0,
-        "interceptions": 0.0,
-        "rushing_yards": 0.0,
-        "rushing_tds": 0.0,
-        "receptions": 0.0,
-        "receiving_yards": 0.0,
-        "receiving_tds": 0.0,
-        "tackles": 0.0,
-        "tackles_for_loss": 0.0,
-        "sacks": 0.0,
-        "forced_fumbles": 0.0,
-        "def_interceptions": 0.0,
-        "field_goals_made": 0.0,
-        "punts": 0.0,
-        "punt_yards": 0.0,
+    # Keep this sparse: keys should exist primarily when the player actually produces
+    # that stat. (This helps UI filters treat key presence as stat availability.)
+    base: dict[str, float] = {
+        "games_played": float(rng.randint(8, 17)),
+        "snaps": float(rng.randint(150, 1150)),
+        # Used in the Leaders panel across all categories.
+        "wpa_total": round(clamp(rng.normalvariate(0.1, 0.65), -2.5, 3.5), 3),
     }
     pos = position.upper()
     if pos == "QB":
-        base["passing_yards"] = clamp(rng.normalvariate(3800, 750), 500, 6000)
-        base["passing_tds"] = clamp(rng.normalvariate(27, 8), 2, 55)
-        base["interceptions"] = clamp(rng.normalvariate(11, 5), 0, 30)
-        base["rushing_yards"] = clamp(rng.normalvariate(220, 200), 0, 1200)
-        base["rushing_tds"] = clamp(rng.normalvariate(3, 2), 0, 12)
+        pass_att = clamp(rng.normalvariate(540, 90), 120, 760)
+        comp_pct = clamp(rng.normalvariate(0.655, 0.05), 0.45, 0.78)
+        completions = clamp(pass_att * comp_pct + rng.normalvariate(0, 8), 60, pass_att)
+
+        base["passing_attempts"] = round(pass_att, 2)
+        base["passing_completions"] = round(completions, 2)
+        base["passing_yards"] = round(clamp(rng.normalvariate(3800, 750), 500, 6000), 2)
+        base["passing_tds"] = round(clamp(rng.normalvariate(27, 8), 2, 55), 2)
+        base["interceptions"] = round(clamp(rng.normalvariate(11, 5), 0, 30), 2)
+        base["qbr"] = round(clamp(rng.normalvariate(62, 12), 10, 98), 1)
+        base["rushing_yards"] = round(clamp(rng.normalvariate(220, 200), 0, 1200), 2)
+        base["rushing_attempts"] = round(clamp(rng.normalvariate(45, 25), 0, 170), 2)
+        base["rushing_tds"] = round(clamp(rng.normalvariate(3, 2), 0, 12), 2)
+        base["fumbles"] = round(clamp(rng.normalvariate(4, 2.5), 0, 14), 2)
+        base["rush_20_plus"] = round(clamp(rng.normalvariate(2.0, 2.0), 0, 12), 2)
     elif pos in {"RB", "FB"}:
-        base["rushing_yards"] = clamp(rng.normalvariate(980, 320), 50, 2000)
-        base["rushing_tds"] = clamp(rng.normalvariate(8, 4), 0, 25)
-        base["receptions"] = clamp(rng.normalvariate(40, 20), 0, 110)
-        base["receiving_yards"] = clamp(rng.normalvariate(310, 180), 0, 900)
-        base["receiving_tds"] = clamp(rng.normalvariate(2, 2), 0, 10)
+        rush_att = clamp(rng.normalvariate(215, 70), 10, 380)
+        base["rushing_attempts"] = round(rush_att, 2)
+        base["rushing_yards"] = round(clamp(rng.normalvariate(980, 320), 50, 2000), 2)
+        base["rushing_tds"] = round(clamp(rng.normalvariate(8, 4), 0, 25), 2)
+        base["fumbles"] = round(clamp(rng.normalvariate(2.5, 1.8), 0, 12), 2)
+        base["rush_20_plus"] = round(clamp(rng.normalvariate(5.5, 3.5), 0, 25), 2)
+
+        targets = clamp(rng.normalvariate(55, 25), 0, 120)
+        catches = clamp(targets * clamp(rng.normalvariate(0.72, 0.08), 0.45, 0.9), 0, targets)
+        base["receiving_targets"] = round(targets, 2)
+        base["receptions"] = round(catches, 2)
+        base["receiving_yards"] = round(clamp(rng.normalvariate(310, 180), 0, 900), 2)
+        base["receiving_tds"] = round(clamp(rng.normalvariate(2, 2), 0, 10), 2)
+        base["receiving_yac"] = round(clamp(rng.normalvariate(220, 120), 0, 650), 2)
     elif pos == "WR":
-        base["receptions"] = clamp(rng.normalvariate(85, 25), 5, 150)
-        base["receiving_yards"] = clamp(rng.normalvariate(1050, 350), 100, 2200)
-        base["receiving_tds"] = clamp(rng.normalvariate(7, 3), 0, 20)
+        targets = clamp(rng.normalvariate(125, 35), 15, 210)
+        catch_pct = clamp(rng.normalvariate(0.66, 0.07), 0.4, 0.85)
+        catches = clamp(targets * catch_pct + rng.normalvariate(0, 5), 5, targets)
+        base["receiving_targets"] = round(targets, 2)
+        base["receptions"] = round(catches, 2)
+        base["receiving_yards"] = round(clamp(rng.normalvariate(1050, 350), 100, 2200), 2)
+        base["receiving_tds"] = round(clamp(rng.normalvariate(7, 3), 0, 20), 2)
+        base["receiving_yac"] = round(clamp(rng.normalvariate(420, 170), 0, 1100), 2)
+        base["fumbles"] = round(clamp(rng.normalvariate(1.2, 1.2), 0, 10), 2)
     elif pos == "TE":
-        base["receptions"] = clamp(rng.normalvariate(65, 20), 5, 120)
-        base["receiving_yards"] = clamp(rng.normalvariate(720, 220), 80, 1500)
-        base["receiving_tds"] = clamp(rng.normalvariate(6, 3), 0, 18)
+        targets = clamp(rng.normalvariate(92, 25), 10, 160)
+        catch_pct = clamp(rng.normalvariate(0.69, 0.06), 0.45, 0.88)
+        catches = clamp(targets * catch_pct + rng.normalvariate(0, 4), 5, targets)
+        base["receiving_targets"] = round(targets, 2)
+        base["receptions"] = round(catches, 2)
+        base["receiving_yards"] = round(clamp(rng.normalvariate(720, 220), 80, 1500), 2)
+        base["receiving_tds"] = round(clamp(rng.normalvariate(6, 3), 0, 18), 2)
+        base["receiving_yac"] = round(clamp(rng.normalvariate(260, 130), 0, 850), 2)
+        base["fumbles"] = round(clamp(rng.normalvariate(0.7, 0.9), 0, 7), 2)
     elif pos in {"CB", "S", "SAF", "DB"}:
-        base["tackles"] = clamp(rng.normalvariate(70, 25), 10, 160)
-        base["tackles_for_loss"] = clamp(rng.normalvariate(2, 2), 0, 10)
-        base["def_interceptions"] = clamp(rng.normalvariate(2.5, 2.5), 0, 12)
-        base["forced_fumbles"] = clamp(rng.normalvariate(1.0, 1.2), 0, 8)
+        base["tackles"] = round(clamp(rng.normalvariate(70, 25), 10, 160), 2)
+        base["tackles_for_loss"] = round(clamp(rng.normalvariate(2, 2), 0, 10), 2)
+        base["sacks"] = round(clamp(rng.normalvariate(1.0, 1.2), 0, 8), 2)
+        base["def_interceptions"] = round(clamp(rng.normalvariate(2.5, 2.5), 0, 12), 2)
+        base["forced_fumbles"] = round(clamp(rng.normalvariate(1.0, 1.2), 0, 8), 2)
+        base["passes_defended"] = round(clamp(rng.normalvariate(11, 4), 0, 28), 2)
     elif pos in {"LB", "ILB", "OLB", "MLB"}:
-        base["tackles"] = clamp(rng.normalvariate(105, 25), 20, 180)
-        base["tackles_for_loss"] = clamp(rng.normalvariate(12, 6), 0, 30)
-        base["sacks"] = clamp(rng.normalvariate(4, 3), 0, 20)
-        base["forced_fumbles"] = clamp(rng.normalvariate(1.5, 1.2), 0, 8)
+        base["tackles"] = round(clamp(rng.normalvariate(105, 25), 20, 180), 2)
+        base["tackles_for_loss"] = round(clamp(rng.normalvariate(12, 6), 0, 30), 2)
+        base["sacks"] = round(clamp(rng.normalvariate(4, 3), 0, 20), 2)
+        base["forced_fumbles"] = round(clamp(rng.normalvariate(1.5, 1.2), 0, 8), 2)
+        base["def_interceptions"] = round(clamp(rng.normalvariate(1.2, 1.8), 0, 8), 2)
+        base["passes_defended"] = round(clamp(rng.normalvariate(5.0, 3.0), 0, 18), 2)
     elif pos in {"DE", "DT", "NT", "DL"}:
-        base["tackles"] = clamp(rng.normalvariate(55, 15), 10, 120)
-        base["tackles_for_loss"] = clamp(rng.normalvariate(10, 5), 0, 25)
-        base["sacks"] = clamp(rng.normalvariate(6, 4), 0, 22)
-        base["forced_fumbles"] = clamp(rng.normalvariate(1.0, 0.8), 0, 6)
+        base["tackles"] = round(clamp(rng.normalvariate(55, 15), 10, 120), 2)
+        base["tackles_for_loss"] = round(clamp(rng.normalvariate(10, 5), 0, 25), 2)
+        base["sacks"] = round(clamp(rng.normalvariate(6, 4), 0, 22), 2)
+        base["forced_fumbles"] = round(clamp(rng.normalvariate(1.0, 0.8), 0, 6), 2)
+        base["passes_defended"] = round(clamp(rng.normalvariate(2.0, 1.5), 0, 10), 2)
     elif pos in {"K"}:
-        base["field_goals_made"] = clamp(rng.normalvariate(25, 6), 10, 45)
+        fga = int(round(clamp(rng.normalvariate(34, 6), 10, 55)))
+        # Simple breakdown; keep sums consistent with made/attempted.
+        made_rate = clamp(rng.normalvariate(0.83, 0.07), 0.55, 0.98)
+        fgm = int(round(clamp(fga * made_rate, 0, fga)))
+
+        under_29 = int(round(clamp(rng.normalvariate(10, 3), 0, fgm)))
+        remaining = max(0, fgm - under_29)
+        from_30_39 = int(round(clamp(rng.normalvariate(8, 3), 0, remaining)))
+        remaining = max(0, remaining - from_30_39)
+        from_40_49 = int(round(clamp(rng.normalvariate(7, 3), 0, remaining)))
+        remaining = max(0, remaining - from_40_49)
+        from_50_plus = remaining
+
+        base["field_goals_attempted"] = float(fga)
+        base["field_goals_made"] = float(fgm)
+        base["fg_made_under_29"] = float(under_29)
+        base["fg_made_30_39"] = float(from_30_39)
+        base["fg_made_40_49"] = float(from_40_49)
+        base["fg_made_50_plus"] = float(from_50_plus)
     elif pos in {"P"}:
-        base["punts"] = clamp(rng.normalvariate(70, 15), 30, 120)
-        base["punt_yards"] = base["punts"] * clamp(rng.normalvariate(45, 3), 35, 55)
-    return {k: round(v, 2) if isinstance(v, float) else v for k, v in base.items()}
+        punts = clamp(rng.normalvariate(70, 15), 30, 120)
+        base["punts"] = round(punts, 2)
+        base["punt_yards"] = round(punts * clamp(rng.normalvariate(45, 3), 35, 55), 2)
+
+    return base
 
 
 def group_names_by_position(

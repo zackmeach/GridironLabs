@@ -23,3 +23,4 @@ Running the UI locally:
 
 Scrolling note:
 - The theme supports OOTP-style hidden scrollbars **per-surface** via `scrollVariant="hidden"` on `QAbstractScrollArea` (default platform scrollbars remain enabled for future large-table pages).
+  - For dense “locked surface” panels, use `MicroScrollGuard` (`src/gridironlabs/ui/widgets/scroll_guard.py`) to suppress accidental 1px micro-scroll caused by rounding/border mismatches.

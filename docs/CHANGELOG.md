@@ -10,6 +10,18 @@
   - Scrollbar hiding is now **scoped** via `scrollVariant="hidden"` (default platform scrollbars remain available for future QTableView surfaces).
   - Added pytest-qt coverage for panel invariants (bar visibility rules, table variant padding, standings click navigation).
 
+## 2026-01-01
+
+- Home dashboard enhancements:
+  - Added **League Leaders** panel next to League Standings with category sections (PASSING/RUSHING/RECEIVING/KICKING/DEFENSE).
+  - Category stat headers are clickable and re-rank leaders **best-to-worst** (no ascending toggle); defensive category shows 12 rows and offensive categories show 5.
+  - Leaders stat headers now render inside the category bar row; numeric columns are right-aligned and column widths are normalized across categories for clean alignment.
+- Scroll UX hardening:
+  - Added `MicroScrollGuard` to suppress accidental 1px “micro-scroll” on locked surfaces while restoring normal scrolling for meaningful overflow.
+- Synthetic data generator:
+  - Expanded `scripts/generate_fake_nfl_data.py` to populate stat keys used by League Leaders (passing/rushing/receiving/kicking/defense + WPA/QBR inputs).
+  - `rich` is now optional for the generator; it falls back to plain printing when unavailable.
+
 ## 2025-12-29
 
 - Home dashboard layout:

@@ -99,6 +99,7 @@ Reference implementation:
 - For OOTP-style “no visible scrollbars” on a specific list/table surface:
   - set `scrollVariant="hidden"` on the `QAbstractScrollArea`
   - keep scroll policies `AsNeeded` so scrolling remains enabled
+  - if the surface should feel “locked” when content fits, attach `MicroScrollGuard` to treat <= 1px overflow as “fits” (suppresses the annoying 1px scroll range)
 
 ### 7) Interactivity rules (rows should be actionable)
 
@@ -252,7 +253,7 @@ config.set_cell_size(28)
 
 ## Reference implementation
 
-- **HomePage** includes a League Standings reference panel as a reference surface for the chrome + dense rows.
+- **HomePage** includes **League Standings** and **League Leaders** as reference surfaces for the chrome + dense rows (leaders supports clickable stat headers that re-rank best-to-worst per category).
 - **SettingsPage** is intentionally a blank scaffold while the new panel system is implemented.
 - **Entity Pages**:
   - `TeamSummaryPage` and `PlayerSummaryPage` serve as summary scaffolds for detail views.

@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
 
 from gridironlabs.ui.panels.bars.standard_bars import SectionBar
 from gridironlabs.ui.assets.logos import get_logo_pixmap
+from gridironlabs.ui.widgets.scroll_guard import MicroScrollGuard
 
 
 ROW_H = 26
@@ -216,6 +217,9 @@ class LeagueStandingsWidget(QFrame):
         # Keep scrolling enabled; scrollbars are hidden via theme.qss when scrollVariant="hidden".
         self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.scroll.setFocusPolicy(Qt.StrongFocus)
+
+        # Suppress accidental 1px micro-scroll while preserving real overflow scrolling.
+        self._micro_scroll_guard = MicroScrollGuard(self.scroll, threshold_px=1, normal_policy=Qt.ScrollBarAsNeeded)
         
         # Container for the vertical stack of sections
         self.content = QWidget()

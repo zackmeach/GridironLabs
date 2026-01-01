@@ -27,7 +27,7 @@ ParquetSummaryRepository (players/teams/coaches/games) ──► Services (summa
 
 Note: `scripts/refresh_data.py` is currently a **partial refresh** focused on downloading team logos and enriching `data/processed/teams.parquet` with `logo_path` / `logo_url`. Full end-to-end ingestion (fetch/merge/validate/write for all tables) is still scaffolded.
 
-UI note: table-like list surfaces (e.g. League Standings) load logos from `data/external/logos/` and cache scaled pixmaps in-process; scrollbar hiding is opt-in per surface via `scrollVariant="hidden"` (not global).
+UI note: table-like list surfaces (e.g. League Standings, League Leaders) load logos from `data/external/logos/` and cache scaled pixmaps in-process; scrollbar hiding is opt-in per surface via `scrollVariant="hidden"` (not global). For “locked surface” panels, `MicroScrollGuard` suppresses accidental 1px micro-scroll caused by rounding/border mismatches.
 
 ## Runtime bootstrap
 

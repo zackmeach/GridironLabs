@@ -13,7 +13,7 @@ These tables are consumed by `gridironlabs.data.repository.ParquetSummaryReposit
 - **team** (str): team abbreviation (e.g., `GB`)
 - **era** (str): season label (currently stringified year, e.g., `2025`)
 - **ratings** (struct/map): `overall`, `athleticism`, `technical`, `intangibles`, `potential` (0–100)
-- **stats** (struct/map): numeric stat keys (examples: `passing_yards`, `passing_tds`, `interceptions`, `rushing_yards`, `rushing_tds`, `receptions`, `receiving_yards`, `receiving_tds`, `tackles`, `tackles_for_loss`, `sacks`, `forced_fumbles`, `def_interceptions`, `field_goals_made`, `punts`, `punt_yards`)
+- **stats** (struct/map): numeric stat keys (examples used by the Home **League Leaders** panel):\n+  - Passing: `passing_yards`, `passing_completions`, `passing_attempts`, `passing_tds`, `interceptions`, `qbr`, `wpa_total`\n+  - Rushing: `rushing_yards`, `rushing_attempts`, `rushing_tds`, `fumbles`, `rush_20_plus`, `wpa_total`\n+  - Receiving: `receiving_yards`, `receptions`, `receiving_targets`, `receiving_tds`, `receiving_yac`, `fumbles`, `wpa_total`\n+  - Kicking: `field_goals_made`, `field_goals_attempted`, `fg_made_under_29`, `fg_made_30_39`, `fg_made_40_49`, `fg_made_50_plus`, `wpa_total`\n+  - Defense: `tackles`, `tackles_for_loss`, `sacks`, `forced_fumbles`, `def_interceptions`, `passes_defended`, `wpa_total`\n+\n+  Other example keys (still used by scripts/UI scaffolds): `punts`, `punt_yards`
 
 **Optional common metadata (when present):** `entity_type`, `schema_version`, `source`, `updated_at`
 
