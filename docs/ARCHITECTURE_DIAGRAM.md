@@ -40,7 +40,7 @@
 │  UI (PySide6)                │
 │  - NavigationBar + Context   │
 │  - Stacked pages             │
-│    - Settings: scaffold      │
+│    - Settings: form surface  │
 │    - Others: placeholders    │
 │  - Context bar 2x nav, holds │
 │    titles; no titles in body │
@@ -51,5 +51,6 @@
 
 Notes:
 - Context bar height is 2x nav and includes a leading icon slot.
-- Pages are built with the Page → GridCanvas → PanelChrome framework; many pages are placeholders/scaffolds.
+- Pages are built with the Page → GridCanvas → PanelChrome framework.
+- High-row-count tables are validated via a dev-only Table Demo surface (`page-table-demo`) using `OOTPTableView`.
 

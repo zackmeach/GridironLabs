@@ -23,6 +23,25 @@
   - Expanded `scripts/generate_fake_nfl_data.py` to populate stat keys used by League Leaders (passing/rushing/receiving/kicking/defense + WPA/QBR inputs).
   - `rich` is now optional for the generator; it falls back to plain printing when unavailable.
 
+## 2026-01-02
+
+- Panel system hardening:
+  - Added a protected `PanelChrome` public API for header/footer composition (`set_filters_*`, `set_columns_*`, `set_footer`, `set_primary_*`) to reduce UI drift.
+  - Standardized “locked surface” scrolling via `make_locked_scroll(...)` (hidden scrollbars per-surface + `MicroScrollGuard`).
+  - SectionBar now supports right-side column labels (`set_right_columns(...)`).
+- New reusable body primitives:
+  - `KeyValueList` (striped key/value rows with optional value widget)
+  - `RatingBarRow` (single + current/potential dual bars)
+  - `RichTextPanelBody` + `ChartPanelBody` wrappers
+  - `CalloutStrip` + `ScoreboardWidget` + `FooterButtonRow`
+  - `TabStrip` + `FormGrid` (settings-form archetype)
+- Large-table foundation:
+  - Introduced `ui/table` (`ColumnSpec`, `OOTPTableView`, base models, delegates) and a dev-only `TableDemoPage` (1k+ rows).
+  - QSettings persistence for table column widths + sort state.
+  - Rating-color delegate for numeric columns.
+- Settings:
+  - Settings page now renders a real settings-form reference surface via PanelChrome.
+
 ## 2025-12-29
 
 - Home dashboard layout:

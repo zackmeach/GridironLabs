@@ -71,14 +71,15 @@ This section is intentionally written so an independent agent can add a new pane
 ### 3) Build the chrome first, then the body
 
 - **Primary header**: title on the left, optional actions on the right.
-  - Use `panel.add_header_action(widget)` for right-side actions.
-- **Secondary header** (filters/paging): add widgets to `panel.header_secondary.add_left/add_right(...)`.
-- **Tertiary header** (column semantics / sort row): add widgets to `panel.header_tertiary.add_left/add_right(...)`.
+  - Use `panel.add_action_right(widget)` for right-side actions.
+  - Use `panel.add_action_left(widget)` for left-side controls (after the title).
+- **Secondary header** (filters/paging): use `panel.set_filters_left(*widgets)` / `panel.set_filters_right(*widgets)`.
+- **Tertiary header** (column semantics / sort row): use `panel.set_columns_left(*widgets)` / `panel.set_columns_right(*widgets)`.
 - **Important invariant**: don’t manually manage bar visibility in most cases.
   - Bars auto-show when you add content, and `clear()` hides empty bars.
   - If you need to rebuild filters/actions dynamically, use:
-    - `panel.header_secondary.clear()`
-    - `panel.header_tertiary.clear()`
+    - `panel.clear_filters()`
+    - `panel.clear_columns()`
 
 ### Secondary header: OOTP-style filter rows
 
@@ -89,7 +90,8 @@ Reference implementation (Home → **League Leaders** filter row):
 - `src/gridironlabs/core/nfl_structure.py` (static team→conference/division mapping used for filtering)
 
 Notes:
-- Conference/division/team filtering is supported via the static NFL mapping.\n+- Age/rookie filters are scaffolded but disabled until player age metadata is added to the dataset.
+- Conference/division/team filtering is supported via the static NFL mapping.
+- Age/rookie filters are scaffolded but disabled until player age metadata is added to the dataset.
 
 ### 4) Table/list surfaces: use a shared ColumnSpec (no drift)
 
@@ -108,9 +110,8 @@ Reference implementation:
 
 - Default: keep platform scrollbars.
 - For OOTP-style “no visible scrollbars” on a specific list/table surface:
-  - set `scrollVariant="hidden"` on the `QAbstractScrollArea`
-  - keep scroll policies `AsNeeded` so scrolling remains enabled
-  - if the surface should feel “locked” when content fits, attach `MicroScrollGuard` to treat <= 1px overflow as “fits” (suppresses the annoying 1px scroll range)
+  - prefer `make_locked_scroll(widget)` which sets `scrollVariant="hidden"` + `AsNeeded` policies and installs `MicroScrollGuard` to treat <= 1px overflow as “fits”
+  - for QTableView surfaces (`OOTPTableView`), keep platform scrollbars unless the page explicitly opts into hidden scrollbars
 
 ### 7) Interactivity rules (rows should be actionable)
 
@@ -125,7 +126,7 @@ Reference implementation:
 
 ## Example: Player Leaderboards panel (agent-safe skeleton)
 
-This example shows the intended file split and API usage (chrome + ColumnSpec + scroll variant + click callbacks).
+This example shows the intended file split and API usage (chrome + shared ColumnSpec + scroll variant + click callbacks).
 
 ```python
 # src/gridironlabs/ui/widgets/player_leaderboards.py
@@ -138,12 +139,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QScrollArea, QVBoxLayout, QWidget
 
 
-@dataclass(frozen=True)
-class ColumnSpec:
-    key: str
-    label: str
-    width: int
-    alignment: Qt.Alignment
+from gridironlabs.ui.table.columns import ColumnSpec
 
 
 LEADERBOARD_COLUMNS: tuple[ColumnSpec, ...] = (
@@ -176,18 +172,14 @@ class PlayerLeaderboardsWidget(QFrame):
         self.setObjectName("PlayerLeaderboardsWidget")
         self._on_player_click = on_player_click
 
-        self.scroll = QScrollArea(self)
-        self.scroll.setProperty("scrollVariant", "hidden")
-        self.scroll.setWidgetResizable(True)
-        self.scroll.setFrameShape(QFrame.NoFrame)
-        self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        from gridironlabs.ui.widgets.scroll_guard import make_locked_scroll
 
         self.content = QWidget()
         self.content.setObjectName("PlayerLeaderboardsContent")
         self.content_layout = QVBoxLayout(self.content)
         self.content_layout.setContentsMargins(0, 0, 0, 0)
         self.content_layout.setSpacing(0)
-        self.scroll.setWidget(self.content)
+        self.scroll = make_locked_scroll(self.content, threshold_px=1)
 
         root = QVBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
@@ -213,10 +205,10 @@ from gridironlabs.ui.widgets.player_leaderboards import (
 panel = PanelChrome(title="PLAYER LEADERBOARDS", panel_variant="table")
 
 # Optional: filters/paging in secondary header (auto-shows)
-panel.header_secondary.add_left(QLabel("SEASON: 2025"))
+panel.set_filters_left(QLabel("SEASON: 2025"))
 
 # Column semantics in tertiary header
-panel.header_tertiary.add_left(PlayerLeaderboardsHeaderRow())
+panel.set_columns_left(PlayerLeaderboardsHeaderRow())
 
 body = PlayerLeaderboardsWidget(on_player_click=self._on_player_click)
 panel.set_body(body)

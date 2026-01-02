@@ -6,19 +6,11 @@ from dataclasses import dataclass
 from typing import Callable, Iterable, Mapping
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import (
-    QFrame,
-    QHBoxLayout,
-    QLabel,
-    QScrollArea,
-    QSizePolicy,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget
 
 from gridironlabs.core.models import EntitySummary
 from gridironlabs.ui.panels.bars.standard_bars import SectionBar
-from gridironlabs.ui.widgets.scroll_guard import MicroScrollGuard
+from gridironlabs.ui.widgets.scroll_guard import make_locked_scroll
 
 
 ROW_H = 26
@@ -670,22 +662,13 @@ class LeagueLeadersWidget(QFrame):
         self._category_specs = category_specs or build_default_category_specs()
         self._sections: dict[str, CategorySection] = {}
 
-        self.scroll = QScrollArea(self)
-        self.scroll.setProperty("scrollVariant", "hidden")
-        self.scroll.setWidgetResizable(True)
-        self.scroll.setFrameShape(QFrame.NoFrame)
-        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-
-        self._micro_scroll_guard = MicroScrollGuard(self.scroll, threshold_px=1, normal_policy=Qt.ScrollBarAsNeeded)
-
         self.content = QWidget()
         self.content.setObjectName("LeadersContent")
         self.content_layout = QVBoxLayout(self.content)
         self.content_layout.setContentsMargins(0, 0, 0, 0)
         self.content_layout.setSpacing(0)
-
-        self.scroll.setWidget(self.content)
+        self.scroll = make_locked_scroll(self.content, threshold_px=1, normal_policy=Qt.ScrollBarAsNeeded)
+        self.scroll.setParent(self)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)

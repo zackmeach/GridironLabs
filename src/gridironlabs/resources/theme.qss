@@ -263,6 +263,221 @@ QLabel#SectionTitle {
     text-transform: uppercase;
 }
 
+QLabel#SectionColumnLabel {
+    color: #9ca3af;
+    font-family: "Roboto Condensed", sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* --- Key/Value list (detail panels) --- */
+QFrame#KeyValueList {
+    background-color: transparent;
+}
+
+QFrame#KeyValueRow {
+    min-height: 28px;
+    max-height: 28px;
+}
+
+QFrame#KeyValueRow[stripe="even"] {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+QFrame#KeyValueRow[stripe="odd"] {
+    background-color: rgba(255, 255, 255, 0.00);
+}
+
+QLabel#KeyValueKey {
+    color: #cbd5e1;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+QLabel#KeyValueValue {
+    color: #e5e7eb;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+/* --- Rating bars --- */
+QFrame#RatingBarRow {
+    background-color: transparent;
+}
+
+QLabel#RatingLabel {
+    color: #cbd5e1;
+    font-size: 17px;
+    font-weight: 600;
+    min-width: 150px;
+}
+
+QLabel#RatingNumbers {
+    color: #cbd5e1;
+    font-family: "Roboto Condensed", sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+QFrame#RatingTrack {
+    background-color: #3a3f4b;
+    border-radius: 3px;
+}
+
+QFrame#RatingFillCurrent[currentTier="elite"] { background-color: #0284c7; }   /* blue */
+QFrame#RatingFillCurrent[currentTier="good"] { background-color: #10b981; }    /* green */
+QFrame#RatingFillCurrent[currentTier="avg"]  { background-color: #f59e0b; }    /* amber */
+QFrame#RatingFillCurrent[currentTier="poor"] { background-color: #ef4444; }    /* red */
+
+QFrame#RatingFillPotential {
+    background-color: rgba(255, 255, 255, 0.25);
+}
+
+/* --- OOTPTableView (QTableView) --- */
+QTableView#OOTPTableView {
+    background-color: transparent;
+    border: none;
+    selection-background-color: #2c3140;
+    selection-color: #e5e7eb;
+}
+
+QHeaderView::section {
+    background-color: #252a33;
+    color: #9ca3af;
+    padding: 4px 8px;
+    border: none;
+    border-bottom: 1px solid #20242d;
+    font-weight: 700;
+}
+
+/* --- Callout strip + scoreboard --- */
+QFrame#CalloutStrip {
+    background-color: transparent;
+    border-top: 2px solid #20242d;
+    border-bottom: 1px solid #20242d;
+}
+
+QFrame#CalloutStrip[intent="danger"] {
+    border-top: 2px solid #ef4444;
+}
+
+QFrame#CalloutStrip[intent="success"] {
+    border-top: 2px solid #10b981;
+}
+
+QLabel#CalloutLeft {
+    font-size: 20px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+QLabel#CalloutRight {
+    color: #cbd5e1;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+QFrame#ScoreboardWidget {
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid #20242d;
+    border-radius: 6px;
+}
+
+QLabel#ScoreboardHeaderCell {
+    color: #9ca3af;
+    font-family: "Roboto Condensed", sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+QLabel#ScoreboardCell {
+    color: #e5e7eb;
+    font-family: "Roboto Condensed", sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+QLabel#ScoreboardCell[emphasis="true"] {
+    color: #ffffff;
+}
+
+QWidget#FooterButtonRow QPushButton#FooterButton {
+    background-color: #232733;
+    color: #e5e7eb;
+    border: 1px solid #2b3040;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+QWidget#FooterButtonRow QPushButton#FooterButton:hover {
+    background-color: #2c3140;
+}
+
+/* --- Rich text / charts --- */
+QFrame#RichTextPanelBody {
+    background-color: transparent;
+}
+
+QTextBrowser#RichTextBrowser {
+    background-color: transparent;
+    border: none;
+    color: #e5e7eb;
+}
+
+QTextBrowser#RichTextBrowser a {
+    color: #93c5fd;
+    text-decoration: underline;
+}
+
+QFrame#ChartPanelBody {
+    background-color: transparent;
+}
+
+/* --- Tab strip + form grid --- */
+QFrame#TabStrip {
+    background-color: transparent;
+}
+
+QPushButton#TabStripButton {
+    background-color: #232733;
+    color: #d1d5db;
+    border: 1px solid #2b3040;
+    padding: 6px 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+QPushButton#TabStripButton:checked {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    color: #f9fafb;
+}
+
+QFrame#FormGrid {
+    background-color: transparent;
+}
+
+QLabel#FormSectionTitle {
+    color: #9ca3af;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-top: 6px;
+}
+
+QLabel#FormLabel {
+    color: #e5e7eb;
+    font-weight: 600;
+}
+
+QLabel#FormCaption {
+    color: #9ca3af;
+    font-size: 16px;
+    margin-bottom: 6px;
+}
+
 /* Primary Header (Title) */
 QFrame#PrimaryHeaderBar {
     background-color: #2e3440; 

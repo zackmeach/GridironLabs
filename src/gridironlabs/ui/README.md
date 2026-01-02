@@ -10,11 +10,13 @@ PySide6 desktop shell pieces:
 - `style/` — Python-side tokens used by widgets/layout defaults.
 - `panels/` — OOTP-style panel chrome primitives. `PanelChrome` provides optional header bars (primary/secondary/tertiary), a body region (managed via `set_body` / `add_body`), and an optional footer. Bar widgets live in `panels/bars/`.
 - `assets/` — UI asset helpers (e.g. cached logo pixmaps loaded from `data/external/logos/`).
-- `widgets/` — reusable widgets (navigation bar, legacy panel cards, state banners).
+- `widgets/` — reusable widgets (navigation bar, standings/leaders bodies, filters, key/value lists, rating bars, rich text, charts, scoreboard, tab strip, form grid).
+- `table/` — model/view table foundation (`OOTPTableView`, shared `ColumnSpec`, base models, delegates).
+- `persistence/` — QSettings helpers for UI persistence (tables first).
 - `resources` (../resources) — dark theme QSS and future assets.
 
 Settings page note:
-- Settings is currently a minimal scaffold page (built on `BasePage` + `GridCanvas`) that can be expanded with real settings panels.
+- Settings now includes a basic settings-form reference surface (TabStrip + FormGrid) implemented as a `PanelChrome` card.
 
 Running the UI locally:
 - Ensure the venv is active (`source .venv/bin/activate` or `.\\.venv\\Scripts\\activate` on Windows).
@@ -25,4 +27,7 @@ Running the UI locally:
 
 Scrolling note:
 - The theme supports OOTP-style hidden scrollbars **per-surface** via `scrollVariant="hidden"` on `QAbstractScrollArea` (default platform scrollbars remain enabled for future large-table pages).
-  - For dense “locked surface” panels, use `MicroScrollGuard` (`src/gridironlabs/ui/widgets/scroll_guard.py`) to suppress accidental 1px micro-scroll caused by rounding/border mismatches.
+  - For dense “locked surface” panels, use `make_locked_scroll(...)` (`src/gridironlabs/ui/widgets/scroll_guard.py`) to apply consistent scroll config + `MicroScrollGuard` suppression of accidental 1px micro-scroll.
+
+Table demo note:
+- `TableDemoPage` (`page-table-demo`) exists in the stacked pages as a dev-only proof surface for `OOTPTableView` (1k+ rows, sorting, and QSettings persistence).

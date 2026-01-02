@@ -27,7 +27,7 @@ ParquetSummaryRepository (players/teams/coaches/games) ──► Services (summa
 
 Note: `scripts/refresh_data.py` is currently a **partial refresh** focused on downloading team logos and enriching `data/processed/teams.parquet` with `logo_path` / `logo_url`. Full end-to-end ingestion (fetch/merge/validate/write for all tables) is still scaffolded.
 
-UI note: table-like list surfaces (e.g. League Standings, League Leaders) load logos from `data/external/logos/` and cache scaled pixmaps in-process; scrollbar hiding is opt-in per surface via `scrollVariant="hidden"` (not global). For “locked surface” panels, `MicroScrollGuard` suppresses accidental 1px micro-scroll caused by rounding/border mismatches.
+UI note: table-like list surfaces (e.g. League Standings, League Leaders) load logos from `data/external/logos/` and cache scaled pixmaps in-process; scrollbar hiding is opt-in per surface via `scrollVariant="hidden"` (not global). For “locked surface” panels, use `make_locked_scroll(...)` which wires `scrollVariant="hidden"` plus `MicroScrollGuard` to suppress accidental 1px micro-scroll caused by rounding/border mismatches.
 
 Leaders filtering note: the Home **League Leaders** panel includes an OOTP-style filter row. Conference/division/team filters are powered by a static mapping (`src/gridironlabs/core/nfl_structure.py`) so filters work even before the ingestion pipeline provides explicit conference/division fields. Age/rookie remains scaffolded until player metadata is added.
 
@@ -39,6 +39,10 @@ Leaders filtering note: the Home **League Leaders** panel includes an OOTP-style
 4. Initialize the Parquet repository + services (search, summary), caching entities in memory and normalizing text/numeric/date fields.
 5. Start PySide6 shell with navigation, a context bar under the nav (2x nav height), and stacked pages. The shell bootstraps context stats (players/teams/coaches/seasons span) and an upcoming-matchup ticker from `games.parquet`. Page titles are not repeated in body content; pages render body content via `PanelChrome` instances placed on a grid canvas (PanelChrome provides header bars, a body region, and an optional footer).
 6. Navigation history is tracked for browser-style back/forward controls. Search submissions build an in-memory index the first time a query is run and route users to the search page scaffold.
+
+UI table note:
+- High-row-count “big tables” are intended to use `OOTPTableView` (QTableView + QSortFilterProxyModel) under `src/gridironlabs/ui/table/`.
+- Column widths and sort state are persisted via QSettings (see `OOTPTableView.enable_persistence(...)`).
 
 ## Quality & testing guardrails
 

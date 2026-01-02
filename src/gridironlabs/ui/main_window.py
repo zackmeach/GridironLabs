@@ -29,6 +29,7 @@ from gridironlabs.ui.pages.settings_page import SettingsPage
 from gridironlabs.ui.pages.team_page import TeamSummaryPage
 from gridironlabs.ui.pages.player_page import PlayerSummaryPage
 from gridironlabs.ui.pages.base_page import BasePage
+from gridironlabs.ui.pages.table_demo_page import TableDemoPage
 from gridironlabs.ui.panels import PanelChrome
 from gridironlabs.ui.style.tokens import GRID
 from gridironlabs.ui.widgets.navigation import NavigationBar
@@ -63,13 +64,10 @@ class HomePage(BasePage):
         # Minimal chrome box to start rebuilding the Home layout.
         self.league_standings_panel = PanelChrome(title="LEAGUE STANDINGS", panel_variant="table")
         
-        # Configure the chrome to look like a full OOTP panel
-        self.league_standings_panel.show_secondary_header(False)
-        self.league_standings_panel.show_tertiary_header(True)
         self.league_standings_panel.set_footer_text("View: Standard Standings | 32 Teams")
-
-        # Column headers (use a real layout so it aligns with row columns)
-        self.league_standings_panel.header_tertiary.add_left(StandingsHeaderRow())
+        # Column headers (use a real layout so it aligns with row columns).
+        # Adding content shows the tertiary bar automatically.
+        self.league_standings_panel.set_columns_left(StandingsHeaderRow())
 
         # Content: Scrollable list of divisions
         self.standings_widget = LeagueStandingsWidget(on_team_click=self._on_team_click)
@@ -137,12 +135,11 @@ class HomePage(BasePage):
 
         # League leaders panel (wider to accommodate 7 stat columns).
         self.league_leaders_panel = PanelChrome(title="LEAGUE LEADERS", panel_variant="table")
-        self.league_leaders_panel.show_secondary_header(True)
-        self.league_leaders_panel.show_tertiary_header(False)
         self.league_leaders_panel.set_footer_text("Tip: Click a stat to re-rank (best-to-worst).")
 
         self.leaders_filter_bar = LeadersFilterBar(on_change=self._on_leaders_filters_changed)
-        self.league_leaders_panel.header_secondary.add_left(self.leaders_filter_bar)
+        # Adding content shows the secondary bar automatically.
+        self.league_leaders_panel.set_filters_left(self.leaders_filter_bar)
 
         self.leaders_widget = LeagueLeadersWidget(on_player_click=self._on_player_click)
         self.league_leaders_panel.set_body(self.leaders_widget)
@@ -399,6 +396,11 @@ class GridironLabsMainWindow(QMainWindow):
         self.search_page = SearchResultsPage()
         self.content_stack.addWidget(self.search_page)
         self.pages["search"] = self.search_page
+
+        # Dev-only table demo (not in top nav).
+        self.table_demo_page = TableDemoPage()
+        self.content_stack.addWidget(self.table_demo_page)
+        self.pages["table-demo"] = self.table_demo_page
 
         self.team_summary_page = TeamSummaryPage()
         self.content_stack.addWidget(self.team_summary_page)

@@ -10,6 +10,7 @@ from PySide6.QtWidgets import QHBoxLayout, QWidget
 
 from gridironlabs.core.nfl_structure import list_conferences, list_divisions, list_teams
 from gridironlabs.ui.widgets.base_components import AppComboBox
+from gridironlabs.ui.widgets.compact_filter_bar import CompactFilterBar
 
 
 @dataclass(frozen=True)
@@ -29,10 +30,12 @@ class LeadersFilterBar(QWidget):
         self._on_change = on_change
         self._updating = False
 
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(8)
-        layout.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        root = QHBoxLayout(self)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(0)
+
+        self._bar = CompactFilterBar(height=26, spacing=8, allow_horizontal_scroll=False)
+        root.addWidget(self._bar)
 
         self.age_combo = AppComboBox()
         self.age_combo.setFixedWidth(170)
@@ -60,11 +63,10 @@ class LeadersFilterBar(QWidget):
         self.team_combo.setFixedWidth(220)
         self.team_combo.setToolTip("Team filter (alphabetical).")
 
-        layout.addWidget(self.age_combo)
-        layout.addWidget(self.conf_combo)
-        layout.addWidget(self.div_combo)
-        layout.addWidget(self.team_combo)
-        layout.addStretch(1)
+        self._bar.add_left(self.age_combo)
+        self._bar.add_left(self.conf_combo)
+        self._bar.add_left(self.div_combo)
+        self._bar.add_left(self.team_combo)
 
         self.conf_combo.currentIndexChanged.connect(self._on_conference_changed)
         self.div_combo.currentIndexChanged.connect(self._on_division_changed)

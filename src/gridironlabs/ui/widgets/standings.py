@@ -2,35 +2,19 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Callable
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import (
-    QFrame,
-    QHBoxLayout,
-    QLabel,
-    QScrollArea,
-    QSizePolicy,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget
 
 from gridironlabs.ui.panels.bars.standard_bars import SectionBar
 from gridironlabs.ui.assets.logos import get_logo_pixmap
-from gridironlabs.ui.widgets.scroll_guard import MicroScrollGuard
+from gridironlabs.ui.widgets.scroll_guard import make_locked_scroll
+from gridironlabs.ui.table.columns import ColumnSpec
 
 
 ROW_H = 26
 LOGO_SIZE = 18
-
-
-@dataclass(frozen=True)
-class ColumnSpec:
-    key: str
-    label: str
-    width: int
-    alignment: Qt.Alignment
 
 
 STANDINGS_COLUMNS: tuple[ColumnSpec, ...] = (
@@ -208,19 +192,6 @@ class LeagueStandingsWidget(QFrame):
         self.setObjectName("LeagueStandingsWidget")
         self._on_team_click = on_team_click
         
-        # Scroll area for arbitrary number of divisions
-        self.scroll = QScrollArea(self)
-        self.scroll.setProperty("scrollVariant", "hidden")
-        self.scroll.setWidgetResizable(True)
-        self.scroll.setFrameShape(QFrame.NoFrame)
-        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        # Keep scrolling enabled; scrollbars are hidden via theme.qss when scrollVariant="hidden".
-        self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.scroll.setFocusPolicy(Qt.StrongFocus)
-
-        # Suppress accidental 1px micro-scroll while preserving real overflow scrolling.
-        self._micro_scroll_guard = MicroScrollGuard(self.scroll, threshold_px=1, normal_policy=Qt.ScrollBarAsNeeded)
-        
         # Container for the vertical stack of sections
         self.content = QWidget()
         self.content.setObjectName("StandingsContent")
@@ -228,7 +199,9 @@ class LeagueStandingsWidget(QFrame):
         self.content_layout.setContentsMargins(0, 0, 0, 0)
         self.content_layout.setSpacing(0)
         
-        self.scroll.setWidget(self.content)
+        # Scroll area for arbitrary number of divisions (locked surface behavior).
+        self.scroll = make_locked_scroll(self.content, threshold_px=1, normal_policy=Qt.ScrollBarAsNeeded)
+        self.scroll.setParent(self)
         
         # Main layout puts scroll area in frame
         layout = QVBoxLayout(self)

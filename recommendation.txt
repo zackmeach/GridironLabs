@@ -6,10 +6,20 @@ Purpose
 Define an “OOTP-style” panel system that stays consistent across many screens by making the panel structure,
 sizing, semantics, and persistence explicit (so the UI can’t slowly drift screen-by-screen).
 
-Current implementation note
----------------------------
-`PanelChrome` in the codebase is currently a minimal container (panel background + `body_layout` only).
-This document describes the target contract the implementation will grow toward.
+Current implementation note (updated)
+-------------------------------------
+`PanelChrome` is now implemented as an OOTP-style vertical stack with Primary/Secondary/Tertiary header bars, a managed body region, and an optional footer. The public API is intentionally narrower to reduce drift:
+- `set_filters_left/right(...)`, `set_columns_left/right(...)` (replace semantics)
+- `add_action_left/right(...)`, `set_primary_left/right(...)`
+- `set_footer(text=..., left_widget=..., right_widget=...)` (replace semantics; footer meta label is preserved)
+
+For “locked surface” list panels, use `make_locked_scroll(...)` which wires `scrollVariant="hidden"` plus `MicroScrollGuard`.
+
+For high-row-count tables, `ui/table` now includes:
+- `ColumnSpec` (shared with widget tables like Standings)
+- `OOTPTableView` (QTableView wrapper + proxy sorting)
+- QSettings persistence for column widths + sort state (`enable_persistence(...)`)
+- Delegates (starting with rating-colored numeric cells)
 
 Non-goals
 ---------
