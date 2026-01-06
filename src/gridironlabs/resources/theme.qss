@@ -52,7 +52,7 @@ QAbstractScrollArea[scrollVariant="hidden"]::corner {
 QToolButton#NavIconButton {
     color: #d1d5db;
     border: 1px solid #262a33;
-    background-color: #13151c;
+    background-color: #252525;
     padding: 6px 10px;
     border-radius: 6px;
     font-weight: 700;
@@ -60,7 +60,7 @@ QToolButton#NavIconButton {
 }
 
 QToolButton#NavIconButton:hover {
-    background-color: #1c2029;
+    background-color: #2a2f3a;
 }
 
 QToolButton#NavIconButton:disabled {
@@ -70,7 +70,7 @@ QToolButton#NavIconButton:disabled {
 
 QPushButton#NavSectionButton {
     color: #d1d5db;
-    background-color: #14171f;
+    background-color: #252525;
     border: 1px solid #262a33;
     padding: 8px 12px;
     border-radius: 6px;
@@ -79,7 +79,7 @@ QPushButton#NavSectionButton {
 }
 
 QPushButton#NavSectionButton:hover {
-    background-color: #1c2029;
+    background-color: #2a2f3a;
 }
 
 QPushButton#NavSectionButton:checked {
@@ -90,7 +90,7 @@ QPushButton#NavSectionButton:checked {
 
 QLineEdit#TopNavSearch {
     min-width: 200px;
-    background-color: #13171f;
+    background-color: #252525;
     border: 1px solid #262a33;
     padding: 7px 12px;
     border-radius: 6px;
@@ -99,18 +99,18 @@ QLineEdit#TopNavSearch {
 }
 
 QPushButton#SettingsButton {
-    background-color: #232733;
+    background-color: #252525;
     color: #e5e7eb;
     padding: 8px 12px;
     border-radius: 6px;
-    border: 1px solid #262a33;
+    border: 1px solid #20242d;
     text-transform: uppercase;
     font-weight: 700;
     font-size: 32px;
 }
 
 QPushButton#SettingsButton:hover {
-    background-color: #2b3140;
+    background-color: #2a2f3a;
 }
 
 QFrame#ContextStrip {
