@@ -21,6 +21,23 @@ class ColorTokens:
     text_primary: str = "#e5e7eb"
     text_secondary: str = "#9ca3af"
     accent: str = "#2563eb"
+    # Semantic tiers (mirrors theme.qss)
+    tier_elite: str = "#0284c7"  # blue
+    tier_good: str = "#10b981"  # green
+    tier_avg: str = "#f59e0b"  # amber
+    tier_poor: str = "#ef4444"  # red
+
+
+@dataclass(frozen=True)
+class RatingTierTokens:
+    """Stable thresholds for rating tiers (OVR/POT etc.).
+
+    Keep these coarse and stable; bumping these effectively changes the UI meaning.
+    """
+
+    elite_min: int = 70
+    good_min: int = 55
+    avg_min: int = 40
 
 
 @dataclass(frozen=True)
@@ -52,6 +69,7 @@ class GridTokens:
 
 
 COLORS = ColorTokens()
+RATING = RatingTierTokens()
 SPACING = SpacingTokens()
 RADIUS = RadiusTokens()
 GRID = GridTokens()

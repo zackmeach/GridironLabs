@@ -36,6 +36,7 @@ from gridironlabs.ui.widgets.navigation import NavigationBar
 from gridironlabs.ui.widgets.standings import LeagueStandingsWidget, StandingsHeaderRow
 from gridironlabs.ui.widgets.leaders import LeagueLeadersWidget
 from gridironlabs.ui.widgets.leaders_filters import LeadersFilterBar, LeadersFilters
+from gridironlabs.ui.widgets.schedule import LeagueScheduleWidget, ScheduleWeekNavigator
 
 
 class HomePage(BasePage):
@@ -54,6 +55,7 @@ class HomePage(BasePage):
         self._on_team_click = on_team_click
         self._on_player_click = on_player_click
         self._all_players: list[EntitySummary] = []
+        self._all_games: list[GameSummary] = []
         self._leaders_filters = LeadersFilters(
             age_key="all",
             conference=None,
@@ -63,6 +65,7 @@ class HomePage(BasePage):
 
         # Minimal chrome box to start rebuilding the Home layout.
         self.league_standings_panel = PanelChrome(title="LEAGUE STANDINGS", panel_variant="table")
+        self.league_standings_panel.setObjectName("panel-league-standings")
         
         self.league_standings_panel.set_footer_text("View: Standard Standings | 32 Teams")
         # Column headers (use a real layout so it aligns with row columns).
@@ -135,6 +138,7 @@ class HomePage(BasePage):
 
         # League leaders panel (wider to accommodate 7 stat columns).
         self.league_leaders_panel = PanelChrome(title="LEAGUE LEADERS", panel_variant="table")
+        self.league_leaders_panel.setObjectName("panel-league-leaders")
         self.league_leaders_panel.set_footer_text("Tip: Click a stat to re-rank (best-to-worst).")
 
         self.leaders_filter_bar = LeadersFilterBar(on_change=self._on_leaders_filters_changed)
@@ -144,7 +148,22 @@ class HomePage(BasePage):
         self.leaders_widget = LeagueLeadersWidget(on_player_click=self._on_player_click)
         self.league_leaders_panel.set_body(self.leaders_widget)
 
-        self.add_panel(self.league_leaders_panel, col=13, row=0, col_span=23, row_span=12)
+        # League schedule panel (right side).
+        self.league_schedule_panel = PanelChrome(title="LEAGUE SCHEDULE", panel_variant="table")
+        self.league_schedule_panel.setObjectName("panel-league-schedule")
+        self.league_schedule_panel.set_footer_text("Tip: Use ◀ ▶ to change weeks.")
+
+        self.schedule_widget = LeagueScheduleWidget()
+        self.league_schedule_panel.set_body(self.schedule_widget)
+
+        # Week navigator lives in primary-right.
+        self.week_nav = ScheduleWeekNavigator(on_prev=self._on_prev_week, on_next=self._on_next_week)
+        self.week_nav.set_label(self.schedule_widget.current_group_label())
+        self.league_schedule_panel.set_primary_right(self.week_nav)
+
+        # Rebalance spans to fit 3 panels in 36 columns.
+        self.add_panel(self.league_leaders_panel, col=13, row=0, col_span=13, row_span=12)
+        self.add_panel(self.league_schedule_panel, col=26, row=0, col_span=10, row_span=12)
 
     def set_subtitle(self, text: str) -> None:
         self._subtitle = text
@@ -154,6 +173,20 @@ class HomePage(BasePage):
         # Normalize to expected model type; repository returns EntitySummary but callers may pass list[Any].
         self._all_players = [p for p in players if isinstance(p, EntitySummary)]
         self._refresh_leaders()
+
+    def set_games(self, games: list) -> None:
+        """Provide game summaries to the schedule widget after data bootstrap."""
+        self._all_games = [g for g in games if isinstance(g, GameSummary)]
+        self.schedule_widget.set_games(self._all_games)
+        self.week_nav.set_label(self.schedule_widget.current_group_label())
+
+    def _on_prev_week(self) -> None:
+        self.schedule_widget.prev_group()
+        self.week_nav.set_label(self.schedule_widget.current_group_label())
+
+    def _on_next_week(self) -> None:
+        self.schedule_widget.next_group()
+        self.week_nav.set_label(self.schedule_widget.current_group_label())
 
     def _on_leaders_filters_changed(self, filters: LeadersFilters) -> None:
         self._leaders_filters = filters
@@ -468,6 +501,11 @@ class GridironLabsMainWindow(QMainWindow):
                     home_page.set_players(players)
                 except Exception:
                     pass
+            if home_page and hasattr(home_page, "set_games"):
+                try:
+                    home_page.set_games(games)
+                except Exception:
+                    pass
 
             matchups = self._build_upcoming_matchups(games, teams)
             self._start_matchup_cycle(matchups)
@@ -603,6 +641,23 @@ class GridironLabsMainWindow(QMainWindow):
 
         if self.logger:
             self.logger.info("Navigate", extra={"section": section_key})
+
+    # --- Public navigation API (for dev tooling / snapshot CLI) ---
+    def navigate_to(self, page_object_name: str) -> None:
+        """Navigate to a page by its widget objectName (e.g. 'page-home').
+
+        This is a dev-tooling friendly wrapper so scripts don't have to call private
+        methods or depend on section keys.
+        """
+        # Resolve objectName -> section_key.
+        for key, page in self.pages.items():
+            if page.objectName() == page_object_name:
+                self._navigate_to(key)
+                return
+        # Fallback: allow passing section key directly.
+        if page_object_name in self.pages:
+            self._navigate_to(page_object_name)
+            return
 
     def _record_history(self, section_key: str) -> None:
         if self.history and self.history[self.history_index] == section_key:

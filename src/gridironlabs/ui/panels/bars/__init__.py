@@ -1,7 +1,7 @@
 """Panel bar primitives (scaffolding).
 
 These bars are the building blocks of the OOTP-style panel contract described in
-`recommendation.txt` (repo root).
+`docs/UI_CONTRACT.md`.
 """
 
 from __future__ import annotations

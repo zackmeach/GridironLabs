@@ -10,6 +10,8 @@ Gridiron Labs follows a layered desktop architecture built for offline-friendly 
 - **UI**: PySide6 shell (nav + context bar + content stack). Page titles live only in the context bar. Pages are built with the Page → GridCanvas → PanelChrome framework (PanelChrome implements the OOTP-style header/body/footer chrome and provides an opinionated body API). Interactive entity navigation (clicking teams/players) is supported via specialized summary pages. The nav bar also exposes search + settings affordances and back/forward history controls.
 - **Scripts**: Operational entrypoints for refresh and synthetic data.
 
+UI contract note: the source-of-truth UI composition + persistence conventions live in `docs/UI_CONTRACT.md`.
+
 ## Data flow (current scaffold)
 
 ```text

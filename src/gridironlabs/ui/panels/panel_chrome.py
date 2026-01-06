@@ -1,6 +1,6 @@
 """Panel chrome implementing the OOTP-style container contract.
 
-See `recommendation.txt` for the full spec.
+See `docs/UI_CONTRACT.md` for the full spec.
 """
 
 from __future__ import annotations

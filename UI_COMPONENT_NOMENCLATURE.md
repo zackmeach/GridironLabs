@@ -15,7 +15,9 @@ Current UI primitives and screens (cosmetic unless noted):
 - **BasePage** — reusable page base that owns a `GridCanvas` for panel placement.
 - **GridCanvas** — 36-column content grid; panels are placed by `(col, row, col_span, row_span)`.
 - **GridOverlay / GridOverlayConfig** — optional debug overlay for the grid (toggle, opacity, color, cell size).
-- **PanelChrome** — OOTP-style page panel container used on the grid.\n+  - Vertical stack: primary/secondary/tertiary header bars + body + optional footer.\n+  - `panel_variant=\"table\"` provides dense “table/list” padding defaults for aligned rows.
+- **PanelChrome** — OOTP-style page panel container used on the grid.
+  - Vertical stack: primary/secondary/tertiary header bars + body + optional footer.
+  - `panel_variant="table"` provides dense “table/list” padding defaults for aligned rows.
 - **SettingsPage** — settings reference surface (TabStrip + FormGrid) implemented as a `PanelChrome` card panel.
 - **TableDemoPage** — dev-only high-row-count table surface used to validate `OOTPTableView` styling/sorting/persistence.
 

@@ -232,6 +232,17 @@ QFrame#PanelChrome QWidget {
     background-color: transparent;
 }
 
+/* Panel variants
+   Note: layout padding is handled in code (PanelChrome body layout margins).
+   These selectors exist so visual divergence is expressed in QSS (not Python). */
+QFrame#PanelChrome[panelVariant="card"] {
+    /* Default card-like panel. Keep as the base. */
+}
+
+QFrame#PanelChrome[panelVariant="table"] {
+    /* Dense, table-like surfaces. */
+}
+
 /* Panel Body */
 QFrame#PanelBody {
     background-color: transparent; /* Let container bg show through or set specific */
@@ -500,6 +511,31 @@ QFrame#SecondaryHeaderBar {
     min-height: 28px; /* Increased from 24px */
     max-height: 28px;
     padding: 0px 8px;
+}
+
+/* CompactFilterBar (secondary header standard)
+   Keep it neutral; the header bar provides inset + background. */
+QFrame#CompactFilterBar {
+    background-color: transparent;
+}
+
+QWidget#CompactFilterBarContent {
+    background-color: transparent;
+}
+
+QScrollArea#CompactFilterBarScroll {
+    background-color: transparent;
+    border: none;
+}
+
+QScrollArea#CompactFilterBarScroll QWidget {
+    background-color: transparent;
+}
+
+QLabel#CompactFilterSummary {
+    color: #9ca3af;
+    font-size: 16px;
+    font-weight: 700;
 }
 
 /* Tertiary Header (Sort/Columns) */
@@ -846,4 +882,60 @@ QWidget#LeagueLeadersWidget,
 QWidget#LeadersContent {
     background-color: transparent;
     border: none;
+}
+
+/* Schedule Specifics */
+
+/* Make schedule day header bars taller than generic section bars. */
+QFrame[barRole="section"][scheduleVariant="schedule"] {
+    min-height: 44px;
+    max-height: 44px;
+}
+
+QWidget#LeagueScheduleWidget,
+QWidget#ScheduleContent {
+    background-color: transparent;
+    border: none;
+}
+
+QFrame#ScheduleRow {
+    border-bottom: 1px solid #1c1f27;
+}
+
+QFrame#ScheduleRow:hover {
+    background-color: #2c3140;
+}
+
+QLabel#ScheduleTeamLabel,
+QLabel#ScheduleTime,
+QLabel#ScheduleScore {
+    color: #cbd5e1;
+    font-family: "Roboto Condensed", sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+QLabel#ScheduleTeamLabel {
+    color: #e5e7eb;
+}
+
+QLabel#ScheduleTime,
+QLabel#ScheduleScore {
+    font-family: "Roboto Mono", "Consolas", monospace;
+}
+
+QWidget#ScheduleWeekNavigator QToolButton#ScheduleWeekPrev,
+QWidget#ScheduleWeekNavigator QToolButton#ScheduleWeekNext {
+    color: #e5e7eb;
+    font-size: 18px;
+    font-weight: 800;
+    border: none;
+    background-color: transparent;
+}
+
+QLabel#ScheduleWeekLabel {
+    color: #e5e7eb;
+    font-size: 18px;
+    font-weight: 800;
+    text-transform: uppercase;
 }

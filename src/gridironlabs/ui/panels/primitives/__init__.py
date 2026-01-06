@@ -5,7 +5,7 @@ Future home for reusable body surfaces:
 - sectioned lists/grids
 - table/list view bases + delegates
 
-See the contract in `recommendation.txt` (repo root).
+See the contract in `docs/UI_CONTRACT.md`.
 """
 
 from __future__ import annotations

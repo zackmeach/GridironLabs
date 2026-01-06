@@ -219,7 +219,7 @@ body.add_row(rank="2", player_name="Player B", value="4,980")
 
 ## Where the OOTP-style panel work lives
 
-- **Design contract**: see the repo root `recommendation.txt` (metrics, semantics, persistence, composition rules).
+- **Design contract**: see `docs/UI_CONTRACT.md` (composition rules, persistence conventions, semantic tokens).
 - **New panel system**: `gridironlabs.ui.panels` (starting with `PanelChrome`).
 - **Implementation detail**: a temporary legacy implementation is retained internally for compatibility until the migration completes.
 
@@ -257,6 +257,6 @@ config.set_cell_size(28)
 ## Reference implementation
 
 - **HomePage** includes **League Standings** and **League Leaders** as reference surfaces for the chrome + dense rows (leaders supports clickable stat headers that re-rank best-to-worst per category).
-- **SettingsPage** is intentionally a blank scaffold while the new panel system is implemented.
+- **SettingsPage** includes a settings-form reference surface (TabStrip + FormGrid) implemented via a `PanelChrome` card panel.
 - **Entity Pages**:
   - `TeamSummaryPage` and `PlayerSummaryPage` serve as summary scaffolds for detail views.

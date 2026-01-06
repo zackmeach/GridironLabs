@@ -1,6 +1,6 @@
 """Thin QSettings wrapper for UI persistence.
 
-Conventions (from recommendation.txt):
+Conventions (see docs/UI_CONTRACT.md):
   ui/pages/<page_id>/tables/<table_id>/...
 Version keys when structure changes.
 """

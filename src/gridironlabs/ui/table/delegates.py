@@ -9,16 +9,18 @@ from PySide6.QtCore import QModelIndex, QRect, Qt
 from PySide6.QtGui import QColor, QPainter, QPalette
 from PySide6.QtWidgets import QStyledItemDelegate, QStyleOptionViewItem, QWidget
 
+from gridironlabs.ui.style.tokens import COLORS, RATING
+
 
 def _rating_color(value: int) -> QColor:
-    # Mirror the broad tiers used in theme.qss; keep logic stable.
-    if value >= 70:
-        return QColor("#0284c7")  # blue
-    if value >= 55:
-        return QColor("#10b981")  # green
-    if value >= 40:
-        return QColor("#f59e0b")  # amber
-    return QColor("#ef4444")  # red
+    # Delegate paint-time colors must come from centralized tokens (see docs/UI_CONTRACT.md).
+    if value >= RATING.elite_min:
+        return QColor(COLORS.tier_elite)
+    if value >= RATING.good_min:
+        return QColor(COLORS.tier_good)
+    if value >= RATING.avg_min:
+        return QColor(COLORS.tier_avg)
+    return QColor(COLORS.tier_poor)
 
 
 class RatingColorDelegate(QStyledItemDelegate):
