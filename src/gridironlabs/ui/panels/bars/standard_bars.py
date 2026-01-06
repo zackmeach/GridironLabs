@@ -203,6 +203,7 @@ class SectionBar(PanelBar):
         columns: Sequence[tuple[str, int, Qt.Alignment]] | Sequence[tuple[str, int]] | Sequence[str],
         *,
         spacing: int = 4,
+        stretches: Sequence[int] | None = None,
     ) -> None:
         """Render a right-aligned set of column labels inside the section bar.
 
@@ -214,10 +215,15 @@ class SectionBar(PanelBar):
                 - Sequence[str]: labels only (auto width, right aligned)
                 - Sequence[(label, width)] (right aligned)
                 - Sequence[(label, width, alignment)]
+            stretches: optional stretch factors applied to each label to balance
+                available width. When omitted, labels are sized to their content or
+                fixed width, if provided.
         """
 
+        self._layout.setStretchFactor(self.right_slot, 1)
         container = QWidget(self)
         container.setObjectName("SectionColumnsRow")
+        container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         layout = QHBoxLayout(container)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(int(spacing))
@@ -234,16 +240,17 @@ class SectionBar(PanelBar):
                 label, width, align = col  # type: ignore[misc]
                 normalized.append((str(label), int(width), Qt.Alignment(align)))
 
-        # Right-align: stretch first pushes labels to the right edge.
-        layout.addStretch(1)
-
-        for label, width, align in normalized:
+        for idx, (label, width, align) in enumerate(normalized):
             cell = QLabel(label)
             cell.setObjectName("SectionColumnLabel")
             cell.setAlignment(align)
+            cell.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
             if width is not None:
                 cell.setFixedWidth(width)
             layout.addWidget(cell)
+            if stretches is not None and idx < len(stretches):
+                stretch = max(0, int(stretches[idx]))
+                layout.setStretch(layout.count() - 1, stretch)
         self.set_right_widget(container)
 
     def clear(self) -> None:

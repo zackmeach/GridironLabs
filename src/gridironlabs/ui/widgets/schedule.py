@@ -31,11 +31,13 @@ LOGO_SIZE = 26
 ROW_H = 56
 DAY_ROW_H = 44
 
-# Column widths tuned to match the reference layout.
-HOME_W = 300
-AWAY_W = 300
-TIME_W = 160
-SCORE_W = 220
+# Column sizing tuned to fit within the schedule panel while staying readable.
+HOME_STRETCH = 4
+AWAY_STRETCH = 4
+TIME_STRETCH = 2
+SCORE_STRETCH = 3
+TIME_MIN_W = 96
+SCORE_MIN_W = 156
 
 
 PLAYOFF_ORDER = {
@@ -160,10 +162,10 @@ class ScheduleRow(QFrame):
         layout.setContentsMargins(12, 0, 12, 0)
         layout.setSpacing(12)
 
-        def team_cell(abbr: str, *, width: int) -> QWidget:
+        def team_cell(abbr: str) -> QWidget:
             cell = QWidget()
             cell.setObjectName("ScheduleTeamCell")
-            cell.setFixedWidth(int(width))
+            cell.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
             cell.setAttribute(Qt.WA_TransparentForMouseEvents, True)
             hl = QHBoxLayout(cell)
             hl.setContentsMargins(0, 0, 0, 0)
@@ -187,18 +189,20 @@ class ScheduleRow(QFrame):
             hl.addWidget(name, 1, Qt.AlignVCenter)
             return cell
 
-        home = team_cell(game.home_team, width=HOME_W)
-        away = team_cell(game.away_team, width=AWAY_W)
+        home = team_cell(game.home_team)
+        away = team_cell(game.away_team)
 
         time_lbl = QLabel(_fmt_time(game.start_time))
         time_lbl.setObjectName("ScheduleTime")
-        time_lbl.setFixedWidth(TIME_W)
+        time_lbl.setMinimumWidth(TIME_MIN_W)
+        time_lbl.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         time_lbl.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         time_lbl.setAttribute(Qt.WA_TransparentForMouseEvents, True)
 
         score_cell = QWidget()
         score_cell.setObjectName("ScheduleScoreCell")
-        score_cell.setFixedWidth(SCORE_W)
+        score_cell.setMinimumWidth(SCORE_MIN_W)
+        score_cell.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         score_cell.setAttribute(Qt.WA_TransparentForMouseEvents, True)
         sl = QHBoxLayout(score_cell)
         sl.setContentsMargins(0, 0, 0, 0)
@@ -243,7 +247,10 @@ class ScheduleRow(QFrame):
         layout.addWidget(away)
         layout.addWidget(time_lbl)
         layout.addWidget(score_cell)
-        layout.addStretch(1)
+        layout.setStretchFactor(home, HOME_STRETCH)
+        layout.setStretchFactor(away, AWAY_STRETCH)
+        layout.setStretchFactor(time_lbl, TIME_STRETCH)
+        layout.setStretchFactor(score_cell, SCORE_STRETCH)
 
 
 class LeagueScheduleWidget(QFrame):
@@ -346,12 +353,13 @@ class LeagueScheduleWidget(QFrame):
             bar.setProperty("scheduleVariant", "schedule")
             bar.set_right_columns(
                 (
-                    ("Home", HOME_W, Qt.AlignLeft | Qt.AlignVCenter),
-                    ("Away", AWAY_W, Qt.AlignLeft | Qt.AlignVCenter),
-                    ("Time", TIME_W, Qt.AlignLeft | Qt.AlignVCenter),
-                    ("Score", SCORE_W, Qt.AlignLeft | Qt.AlignVCenter),
+                    ("Home", None, Qt.AlignLeft | Qt.AlignVCenter),
+                    ("Away", None, Qt.AlignLeft | Qt.AlignVCenter),
+                    ("Time", TIME_MIN_W, Qt.AlignLeft | Qt.AlignVCenter),
+                    ("Score", SCORE_MIN_W, Qt.AlignLeft | Qt.AlignVCenter),
                 ),
                 spacing=12,
+                stretches=(HOME_STRETCH, AWAY_STRETCH, TIME_STRETCH, SCORE_STRETCH),
             )
             self.content_layout.addWidget(bar)
             for g in by_day[day_label]:
