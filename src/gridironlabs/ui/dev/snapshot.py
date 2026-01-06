@@ -166,6 +166,12 @@ def grab_window_pixmap(window: QWidget) -> QPixmap:
     return screen.grabWindow(int(window.winId()))
 
 
+def grab_widget_pixmap(widget: QWidget) -> QPixmap:
+    """Grab a pixmap of a specific widget respecting its device pixel ratio."""
+
+    return widget.grab()
+
+
 def compute_target_rects(window: QWidget, target: QWidget, *, pixmap: QPixmap) -> dict[str, Any]:
     """Compute logical and pixel rectangles for cropping target from a window screenshot."""
 
@@ -224,6 +230,12 @@ def widget_tree(root: QWidget, *, include_children: bool = True) -> dict[str, An
         return data
 
     return _node(root)
+
+
+def capture_widget_tree(root: QWidget) -> dict[str, Any]:
+    """Explicit alias to keep CLI/docs wording stable for agents."""
+
+    return widget_tree(root)
 
 
 def find_widget_by_object_name(root: QWidget, name: str) -> QWidget | None:
@@ -439,6 +451,7 @@ __all__ = [
     "find_widget_by_object_name",
     "force_window_geometry",
     "grab_window_pixmap",
+    "grab_widget_pixmap",
     "list_candidate_panels",
     "render_full_content_for_scroll_area",
     "save_pixmap",
@@ -446,6 +459,7 @@ __all__ = [
     "scroll_diagnostics",
     "wait_for_stable_geometry",
     "widget_tree",
+    "capture_widget_tree",
     "write_json",
 ]
 

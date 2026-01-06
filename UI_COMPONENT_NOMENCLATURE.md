@@ -8,6 +8,7 @@ Current UI primitives and screens (cosmetic unless noted):
 - **HomePage** — home dashboard with OOTP-style panels:
   - **League Standings** panel (division sections; rows clickable → team summary)
   - **League Leaders** panel (category sections; clickable stat headers → re-rank best-to-worst; rows clickable → player summary)
+  - **League Schedule** panel (week/day grouping, week navigation arrows in header; objectNames: `panel-league-standings`, `panel-league-leaders`, `panel-league-schedule`)
 - **TeamSummaryPage** — dedicated summary page for team details (rosters, schedules).
 - **PlayerSummaryPage** — dedicated summary page for player details (stats, ratings).
 - **SectionPage** — section page scaffold for sections (Seasons, Teams, Players, Drafts, History); body content intentionally empty.
@@ -26,6 +27,7 @@ Reusable primitives (selected):
 - **KeyValueList** — striped key/value table rows for detail panels; supports value widgets.
 - **RatingBarRow** — single/dual rating bars for current/potential style panels.
 - **OOTPTableView** — QTableView wrapper with proxy sorting and QSettings persistence.
+- **LeagueScheduleWidget** — schedule body widget rendering grouped games for the active week with team logos, date headers, and final/scheduled scoring display.
 
 Supporting assets:
 

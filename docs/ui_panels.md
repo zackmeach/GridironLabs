@@ -19,6 +19,12 @@ This project uses a reusable **Page → GridCanvas → PanelChrome** pattern for
 
 - **GridOverlay**: an optional debug overlay for the grid canvas, controlled by a `GridOverlayConfig`.
 
+## Debugging/layout verification
+
+- Use `python scripts/ui_snapshot.py --page <page_objectName> [--panel <panel_objectName>] --name <label>` to capture deterministic PNG + JSON artifacts into `ui_artifacts/`.
+- Target widgets by `objectName` only; set stable IDs on pages/panels when you add new surfaces so snapshots remain reproducible (e.g. `page-home`, `panel-league-schedule`).
+- Artifacts include the full window PNG, a cropped target PNG, and a widget tree + geometry dump for the target subtree (plus scroll diagnostics).
+
 ## Create a new page
 
 1) Create a page class that inherits `BasePage`.
