@@ -617,6 +617,27 @@ class GridironLabsMainWindow(QMainWindow):
         current_section = self.history[self.history_index] if self.history_index >= 0 else "home"
         self._update_context_bar(current_section)
 
+    # --- Public navigation API (for dev tooling / snapshot CLI) ---
+    def navigate_to(self, page_or_object_name: str) -> None:
+        """Public navigation hook that resolves either a section key or objectName."""
+
+        target_key = self._section_key_from_identifier(page_or_object_name)
+        if target_key is None:
+            if self.logger:
+                self.logger.warning(
+                    "Navigation target not found", extra={"target": page_or_object_name}
+                )
+            return
+        self._navigate_to(target_key)
+
+    def _section_key_from_identifier(self, identifier: str) -> str | None:
+        if identifier in self.pages:
+            return identifier
+        for key, page in self.pages.items():
+            if page.objectName() == identifier:
+                return key
+        return None
+
     def _update_context_bar(self, section_key: str) -> None:
         payload = self.context_payloads.get(section_key, self.context_payloads.get("default", {}))
         title = payload.get("title", "Context")
@@ -641,23 +662,6 @@ class GridironLabsMainWindow(QMainWindow):
 
         if self.logger:
             self.logger.info("Navigate", extra={"section": section_key})
-
-    # --- Public navigation API (for dev tooling / snapshot CLI) ---
-    def navigate_to(self, page_object_name: str) -> None:
-        """Navigate to a page by its widget objectName (e.g. 'page-home').
-
-        This is a dev-tooling friendly wrapper so scripts don't have to call private
-        methods or depend on section keys.
-        """
-        # Resolve objectName -> section_key.
-        for key, page in self.pages.items():
-            if page.objectName() == page_object_name:
-                self._navigate_to(key)
-                return
-        # Fallback: allow passing section key directly.
-        if page_object_name in self.pages:
-            self._navigate_to(page_object_name)
-            return
 
     def _record_history(self, section_key: str) -> None:
         if self.history and self.history[self.history_index] == section_key:

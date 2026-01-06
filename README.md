@@ -13,12 +13,28 @@ OOTP26-inspired NFL analytics explorer built with PySide6. This repository ships
 - (Optional) Generate synthetic Parquet so the UI has data (players/teams/coaches/games with schedules and scores): `python scripts/generate_fake_nfl_data.py`
 - Launch the desktop shell: `python -m gridironlabs.main`, the `gridironlabs` console script, or `python main.py`.
 - You should see a dark-themed shell with a persistent top nav (cycling upcoming matchups from `games.parquet`), a 2x-height context bar with stat chips, and stacked pages.
-  - Home includes **League Standings** and a **League Leaders** panel (clickable stat headers re-rank leaders best-to-worst) built on the OOTP-style panel system.
+  - Home includes **League Standings**, **League Leaders**, and a full-height **League Schedule** panel (clickable stat headers re-rank leaders best-to-worst; schedule groups by week/day).
   - League Leaders includes an OOTP-style filter row (conference/division/team; age/rookie is scaffolded).
   - Settings now includes a basic settings-form surface (TabStrip + FormGrid) as a reference archetype.
   - A dev-only **Table Demo** page exists in the stack (`page-table-demo`) to validate the `OOTPTableView` + sorting + persistence at 1k+ rows.
 - If `data/processed` is empty or Parquet fails validation, the app still boots and the context bar will reflect a zero-count/validation status; the matchup ticker may have no items. Seed Parquet with `python scripts/generate_fake_nfl_data.py` if you want matchups to cycle in the top nav.
 - Run smoke tests (includes pytest-qt UI check): `pytest`
+
+## UI snapshot tool (agent workflow)
+
+Capture deterministic PNG + JSON snapshots of any page or panel by `objectName` (stable IDs defined in the UI code):
+
+```bash
+python scripts/ui_snapshot.py --page page-home --panel panel-league-leaders --name home-leaders
+```
+
+Outputs land in `ui_artifacts/` by default:
+
+- `<name>.window.png` — full window render
+- `<name>.target.png` — cropped page/panel render
+- `<name>.json` — widget tree + geometry + scroll diagnostics for the target subtree
+
+Use `--list-pages` to discover page objectNames and `--list-panels --page <page_objectName>` for panel IDs. Override output directory with `--out <path>`.
 
 ## Architecture
 
