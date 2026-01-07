@@ -13,7 +13,7 @@ OOTP26-inspired NFL analytics explorer built with PySide6. This repository ships
 - (Optional) Generate synthetic Parquet so the UI has data (players/teams/coaches/games with schedules and scores): `python scripts/generate_fake_nfl_data.py`
 - Launch the desktop shell: `python -m gridironlabs.main`, the `gridironlabs` console script, or `python main.py`.
 - You should see a dark-themed shell with a persistent top nav (cycling upcoming matchups from `games.parquet`), a 2x-height context bar with stat chips, and stacked pages.
-  - Home includes **League Standings**, **League Leaders**, and a full-height **League Schedule** panel (clickable stat headers re-rank leaders best-to-worst; schedule groups by week/day).
+  - Home includes **League Standings**, **League Leaders**, and a full-height **League Schedule** panel (clickable stat headers re-rank leaders best-to-worst; schedule groups by week/day and shows kickoff times plus scores in addition to the team columns).
   - League Leaders includes an OOTP-style filter row (conference/division/team; age/rookie is scaffolded).
   - Settings now includes a basic settings-form surface (TabStrip + FormGrid) as a reference archetype.
   - A dev-only **Table Demo** page exists in the stack (`page-table-demo`) to validate the `OOTPTableView` + sorting + persistence at 1k+ rows.
