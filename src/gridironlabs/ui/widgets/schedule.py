@@ -317,11 +317,17 @@ class LeagueScheduleWidget(QFrame):
         season_games = [g for g in self._games if g.season == latest_season]
         return [g for g in season_games if _group_key_for(g) == key]
 
-    def _clear_content(self) -> None:
-        while self.content_layout.count():
-            item = self.content_layout.takeAt(0)
+    def _clear_layout(self, layout: QVBoxLayout) -> None:
+        while layout.count():
+            item = layout.takeAt(0)
+            if child_layout := item.layout():
+                self._clear_layout(child_layout)
+                child_layout.deleteLater()
             if w := item.widget():
-                w.setParent(None)
+                w.deleteLater()
+
+    def _clear_content(self) -> None:
+        self._clear_layout(self.content_layout)
 
     def _render(self) -> None:
         self._clear_content()
