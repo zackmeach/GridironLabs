@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-01-03
+
+- Visual alignment cleanup:
+  - Restored the panel/leader accent color to the house palette (amber) instead of matching the reference mock exactly.
+  - Tightened League Schedule column widths and spacing so Time and Score remain visible inside the right-rail panel.
+- Documentation:
+  - resources README calls out the house palette and panel-driven styling expectations.
+  - README clarifies the schedule panel shows kickoff times and scores alongside team columns.
+
 ## 2026-01-02
 
 - Panel system hardening:

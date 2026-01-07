@@ -27,15 +27,18 @@ from gridironlabs.ui.panels.bars.standard_bars import SectionBar
 from gridironlabs.ui.widgets.scroll_guard import make_locked_scroll
 
 
-LOGO_SIZE = 26
+LOGO_SIZE = 22
 ROW_H = 56
 DAY_ROW_H = 44
+COLUMN_GAP = 8
+ROW_MARGIN_X = 8
+SCORE_GAP = 6
 
-# Column widths tuned to match the reference layout.
-HOME_W = 300
-AWAY_W = 300
-TIME_W = 160
-SCORE_W = 220
+# Column widths tuned for the panel layout (fit within the Home right rail).
+HOME_W = 108
+AWAY_W = 108
+TIME_W = 72
+SCORE_W = 96
 
 
 PLAYOFF_ORDER = {
@@ -157,8 +160,8 @@ class ScheduleRow(QFrame):
         self.setFixedHeight(ROW_H)
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(12, 0, 12, 0)
-        layout.setSpacing(12)
+        layout.setContentsMargins(ROW_MARGIN_X, 0, ROW_MARGIN_X, 0)
+        layout.setSpacing(COLUMN_GAP)
 
         def team_cell(abbr: str, *, width: int) -> QWidget:
             cell = QWidget()
@@ -167,7 +170,7 @@ class ScheduleRow(QFrame):
             cell.setAttribute(Qt.WA_TransparentForMouseEvents, True)
             hl = QHBoxLayout(cell)
             hl.setContentsMargins(0, 0, 0, 0)
-            hl.setSpacing(10)
+            hl.setSpacing(COLUMN_GAP)
 
             logo = QLabel()
             logo.setObjectName("ScheduleTeamLogo")
@@ -181,6 +184,8 @@ class ScheduleRow(QFrame):
             name = QLabel(_display_team(abbr))
             name.setObjectName("ScheduleTeamLabel")
             name.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+            name.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+            name.setMinimumWidth(0)
             name.setAttribute(Qt.WA_TransparentForMouseEvents, True)
 
             hl.addWidget(logo, 0, Qt.AlignVCenter)
@@ -202,7 +207,7 @@ class ScheduleRow(QFrame):
         score_cell.setAttribute(Qt.WA_TransparentForMouseEvents, True)
         sl = QHBoxLayout(score_cell)
         sl.setContentsMargins(0, 0, 0, 0)
-        sl.setSpacing(10)
+        sl.setSpacing(SCORE_GAP)
 
         # Score rendering: scheduled shows "—"; finals show "H - A" with logos flanking.
         if str(game.status).lower() == "final" and game.home_score is not None and game.away_score is not None:
@@ -351,7 +356,7 @@ class LeagueScheduleWidget(QFrame):
                     ("Time", TIME_W, Qt.AlignLeft | Qt.AlignVCenter),
                     ("Score", SCORE_W, Qt.AlignLeft | Qt.AlignVCenter),
                 ),
-                spacing=12,
+                spacing=COLUMN_GAP,
             )
             self.content_layout.addWidget(bar)
             for g in by_day[day_label]:
@@ -361,4 +366,3 @@ class LeagueScheduleWidget(QFrame):
 
 
 __all__ = ["LeagueScheduleWidget", "ScheduleWeekNavigator"]
-

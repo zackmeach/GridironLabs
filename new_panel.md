@@ -6,7 +6,7 @@ Goal: add a full-height League Schedule panel to Home alongside standings/leader
 
 - Layout: three panels across Home (standings, leaders, schedule on the right). Stable IDs: `panel-league-standings`, `panel-league-leaders`, `panel-league-schedule`.
 - Header: panel variant `table` with week navigator in the primary-right slot.
-- Body: grouped by week/day; shows date bars with column labels (Date | Home | Away | Time | Score) and rows with team logos/names plus kickoff time or final score.
+- Body: grouped by week/day; shows date bars with column labels (Date | Home | Away | Time | Score) and rows with team logos/names plus kickoff time or final score. Column widths and spacing are tuned to keep Time/Score visible in the right-rail panel.
 - Empty state: "No games loaded. Generate data with scripts/generate_fake_nfl_data.py."
 
 ## Data requirements
@@ -18,5 +18,6 @@ Goal: add a full-height League Schedule panel to Home alongside standings/leader
 
 - `src/gridironlabs/ui/main_window.py` (Home layout + week navigator wiring)
 - `src/gridironlabs/ui/widgets/schedule.py` (LeagueScheduleWidget and navigator)
+- `src/gridironlabs/resources/theme.qss` (schedule row styling + accent alignment)
 - Docs: `README.md`, `UI_COMPONENT_NOMENCLATURE.md`, `docs/ARCHITECTURE.md`
 - Tests: `tests/ui/test_schedule_widget.py`
