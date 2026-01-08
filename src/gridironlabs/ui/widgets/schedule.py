@@ -153,6 +153,10 @@ class ScheduleWeekNavigator(QWidget):
     def set_label(self, text: str) -> None:
         self.label.setText(str(text))
 
+    def set_state(self, *, can_prev: bool, can_next: bool) -> None:
+        self.prev_btn.setEnabled(bool(can_prev))
+        self.next_btn.setEnabled(bool(can_next))
+
 
 class ScheduleRow(QFrame):
     def __init__(self, *, game: GameSummary) -> None:
@@ -335,6 +339,12 @@ class LeagueScheduleWidget(QFrame):
             return
         self._group_index = min(len(self._groups) - 1, self._group_index + 1)
         self._render()
+
+    def can_prev(self) -> bool:
+        return bool(self._groups) and self._group_index > 0
+
+    def can_next(self) -> bool:
+        return bool(self._groups) and self._group_index < (len(self._groups) - 1)
 
     def _rebuild_groups(self) -> None:
         if not self._games:
