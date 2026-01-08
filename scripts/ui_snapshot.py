@@ -1,7 +1,7 @@
 """Deterministic UI snapshot CLI for agent workflows.
 
 Outputs:
-- ui_artifacts/<name>.window.png
+- ui_artifacts/<name>.png
 - ui_artifacts/<name>.target.png
 - ui_artifacts/<name>.json
 
@@ -185,7 +185,7 @@ def main() -> int:
 
         name = args.name or args.panel_only
         base = out_dir / f"{name}.panel-only"
-        save_pixmap(Path(f"{base}.window.png"), host_pm)
+        save_pixmap(Path(f"{base}.png"), host_pm)
         save_pixmap(Path(f"{base}.target.png"), crop_pm)
 
         payload: dict[str, Any] = {
@@ -251,7 +251,7 @@ def main() -> int:
 
     name = args.name or (args.panel or page_name)
     base = out_dir / name
-    save_pixmap(Path(f"{base}.window.png"), window_pm)
+    save_pixmap(Path(f"{base}.png"), window_pm)
     save_pixmap(Path(f"{base}.target.png"), crop_pm)
 
     payload: dict[str, Any] = {
@@ -306,4 +306,3 @@ def _rect_from_dict(d: dict[str, int]):
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

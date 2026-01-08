@@ -18,7 +18,7 @@ Key flags:
 
 Outputs land in `ui_artifacts/`:
 
-- `<name>.window.png` – full window render
+- `<name>.png` – full window render
 - `<name>.target.png` – cropped page/panel render
 - `<name>.json` – widget tree + geometry, scroll diagnostics, env/font/screen metadata
 
