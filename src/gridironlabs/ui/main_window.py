@@ -179,14 +179,26 @@ class HomePage(BasePage):
         self._all_games = [g for g in games if isinstance(g, GameSummary)]
         self.schedule_widget.set_games(self._all_games)
         self.week_nav.set_label(self.schedule_widget.current_group_label())
+        self.week_nav.set_state(
+            can_prev=self.schedule_widget.can_prev(),
+            can_next=self.schedule_widget.can_next(),
+        )
 
     def _on_prev_week(self) -> None:
         self.schedule_widget.prev_group()
         self.week_nav.set_label(self.schedule_widget.current_group_label())
+        self.week_nav.set_state(
+            can_prev=self.schedule_widget.can_prev(),
+            can_next=self.schedule_widget.can_next(),
+        )
 
     def _on_next_week(self) -> None:
         self.schedule_widget.next_group()
         self.week_nav.set_label(self.schedule_widget.current_group_label())
+        self.week_nav.set_state(
+            can_prev=self.schedule_widget.can_prev(),
+            can_next=self.schedule_widget.can_next(),
+        )
 
     def _on_leaders_filters_changed(self, filters: LeadersFilters) -> None:
         self._leaders_filters = filters
