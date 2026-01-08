@@ -149,7 +149,7 @@ class HomePage(BasePage):
         self.league_leaders_panel.set_body(self.leaders_widget)
 
         # League schedule panel (right side).
-        self.league_schedule_panel = PanelChrome(title="LEAGUE SCHEDULE", panel_variant="table")
+        self.league_schedule_panel = PanelChrome(title="LEAGUE SCHEDULE", panel_variant="concept")
         self.league_schedule_panel.setObjectName("panel-league-schedule")
         self.league_schedule_panel.set_footer_text("Tip: Use ◀ ▶ to change weeks.")
 

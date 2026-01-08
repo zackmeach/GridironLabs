@@ -243,6 +243,10 @@ QFrame#PanelChrome[panelVariant="table"] {
     /* Dense, table-like surfaces. */
 }
 
+QFrame#PanelChrome[panelVariant="concept"] {
+    background-color: #2a2f3a;
+}
+
 /* Panel Body */
 QFrame#PanelBody {
     background-color: transparent; /* Let container bg show through or set specific */
