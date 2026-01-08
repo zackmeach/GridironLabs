@@ -495,7 +495,7 @@ QLabel#FormCaption {
 
 /* Primary Header (Title) */
 QFrame#PrimaryHeaderBar {
-    background-color: #2e3440; 
+    background-color: #2a2f3a;
     min-height: 32px; /* Increased from 28px */
     max-height: 32px;
     padding: 0px 8px;
