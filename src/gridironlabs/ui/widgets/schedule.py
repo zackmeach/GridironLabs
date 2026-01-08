@@ -35,6 +35,7 @@ ROW_MARGIN_X = 8
 SCORE_GAP = 6
 
 # Column widths tuned for the panel layout (fit within the Home right rail).
+DATE_W = 160
 HOME_W = 108
 AWAY_W = 108
 TIME_W = 72
@@ -163,6 +164,11 @@ class ScheduleRow(QFrame):
         layout.setContentsMargins(ROW_MARGIN_X, 0, ROW_MARGIN_X, 0)
         layout.setSpacing(COLUMN_GAP)
 
+        date_spacer = QWidget()
+        date_spacer.setObjectName("ScheduleDateSpacer")
+        date_spacer.setFixedWidth(DATE_W)
+        date_spacer.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+
         def team_cell(abbr: str, *, width: int) -> QWidget:
             cell = QWidget()
             cell.setObjectName("ScheduleTeamCell")
@@ -244,10 +250,42 @@ class ScheduleRow(QFrame):
             score_text.setAttribute(Qt.WA_TransparentForMouseEvents, True)
             sl.addWidget(score_text, 1, Qt.AlignVCenter)
 
+        layout.addWidget(date_spacer)
         layout.addWidget(home)
         layout.addWidget(away)
         layout.addWidget(time_lbl)
         layout.addWidget(score_cell)
+        layout.addStretch(1)
+
+
+class ScheduleDayHeaderRow(QFrame):
+    def __init__(self) -> None:
+        super().__init__()
+        self.setObjectName("ScheduleDayHeaderRow")
+        self.setFixedHeight(DAY_ROW_H)
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(ROW_MARGIN_X, 0, ROW_MARGIN_X, 0)
+        layout.setSpacing(COLUMN_GAP)
+
+        date_spacer = QWidget()
+        date_spacer.setObjectName("ScheduleDateSpacer")
+        date_spacer.setFixedWidth(DATE_W)
+        date_spacer.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+
+        def header_label(text: str, *, width: int) -> QLabel:
+            label = QLabel(text)
+            label.setObjectName("ScheduleHeaderLabel")
+            label.setFixedWidth(int(width))
+            label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+            label.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+            return label
+
+        layout.addWidget(date_spacer)
+        layout.addWidget(header_label("Home", width=HOME_W))
+        layout.addWidget(header_label("Away", width=AWAY_W))
+        layout.addWidget(header_label("Time", width=TIME_W))
+        layout.addWidget(header_label("Score", width=SCORE_W))
         layout.addStretch(1)
 
 
@@ -355,16 +393,8 @@ class LeagueScheduleWidget(QFrame):
             bar = SectionBar(day_label)
             bar.setFixedHeight(DAY_ROW_H)
             bar.setProperty("scheduleVariant", "schedule")
-            bar.set_right_columns(
-                (
-                    ("Home", HOME_W, Qt.AlignLeft | Qt.AlignVCenter),
-                    ("Away", AWAY_W, Qt.AlignLeft | Qt.AlignVCenter),
-                    ("Time", TIME_W, Qt.AlignLeft | Qt.AlignVCenter),
-                    ("Score", SCORE_W, Qt.AlignLeft | Qt.AlignVCenter),
-                ),
-                spacing=COLUMN_GAP,
-            )
             self.content_layout.addWidget(bar)
+            self.content_layout.addWidget(ScheduleDayHeaderRow())
             for g in by_day[day_label]:
                 self.content_layout.addWidget(ScheduleRow(game=g))
 
