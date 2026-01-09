@@ -143,6 +143,7 @@ class StandingsRow(QFrame):
             if col.key == "team":
                 # TEAM column: logo + team name (kept within the TEAM column width)
                 team_cell = QWidget()
+                team_cell.setObjectName("StandingsTeamCellContainer")
                 team_cell.setFixedWidth(col.width)
                 team_cell.setAttribute(Qt.WA_TransparentForMouseEvents, True)
                 team_cell_layout = QHBoxLayout(team_cell)

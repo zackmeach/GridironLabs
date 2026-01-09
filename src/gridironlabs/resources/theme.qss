@@ -43,6 +43,11 @@ QAbstractScrollArea[scrollVariant="hidden"]::corner {
     background-color: #0f1115;
 }
 
+/* Main container backdrop - matches ContentFrame for dead space between nav/context bars */
+QWidget#MainContainer {
+    background-color: #0a0d12; /* Near-black backdrop, darker than panels */
+}
+
 #TopNavigationBar {
     background-color: #252525;
     border-bottom: 1px solid #262a33;
@@ -130,7 +135,7 @@ QLabel#TickerLabel {
 }
 
 #ContentFrame {
-    background-color: transparent;
+    background-color: #0a0d12; /* Near-black backdrop, darker than panels */
 }
 
 QFrame#PageContextBar {
@@ -512,12 +517,9 @@ QLabel#PanelTitle {
     background-color: transparent;
 }
 
-/* Secondary Header (Filters) */
+/* Secondary Header (Filters) - Normalized height with TertiaryHeaderBar for alignment */
 QFrame#SecondaryHeaderBar {
     background-color: transparent; /* Match panel background */
-    min-height: 28px; /* Increased from 24px */
-    max-height: 28px;
-    padding: 0px 8px;
 }
 
 /* CompactFilterBar (secondary header standard)
@@ -546,11 +548,16 @@ QLabel#CompactFilterSummary {
     background-color: transparent;
 }
 
-/* Tertiary Header (Sort/Columns) */
+/* Tertiary Header (Sort/Columns) - Normalized height with SecondaryHeaderBar for alignment */
 QFrame#TertiaryHeaderBar {
     background-color: transparent; /* Match panel background */
-    min-height: 26px; /* Increased from 22px */
-    max-height: 26px;
+}
+
+/* Normalize SecondaryHeaderBar and TertiaryHeaderBar heights for alignment */
+QFrame#SecondaryHeaderBar,
+QFrame#TertiaryHeaderBar {
+    min-height: 28px;
+    max-height: 28px;
     padding: 0px 8px;
 }
 
@@ -817,6 +824,7 @@ QWidget#page-settings QTextEdit#TerminalOutput {
 
 QFrame#StandingsRow {
     border-bottom: 1px solid #1c1f27;
+    background-color: transparent;
 }
 
 QFrame#StandingsRow:hover {
@@ -839,6 +847,16 @@ QLabel#StandingsTeamCell {
 }
 
 QLabel#StandingsTeamLogo {
+    background-color: transparent;
+}
+
+/* Team cell container transparency */
+QWidget#StandingsTeamCellContainer {
+    background-color: transparent;
+}
+
+/* Ensure all child widgets in StandingsRow are transparent */
+QFrame#StandingsRow QWidget {
     background-color: transparent;
 }
 
@@ -900,6 +918,12 @@ QWidget#LeadersContent {
 }
 
 /* Schedule Specifics */
+
+/* Remove border-bottom from PrimaryHeaderBar for schedule panel */
+QFrame#panel-league-schedule QFrame[barRole="primary"],
+QFrame#panel-league-schedule QFrame#PrimaryHeaderBar {
+    border-bottom: none;
+}
 
 /* Make schedule day header bars taller than generic section bars. */
 QFrame[barRole="section"][scheduleVariant="schedule"] {

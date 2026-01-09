@@ -761,9 +761,32 @@ def generate_games(
         teams = [abbr for abbr, _ in team_catalog]
         for week in range(1, weeks + 1):
             week_pairs = weekly_pairings(teams)
-            for home, away in week_pairs:
-                start_date = base_sunday + timedelta(days=7 * (week - 1))
-                start_dt = datetime.combine(start_date, rng.choice(kickoff_times))
+            week_start_sunday = base_sunday + timedelta(days=7 * (week - 1))
+            
+            for i, (home, away) in enumerate(week_pairs):
+                # Determine game day and time based on position in week
+                if i == 0:
+                    # First game: Thursday
+                    start_date = week_start_sunday - timedelta(days=3)
+                    start_time_obj = time(20, 15)  # 8:15 PM
+                elif i == len(week_pairs) - 1:
+                    # Last game: Monday
+                    start_date = week_start_sunday + timedelta(days=1)
+                    start_time_obj = time(20, 15)  # 8:15 PM
+                elif i == len(week_pairs) - 2:
+                    # Second-to-last: Sunday night
+                    start_date = week_start_sunday
+                    start_time_obj = time(20, 20)  # 8:20 PM
+                else:
+                    # Sunday games: split between early and late afternoon
+                    start_date = week_start_sunday
+                    mid_point = len(week_pairs) // 2
+                    if i < mid_point:
+                        start_time_obj = time(13, 0)  # 1:00 PM
+                    else:
+                        start_time_obj = time(16, 25)  # 4:25 PM
+                
+                start_dt = datetime.combine(start_date, start_time_obj)
                 status = "final" if start_date <= today else "scheduled"
                 home_score = away_score = None
                 if status == "final":
@@ -802,13 +825,40 @@ def generate_games(
         for round_name, game_count in rounds:
             current_week += 1
             rng.shuffle(pool)
+            round_start_sunday = base_sunday + timedelta(days=7 * (current_week - 1))
+            
             for i in range(game_count):
                 if len(pool) < 2:
                     pool = list(teams)
                     rng.shuffle(pool)
                 home, away = pool[i % len(pool)], pool[(i + 1) % len(pool)]
-                start_date = base_sunday + timedelta(days=7 * (current_week - 1))
-                start_dt = datetime.combine(start_date, rng.choice(kickoff_times))
+                
+                # Postseason: distribute across weekend (Saturday/Sunday/Monday)
+                if game_count == 1:
+                    # Super Bowl: Sunday evening
+                    start_date = round_start_sunday
+                    start_time_obj = time(18, 30)  # 6:30 PM
+                elif i == 0:
+                    # First game: Saturday
+                    start_date = round_start_sunday - timedelta(days=1)
+                    start_time_obj = time(16, 30)  # 4:30 PM
+                elif i == game_count - 1:
+                    # Last game: Monday night (only for Wild Card weekend typically)
+                    start_date = round_start_sunday + timedelta(days=1)
+                    start_time_obj = time(20, 15)  # 8:15 PM
+                elif i == game_count - 2:
+                    # Second-to-last: Sunday night
+                    start_date = round_start_sunday
+                    start_time_obj = time(20, 20)  # 8:20 PM
+                else:
+                    # Sunday afternoon games
+                    start_date = round_start_sunday
+                    if i % 2 == 1:
+                        start_time_obj = time(13, 0)  # 1:00 PM
+                    else:
+                        start_time_obj = time(16, 25)  # 4:25 PM
+                
+                start_dt = datetime.combine(start_date, start_time_obj)
                 status = "final" if start_date <= today else "scheduled"
                 home_score = away_score = None
                 if status == "final":

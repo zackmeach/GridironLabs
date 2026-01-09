@@ -149,7 +149,11 @@ class HomePage(BasePage):
         self.league_leaders_panel.set_body(self.leaders_widget)
 
         # League schedule panel (right side).
-        self.league_schedule_panel = PanelChrome(title="LEAGUE SCHEDULE", panel_variant="concept")
+        self.league_schedule_panel = PanelChrome(
+            title="LEAGUE SCHEDULE", 
+            panel_variant="concept",
+            body_padding=(0, 0, 0, 0)  # No padding for full-width SectionBars
+        )
         self.league_schedule_panel.setObjectName("panel-league-schedule")
         self.league_schedule_panel.set_footer_text("Tip: Use ◀ ▶ to change weeks.")
 
@@ -391,6 +395,7 @@ class GridironLabsMainWindow(QMainWindow):
         self._matchup_timer: QTimer | None = None
 
         container = QWidget(self)
+        container.setObjectName("MainContainer")
         container_layout = QVBoxLayout(container)
         container_layout.setContentsMargins(0, 0, 0, 0)
         container_layout.setSpacing(16)
