@@ -258,12 +258,12 @@ QFrame[barRole="secondary"],
 QFrame[barRole="tertiary"],
 QFrame[barRole="footer"] {
     border-bottom: 1px solid #20242d;
-    background-color: #2a2f3a; /* Default bar bg, slightly lighter than panel bg */
+    background-color: transparent; /* Match panel background */
 }
 
 /* Section Bar (In-Body) */
 QFrame[barRole="section"] {
-    background-color: #2a2f3a;
+    background-color: transparent; /* Match panel background */
     border-top: 1px solid #d97706; /* Gold/Amber */
     border-bottom: 1px solid #d97706;
     min-height: 26px; /* Increased from 22px */
@@ -276,6 +276,7 @@ QLabel#SectionTitle {
     font-weight: 700;
     color: #f3f4f6;
     text-transform: uppercase;
+    background-color: transparent;
 }
 
 QLabel#SectionColumnLabel {
@@ -284,6 +285,7 @@ QLabel#SectionColumnLabel {
     font-size: 18px;
     font-weight: 700;
     text-transform: uppercase;
+    background-color: transparent;
 }
 
 /* --- Key/Value list (detail panels) --- */
@@ -358,7 +360,7 @@ QTableView#OOTPTableView {
 }
 
 QHeaderView::section {
-    background-color: #252a33;
+    background-color: transparent; /* Match panel background */
     color: #9ca3af;
     padding: 4px 8px;
     border: none;
@@ -495,7 +497,7 @@ QLabel#FormCaption {
 
 /* Primary Header (Title) */
 QFrame#PrimaryHeaderBar {
-    background-color: #2a2f3a;
+    background-color: transparent; /* Match panel background */
     min-height: 32px; /* Increased from 28px */
     max-height: 32px;
     padding: 0px 8px;
@@ -507,11 +509,12 @@ QLabel#PanelTitle {
     color: #f3f4f6;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    background-color: transparent;
 }
 
 /* Secondary Header (Filters) */
 QFrame#SecondaryHeaderBar {
-    background-color: #2a2f3a;
+    background-color: transparent; /* Match panel background */
     min-height: 28px; /* Increased from 24px */
     max-height: 28px;
     padding: 0px 8px;
@@ -540,11 +543,12 @@ QLabel#CompactFilterSummary {
     color: #9ca3af;
     font-size: 16px;
     font-weight: 700;
+    background-color: transparent;
 }
 
 /* Tertiary Header (Sort/Columns) */
 QFrame#TertiaryHeaderBar {
-    background-color: #252a33;
+    background-color: transparent; /* Match panel background */
     min-height: 26px; /* Increased from 22px */
     max-height: 26px;
     padding: 0px 8px;
@@ -552,7 +556,7 @@ QFrame#TertiaryHeaderBar {
 
 /* Footer */
 QFrame#FooterBar {
-    background-color: #2a2f3a;
+    background-color: transparent; /* Match panel background */
     border-top: 1px solid #20242d;
     border-bottom: none;
     min-height: 20px; /* Increased from 18px to fit 15px text */
@@ -563,6 +567,7 @@ QFrame#FooterBar {
 QLabel#FooterMetaLabel {
     font-size: 15px;
     color: #9ca3af;
+    background-color: transparent;
 }
 
 /* Dummy Labels (Home Page Demo) */
@@ -582,6 +587,7 @@ QLabel#SortLabel {
 QFrame#TertiaryHeaderBar QLabel {
     font-size: 18px;
     font-weight: 700;
+    background-color: transparent;
 }
 
 QFrame#StandingsHeaderRow {
@@ -594,6 +600,7 @@ QLabel#StandingsHeaderCell {
     font-family: "Roboto Condensed", sans-serif;
     font-size: 18px;
     font-weight: 700;
+    background-color: transparent;
 }
 
 QLabel#CardTitlePrimary {
@@ -813,7 +820,7 @@ QFrame#StandingsRow {
 }
 
 QFrame#StandingsRow:hover {
-    background-color: #2c3140;
+    background-color: rgba(255, 255, 255, 0.05); /* Subtle hover effect */
 }
 
 QLabel#StandingsCell {
@@ -821,12 +828,14 @@ QLabel#StandingsCell {
     font-family: "Roboto Condensed", sans-serif;
     font-size: 18px; /* Match main title */
     font-weight: 700;
+    background-color: transparent;
 }
 
 QLabel#StandingsTeamCell {
     color: #e5e7eb;
     font-weight: 700;
     font-size: 18px; /* Match main title */
+    background-color: transparent;
 }
 
 QLabel#StandingsTeamLogo {
@@ -853,6 +862,7 @@ QLabel#LeadersBarStatHeader {
     font-family: "Roboto Condensed", sans-serif;
     font-size: 18px;
     font-weight: 700;
+    background-color: transparent;
 }
 
 QLabel#LeadersBarStatHeader[selected="true"] {
@@ -866,7 +876,7 @@ QFrame#LeadersRow {
 }
 
 QFrame#LeadersRow:hover {
-    background-color: #2c3140;
+    background-color: rgba(255, 255, 255, 0.05); /* Subtle hover effect */
 }
 
 QLabel#LeadersCell,
@@ -876,6 +886,7 @@ QLabel#LeadersCellPlayer {
     font-family: "Roboto Condensed", sans-serif;
     font-size: 18px;
     font-weight: 700;
+    background-color: transparent;
 }
 
 QLabel#LeadersCellPlayer {
@@ -896,6 +907,11 @@ QFrame[barRole="section"][scheduleVariant="schedule"] {
     max-height: 44px;
 }
 
+/* Style column labels in schedule section headers */
+QFrame[barRole="section"][scheduleVariant="schedule"] QLabel#SectionColumnLabel {
+    color: #e5e7eb;
+}
+
 QWidget#LeagueScheduleWidget,
 QWidget#ScheduleContent {
     background-color: transparent;
@@ -907,7 +923,7 @@ QFrame#ScheduleRow {
 }
 
 QFrame#ScheduleRow:hover {
-    background-color: #2c3140;
+    background-color: rgba(255, 255, 255, 0.05); /* Subtle hover effect */
 }
 
 QLabel#ScheduleTeamLabel,
@@ -917,6 +933,7 @@ QLabel#ScheduleScore {
     font-family: "Roboto Condensed", sans-serif;
     font-size: 18px;
     font-weight: 700;
+    background-color: transparent;
 }
 
 QLabel#ScheduleTeamLabel {
@@ -926,6 +943,26 @@ QLabel#ScheduleTeamLabel {
 QLabel#ScheduleTime,
 QLabel#ScheduleScore {
     font-family: "Roboto Mono", "Consolas", monospace;
+}
+
+/* Matchup cell and record styling */
+QWidget#ScheduleMatchupCell {
+    background-color: transparent;
+}
+
+QLabel#ScheduleTeamRecord {
+    color: #9ca3af;
+    font-size: 16px;
+    font-weight: 700;
+    background-color: transparent;
+}
+
+QLabel#ScheduleAtLabel {
+    color: #9ca3af;
+    font-family: "Roboto Mono", "Consolas", monospace;
+    font-size: 18px;
+    font-weight: 800;
+    background-color: transparent;
 }
 
 QWidget#ScheduleWeekNavigator QToolButton#ScheduleWeekPrev,
@@ -942,4 +979,5 @@ QLabel#ScheduleWeekLabel {
     font-size: 18px;
     font-weight: 800;
     text-transform: uppercase;
+    background-color: transparent;
 }

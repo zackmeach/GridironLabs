@@ -35,11 +35,8 @@ ROW_MARGIN_X = 8
 SCORE_GAP = 6
 
 # Column widths tuned for the panel layout (fit within the Home right rail).
-DATE_W = 160
-HOME_W = 108
-AWAY_W = 108
-TIME_W = 72
-SCORE_W = 96
+TIME_W = 84
+SCORE_W = 140
 
 
 PLAYOFF_ORDER = {
@@ -159,7 +156,7 @@ class ScheduleWeekNavigator(QWidget):
 
 
 class ScheduleRow(QFrame):
-    def __init__(self, *, game: GameSummary) -> None:
+    def __init__(self, *, game: GameSummary, records: dict[str, str] | None = None) -> None:
         super().__init__()
         self.setObjectName("ScheduleRow")
         self.setFixedHeight(ROW_H)
@@ -168,42 +165,72 @@ class ScheduleRow(QFrame):
         layout.setContentsMargins(ROW_MARGIN_X, 0, ROW_MARGIN_X, 0)
         layout.setSpacing(COLUMN_GAP)
 
-        date_spacer = QWidget()
-        date_spacer.setObjectName("ScheduleDateSpacer")
-        date_spacer.setFixedWidth(DATE_W)
-        date_spacer.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+        # Matchup cell: away @ home with records
+        matchup_cell = QWidget()
+        matchup_cell.setObjectName("ScheduleMatchupCell")
+        matchup_cell.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        matchup_cell.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+        matchup_layout = QHBoxLayout(matchup_cell)
+        matchup_layout.setContentsMargins(0, 0, 0, 0)
+        matchup_layout.setSpacing(COLUMN_GAP)
 
-        def team_cell(abbr: str, *, width: int) -> QWidget:
-            cell = QWidget()
-            cell.setObjectName("ScheduleTeamCell")
-            cell.setFixedWidth(int(width))
-            cell.setAttribute(Qt.WA_TransparentForMouseEvents, True)
-            hl = QHBoxLayout(cell)
-            hl.setContentsMargins(0, 0, 0, 0)
-            hl.setSpacing(COLUMN_GAP)
+        # Away team
+        away_logo = QLabel()
+        away_logo.setObjectName("ScheduleTeamLogo")
+        away_logo.setFixedSize(LOGO_SIZE, LOGO_SIZE)
+        away_logo.setAlignment(Qt.AlignCenter)
+        away_logo.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+        pm_away = get_logo_pixmap(game.away_team, size=LOGO_SIZE)
+        if pm_away is not None:
+            away_logo.setPixmap(pm_away)
 
-            logo = QLabel()
-            logo.setObjectName("ScheduleTeamLogo")
-            logo.setFixedSize(LOGO_SIZE, LOGO_SIZE)
-            logo.setAlignment(Qt.AlignCenter)
-            logo.setAttribute(Qt.WA_TransparentForMouseEvents, True)
-            pm = get_logo_pixmap(abbr, size=LOGO_SIZE)
-            if pm is not None:
-                logo.setPixmap(pm)
+        away_name = QLabel(_display_team(game.away_team))
+        away_name.setObjectName("ScheduleTeamLabel")
+        away_name.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        away_name.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        away_name.setMinimumWidth(0)
+        away_name.setAttribute(Qt.WA_TransparentForMouseEvents, True)
 
-            name = QLabel(_display_team(abbr))
-            name.setObjectName("ScheduleTeamLabel")
-            name.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-            name.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-            name.setMinimumWidth(0)
-            name.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+        away_record = QLabel(records.get(game.away_team, "0-0") if records else "0-0")
+        away_record.setObjectName("ScheduleTeamRecord")
+        away_record.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        away_record.setAttribute(Qt.WA_TransparentForMouseEvents, True)
 
-            hl.addWidget(logo, 0, Qt.AlignVCenter)
-            hl.addWidget(name, 1, Qt.AlignVCenter)
-            return cell
+        at_label = QLabel("@")
+        at_label.setObjectName("ScheduleAtLabel")
+        at_label.setAlignment(Qt.AlignCenter)
+        at_label.setAttribute(Qt.WA_TransparentForMouseEvents, True)
 
-        home = team_cell(game.home_team, width=HOME_W)
-        away = team_cell(game.away_team, width=AWAY_W)
+        # Home team
+        home_logo = QLabel()
+        home_logo.setObjectName("ScheduleTeamLogo")
+        home_logo.setFixedSize(LOGO_SIZE, LOGO_SIZE)
+        home_logo.setAlignment(Qt.AlignCenter)
+        home_logo.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+        pm_home = get_logo_pixmap(game.home_team, size=LOGO_SIZE)
+        if pm_home is not None:
+            home_logo.setPixmap(pm_home)
+
+        home_name = QLabel(_display_team(game.home_team))
+        home_name.setObjectName("ScheduleTeamLabel")
+        home_name.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        home_name.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        home_name.setMinimumWidth(0)
+        home_name.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+
+        home_record = QLabel(records.get(game.home_team, "0-0") if records else "0-0")
+        home_record.setObjectName("ScheduleTeamRecord")
+        home_record.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        home_record.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+
+        matchup_layout.addWidget(away_logo, 0, Qt.AlignVCenter)
+        matchup_layout.addWidget(away_name, 0, Qt.AlignVCenter)
+        matchup_layout.addWidget(away_record, 0, Qt.AlignVCenter)
+        matchup_layout.addWidget(at_label, 0, Qt.AlignVCenter)
+        matchup_layout.addWidget(home_logo, 0, Qt.AlignVCenter)
+        matchup_layout.addWidget(home_name, 0, Qt.AlignVCenter)
+        matchup_layout.addWidget(home_record, 0, Qt.AlignVCenter)
+        matchup_layout.addStretch(1)
 
         time_lbl = QLabel(_fmt_time(game.start_time))
         time_lbl.setObjectName("ScheduleTime")
@@ -219,32 +246,32 @@ class ScheduleRow(QFrame):
         sl.setContentsMargins(0, 0, 0, 0)
         sl.setSpacing(SCORE_GAP)
 
-        # Score rendering: scheduled shows "—"; finals show "H - A" with logos flanking.
+        # Score rendering: scheduled shows "—"; finals show "A - H" with logos flanking (away @ home order).
         if str(game.status).lower() == "final" and game.home_score is not None and game.away_score is not None:
-            hlogo = QLabel()
-            hlogo.setObjectName("ScheduleScoreLogo")
-            hlogo.setFixedSize(LOGO_SIZE, LOGO_SIZE)
-            hlogo.setAlignment(Qt.AlignCenter)
-            pm = get_logo_pixmap(game.home_team, size=LOGO_SIZE)
-            if pm is not None:
-                hlogo.setPixmap(pm)
-
             alogo = QLabel()
             alogo.setObjectName("ScheduleScoreLogo")
             alogo.setFixedSize(LOGO_SIZE, LOGO_SIZE)
             alogo.setAlignment(Qt.AlignCenter)
-            pm2 = get_logo_pixmap(game.away_team, size=LOGO_SIZE)
-            if pm2 is not None:
-                alogo.setPixmap(pm2)
+            pm_away_score = get_logo_pixmap(game.away_team, size=LOGO_SIZE)
+            if pm_away_score is not None:
+                alogo.setPixmap(pm_away_score)
 
-            score_text = QLabel(f"{int(game.home_score)} - {int(game.away_score)}")
+            hlogo = QLabel()
+            hlogo.setObjectName("ScheduleScoreLogo")
+            hlogo.setFixedSize(LOGO_SIZE, LOGO_SIZE)
+            hlogo.setAlignment(Qt.AlignCenter)
+            pm_home_score = get_logo_pixmap(game.home_team, size=LOGO_SIZE)
+            if pm_home_score is not None:
+                hlogo.setPixmap(pm_home_score)
+
+            score_text = QLabel(f"{int(game.away_score)} - {int(game.home_score)}")
             score_text.setObjectName("ScheduleScore")
             score_text.setAlignment(Qt.AlignCenter)
             score_text.setAttribute(Qt.WA_TransparentForMouseEvents, True)
 
-            sl.addWidget(hlogo, 0, Qt.AlignVCenter)
-            sl.addWidget(score_text, 1, Qt.AlignVCenter)
             sl.addWidget(alogo, 0, Qt.AlignVCenter)
+            sl.addWidget(score_text, 1, Qt.AlignVCenter)
+            sl.addWidget(hlogo, 0, Qt.AlignVCenter)
             # When final, hide the time column content (still reserve width).
             time_lbl.setText("")
         else:
@@ -254,43 +281,11 @@ class ScheduleRow(QFrame):
             score_text.setAttribute(Qt.WA_TransparentForMouseEvents, True)
             sl.addWidget(score_text, 1, Qt.AlignVCenter)
 
-        layout.addWidget(date_spacer)
-        layout.addWidget(home)
-        layout.addWidget(away)
+        layout.addWidget(matchup_cell)
         layout.addWidget(time_lbl)
         layout.addWidget(score_cell)
-        layout.addStretch(1)
 
 
-class ScheduleDayHeaderRow(QFrame):
-    def __init__(self) -> None:
-        super().__init__()
-        self.setObjectName("ScheduleDayHeaderRow")
-        self.setFixedHeight(DAY_ROW_H)
-
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(ROW_MARGIN_X, 0, ROW_MARGIN_X, 0)
-        layout.setSpacing(COLUMN_GAP)
-
-        date_spacer = QWidget()
-        date_spacer.setObjectName("ScheduleDateSpacer")
-        date_spacer.setFixedWidth(DATE_W)
-        date_spacer.setAttribute(Qt.WA_TransparentForMouseEvents, True)
-
-        def header_label(text: str, *, width: int) -> QLabel:
-            label = QLabel(text)
-            label.setObjectName("ScheduleHeaderLabel")
-            label.setFixedWidth(int(width))
-            label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-            label.setAttribute(Qt.WA_TransparentForMouseEvents, True)
-            return label
-
-        layout.addWidget(date_spacer)
-        layout.addWidget(header_label("Home", width=HOME_W))
-        layout.addWidget(header_label("Away", width=AWAY_W))
-        layout.addWidget(header_label("Time", width=TIME_W))
-        layout.addWidget(header_label("Score", width=SCORE_W))
-        layout.addStretch(1)
 
 
 class LeagueScheduleWidget(QFrame):
@@ -365,6 +360,67 @@ class LeagueScheduleWidget(QFrame):
         season_games = [g for g in self._games if g.season == latest_season]
         return [g for g in season_games if _group_key_for(g) == key]
 
+    def _compute_records(self, current_week_games: list[GameSummary]) -> dict[str, str]:
+        """Compute team records as of the start of the current week group.
+        
+        Returns a dict mapping team abbreviation to "W-L" or "W-L-T" format.
+        """
+        if not current_week_games:
+            return {}
+        
+        # Determine cutoff: earliest start time of current week games
+        cutoff = min(g.start_time for g in current_week_games)
+        
+        # Get all season games from the same season
+        if not self._games:
+            return {}
+        
+        key = self._groups[self._group_index]
+        latest_season = key.season
+        season_games = [g for g in self._games if g.season == latest_season]
+        
+        # Count wins/losses/ties from final games before the cutoff
+        records: dict[str, dict[str, int]] = {}
+        
+        for g in season_games:
+            if (
+                str(g.status).lower() == "final"
+                and g.start_time < cutoff
+                and g.home_score is not None
+                and g.away_score is not None
+            ):
+                # Initialize if needed
+                if g.home_team not in records:
+                    records[g.home_team] = {"wins": 0, "losses": 0, "ties": 0}
+                if g.away_team not in records:
+                    records[g.away_team] = {"wins": 0, "losses": 0, "ties": 0}
+                
+                home_score = int(g.home_score)
+                away_score = int(g.away_score)
+                
+                if home_score > away_score:
+                    records[g.home_team]["wins"] += 1
+                    records[g.away_team]["losses"] += 1
+                elif away_score > home_score:
+                    records[g.away_team]["wins"] += 1
+                    records[g.home_team]["losses"] += 1
+                else:
+                    records[g.home_team]["ties"] += 1
+                    records[g.away_team]["ties"] += 1
+        
+        # Format records
+        formatted: dict[str, str] = {}
+        for team, stats in records.items():
+            wins = stats["wins"]
+            losses = stats["losses"]
+            ties = stats["ties"]
+            if ties > 0:
+                formatted[team] = f"{wins}-{losses}-{ties}"
+            else:
+                formatted[team] = f"{wins}-{losses}"
+        
+        return formatted
+
     def _clear_layout(self, layout: QVBoxLayout) -> None:
         while layout.count():
             item = layout.takeAt(0)
@@ -389,6 +445,9 @@ class LeagueScheduleWidget(QFrame):
             self.content_layout.addStretch(1)
             return
 
+        # Compute records for the current week group
+        records = self._compute_records(games)
+
         # Group by calendar day.
         by_day: dict[str, list[GameSummary]] = {}
         day_order: list[str] = []
@@ -403,10 +462,17 @@ class LeagueScheduleWidget(QFrame):
             bar = SectionBar(day_label)
             bar.setFixedHeight(DAY_ROW_H)
             bar.setProperty("scheduleVariant", "schedule")
+            # Add Time and Score labels to the section bar
+            bar.set_right_columns(
+                [
+                    ("Time", TIME_W, Qt.AlignLeft | Qt.AlignVCenter),
+                    ("Score", SCORE_W, Qt.AlignLeft | Qt.AlignVCenter),
+                ],
+                spacing=COLUMN_GAP,
+            )
             self.content_layout.addWidget(bar)
-            self.content_layout.addWidget(ScheduleDayHeaderRow())
             for g in by_day[day_label]:
-                self.content_layout.addWidget(ScheduleRow(game=g))
+                self.content_layout.addWidget(ScheduleRow(game=g, records=records))
 
         self.content_layout.addStretch(1)
 
