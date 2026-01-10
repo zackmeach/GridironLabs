@@ -151,7 +151,7 @@ class HomePage(BasePage):
         # League schedule panel (right side).
         self.league_schedule_panel = PanelChrome(
             title="LEAGUE SCHEDULE", 
-            panel_variant="concept",
+            panel_variant="table",
             body_padding=(0, 0, 0, 0)  # No padding for full-width SectionBars
         )
         self.league_schedule_panel.setProperty("panelKey", "league-schedule")
@@ -427,13 +427,13 @@ class GridironLabsMainWindow(QMainWindow):
         self.context_bar = PageContextBar()
         container_layout.addWidget(self.context_bar)
 
-        content_frame = QFrame(self)
+        content_frame = QFrame(container)
         content_frame.setObjectName("ContentFrame")
         content_layout = QVBoxLayout(content_frame)
         content_layout.setContentsMargins(12, 0, 12, 12)
         content_layout.setSpacing(12)
 
-        self.content_stack = QStackedWidget(self)
+        self.content_stack = QStackedWidget(content_frame)
         self.content_stack.setObjectName("ContentStack")
 
         self.pages: dict[str, QWidget] = {}

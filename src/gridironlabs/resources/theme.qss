@@ -148,6 +148,12 @@ QFrame#GridCanvas {
     border: none;
 }
 
+/* Make ContentStack transparent so ContentFrame backdrop shows through */
+QStackedWidget#ContentStack {
+    background-color: transparent;
+    border: none;
+}
+
 QFrame#PageContextBar {
     background-color: #252525;
     border: 1px solid #20242d;
