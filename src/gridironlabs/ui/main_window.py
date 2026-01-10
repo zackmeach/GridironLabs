@@ -65,7 +65,7 @@ class HomePage(BasePage):
 
         # Minimal chrome box to start rebuilding the Home layout.
         self.league_standings_panel = PanelChrome(title="LEAGUE STANDINGS", panel_variant="table")
-        self.league_standings_panel.setObjectName("panel-league-standings")
+        self.league_standings_panel.setProperty("panelKey", "league-standings")
         
         self.league_standings_panel.set_footer_text("View: Standard Standings | 32 Teams")
         # Column headers (use a real layout so it aligns with row columns).
@@ -138,7 +138,7 @@ class HomePage(BasePage):
 
         # League leaders panel (wider to accommodate 7 stat columns).
         self.league_leaders_panel = PanelChrome(title="LEAGUE LEADERS", panel_variant="table")
-        self.league_leaders_panel.setObjectName("panel-league-leaders")
+        self.league_leaders_panel.setProperty("panelKey", "league-leaders")
         self.league_leaders_panel.set_footer_text("Tip: Click a stat to re-rank (best-to-worst).")
 
         self.leaders_filter_bar = LeadersFilterBar(on_change=self._on_leaders_filters_changed)
@@ -154,7 +154,7 @@ class HomePage(BasePage):
             panel_variant="concept",
             body_padding=(0, 0, 0, 0)  # No padding for full-width SectionBars
         )
-        self.league_schedule_panel.setObjectName("panel-league-schedule")
+        self.league_schedule_panel.setProperty("panelKey", "league-schedule")
         self.league_schedule_panel.set_footer_text("Tip: Use ◀ ▶ to change weeks.")
 
         self.schedule_widget = LeagueScheduleWidget()

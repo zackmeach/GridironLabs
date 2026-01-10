@@ -25,6 +25,7 @@ class BasePage(QWidget):
         overlay_config: GridOverlayConfig | None = None,
     ) -> None:
         super().__init__(parent)
+        self.setProperty("pageRole", "base")
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(*SPACING.page_margins)

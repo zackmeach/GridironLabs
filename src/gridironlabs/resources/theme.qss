@@ -138,6 +138,16 @@ QLabel#TickerLabel {
     background-color: #0a0d12; /* Near-black backdrop, darker than panels */
 }
 
+/* Make BasePage and GridCanvas transparent so ContentFrame backdrop shows through */
+QWidget[pageRole="base"] {
+    background-color: transparent;
+}
+
+QFrame#GridCanvas {
+    background-color: transparent;
+    border: none;
+}
+
 QFrame#PageContextBar {
     background-color: #252525;
     border: 1px solid #20242d;
@@ -920,8 +930,8 @@ QWidget#LeadersContent {
 /* Schedule Specifics */
 
 /* Remove border-bottom from PrimaryHeaderBar for schedule panel */
-QFrame#panel-league-schedule QFrame[barRole="primary"],
-QFrame#panel-league-schedule QFrame#PrimaryHeaderBar {
+QFrame#PanelChrome[panelKey="league-schedule"] QFrame[barRole="primary"],
+QFrame#PanelChrome[panelKey="league-schedule"] QFrame#PrimaryHeaderBar {
     border-bottom: none;
 }
 
