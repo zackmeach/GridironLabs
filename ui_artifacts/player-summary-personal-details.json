@@ -1,0 +1,182 @@
+{
+  "actual": {
+    "frame_geometry": {
+      "h": 1471,
+      "w": 2560,
+      "x": 0,
+      "y": -31
+    },
+    "geometry": {
+      "h": 1440,
+      "w": 2560,
+      "x": 0,
+      "y": 0
+    }
+  },
+  "capture": {
+    "target_rects": {
+      "device_pixel_ratio": 1.0,
+      "rect_logical": {
+        "h": 480,
+        "w": 640,
+        "x": 12,
+        "y": 203
+      },
+      "rect_px": {
+        "h": 480,
+        "w": 640,
+        "x": 12,
+        "y": 203
+      }
+    },
+    "window_pixmap_dpr": 1.0
+  },
+  "env": {
+    "qt_scaling": {
+      "QT_AUTO_SCREEN_SCALE_FACTOR": null,
+      "QT_FONT_DPI": null,
+      "QT_SCALE_FACTOR": null,
+      "QT_SCREEN_SCALE_FACTORS": null
+    }
+  },
+  "font": {
+    "pixel_size": -1,
+    "point_size": 12,
+    "requested_family": "Roboto Condensed",
+    "resolved_family": "Roboto Condensed",
+    "style_hint": 5
+  },
+  "mode": "page",
+  "name": "player-summary-personal-details",
+  "requested": {
+    "pos": [
+      0,
+      0
+    ],
+    "resolution": "1440p",
+    "size": [
+      2560,
+      1440
+    ],
+    "size_arg": null
+  },
+  "screen": {
+    "available_geometry": {
+      "h": 1392,
+      "w": 2560,
+      "x": 0,
+      "y": 0
+    },
+    "device_pixel_ratio": 1.0,
+    "geometry": {
+      "h": 1440,
+      "w": 2560,
+      "x": 0,
+      "y": 0
+    },
+    "logical_dpi_x": 96.0,
+    "logical_dpi_y": 96.0,
+    "name": "HP X27q",
+    "physical_dpi_x": 108.91792294807368,
+    "physical_dpi_y": 108.85714285714285
+  },
+  "scrollAreas": [],
+  "settle": {
+    "samples": [
+      {
+        "global_pos": [
+          12,
+          203
+        ],
+        "size": [
+          640,
+          480
+        ],
+        "t_ms": 16,
+        "visible": false
+      },
+      {
+        "global_pos": [
+          12,
+          203
+        ],
+        "size": [
+          640,
+          480
+        ],
+        "t_ms": 63,
+        "visible": false
+      },
+      {
+        "global_pos": [
+          12,
+          203
+        ],
+        "size": [
+          640,
+          480
+        ],
+        "t_ms": 125,
+        "visible": false
+      }
+    ],
+    "stable_after_ms": 125,
+    "stable_samples": 3
+  },
+  "tree": {
+    "children": [
+      {
+        "children": [
+          {
+            "children": [],
+            "class": "GridOverlay",
+            "enabled": true,
+            "geometry": {
+              "h": 30,
+              "w": 100,
+              "x": 0,
+              "y": 0
+            },
+            "global_pos": [
+              12,
+              203
+            ],
+            "objectName": "GridOverlay",
+            "properties": {},
+            "visible": false
+          }
+        ],
+        "class": "GridCanvas",
+        "enabled": true,
+        "geometry": {
+          "h": 30,
+          "w": 100,
+          "x": 0,
+          "y": 0
+        },
+        "global_pos": [
+          12,
+          203
+        ],
+        "objectName": "GridCanvas",
+        "properties": {},
+        "visible": false
+      }
+    ],
+    "class": "PlayerSummaryPage",
+    "enabled": true,
+    "geometry": {
+      "h": 480,
+      "w": 640,
+      "x": 0,
+      "y": 0
+    },
+    "global_pos": [
+      12,
+      203
+    ],
+    "objectName": "page-player-summary",
+    "properties": {},
+    "visible": false
+  }
+}

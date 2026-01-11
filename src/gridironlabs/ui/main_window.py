@@ -19,12 +19,12 @@ from PySide6.QtWidgets import (
 
 from gridironlabs.core.config import AppConfig, AppPaths
 from gridironlabs.core.errors import DataValidationError, NotFoundError
-from gridironlabs.core.models import EntitySummary
-from gridironlabs.core.models import GameSummary
+from gridironlabs.core.models import EntityRef, EntitySummary, GameSummary, Route
 from gridironlabs.data.repository import ParquetSummaryRepository
 from gridironlabs import resources as package_resources
 from gridironlabs.services.search import SearchService
 from gridironlabs.services.summary import SummaryService
+from gridironlabs.ui.navigation_service import NavigationService
 from gridironlabs.ui.pages.settings_page import SettingsPage
 from gridironlabs.ui.pages.team_page import TeamSummaryPage
 from gridironlabs.ui.pages.player_page import PlayerSummaryPage
@@ -379,12 +379,13 @@ class GridironLabsMainWindow(QMainWindow):
         self.repository: ParquetSummaryRepository | None = None
         self.search_service: SearchService | None = None
         self.summary_service: SummaryService | None = None
+        self.nav_service: NavigationService | None = None
 
         self.setObjectName("GridironLabsMainWindow")
         self.setWindowTitle("Gridiron Labs")
         self.setMinimumSize(1100, 720)
 
-        self.history: list[str] = []
+        self.history: list[Route] = []
         self.history_index = -1
         self.navigation_sections = ["home", "seasons", "teams", "players", "drafts", "history"]
         self.context_payloads = self._build_context_payloads(
@@ -464,9 +465,27 @@ class GridironLabsMainWindow(QMainWindow):
         container_layout.addWidget(content_frame)
         self.setCentralWidget(container)
 
+        # Initialize NavigationService early (before data bootstrap)
+        # so navigation works even if data loading fails
+        self._init_navigation_service()
+        
         self._bootstrap_data()
         self._navigate_to("home")
         self._update_history_buttons()
+
+    def _init_navigation_service(self) -> None:
+        """Initialize or re-initialize NavigationService."""
+        # Use summary_service if available, otherwise None (entity nav won't work but section nav will)
+        summary_service = self.summary_service
+        if summary_service is None and self.repository:
+            summary_service = SummaryService(repository=self.repository)
+        
+        self.nav_service = NavigationService(
+            content_stack=self.content_stack,
+            pages=self.pages,
+            summary_service=summary_service,  # type: ignore[arg-type]
+            logger=self.logger,
+        )
 
     def _build_sections(self) -> None:
         definitions: dict[str, tuple[str, str]] = {
@@ -504,6 +523,9 @@ class GridironLabsMainWindow(QMainWindow):
             self.summary_service = SummaryService(repository=self.repository)
             self.search_service = SearchService(repository=self.repository)
             self.search_service.build_index()
+            
+            # Re-initialize NavigationService with real summary service
+            self._init_navigation_service()
 
             seasons = {p.era for p in players if p.era} | {t.era for t in teams if t.era}
             season_span = (
@@ -532,15 +554,22 @@ class GridironLabsMainWindow(QMainWindow):
         except NotFoundError as exc:
             if self.logger:
                 self.logger.warning("Data missing", extra={"error": str(exc)})
-            self._refresh_context_payloads(players=0, teams=0, coaches=0, seasons_span="No seasons detected")
+            # Initialize with empty context (skip context bar update if history is empty)
+            self.context_payloads = self._build_context_payloads(
+                players=0, teams=0, coaches=0, seasons_span="No seasons detected"
+            )
         except DataValidationError as exc:
             if self.logger:
                 self.logger.error("Data validation failed", extra={"error": str(exc)})
-            self._refresh_context_payloads(players=0, teams=0, coaches=0, seasons_span="Validation error")
+            self.context_payloads = self._build_context_payloads(
+                players=0, teams=0, coaches=0, seasons_span="Validation error"
+            )
         except Exception as exc:  # pragma: no cover - catch-all for UI bootstrap
             if self.logger:
                 self.logger.exception("Unhandled data bootstrap failure", exc_info=exc)
-            self._refresh_context_payloads(players=0, teams=0, coaches=0, seasons_span="Load failure")
+            self.context_payloads = self._build_context_payloads(
+                players=0, teams=0, coaches=0, seasons_span="Load failure"
+            )
 
     def _update_page_subtitles(
         self,
@@ -631,8 +660,9 @@ class GridironLabsMainWindow(QMainWindow):
         self.context_payloads = self._build_context_payloads(
             players=players, teams=teams, coaches=coaches, seasons_span=seasons_span
         )
-        current_section = self.history[self.history_index] if self.history_index >= 0 else "home"
-        self._update_context_bar(current_section)
+        if self.history_index >= 0 and self.history:
+            current_route = self.history[self.history_index]
+            self._update_context_bar_for_route(current_route)
 
     # --- Public navigation API (for dev tooling / snapshot CLI) ---
     def navigate_to(self, page_or_object_name: str) -> None:
@@ -645,7 +675,22 @@ class GridironLabsMainWindow(QMainWindow):
                     "Navigation target not found", extra={"target": page_or_object_name}
                 )
             return
-        self._navigate_to(target_key)
+        
+        # Convert widget key to semantic route page
+        # Reverse lookup in ROUTE_TO_PAGE_KEY
+        from gridironlabs.ui.navigation_service import ROUTE_TO_PAGE_KEY
+        semantic_page = None
+        for semantic, widget_key in ROUTE_TO_PAGE_KEY.items():
+            if widget_key == target_key:
+                semantic_page = semantic
+                break
+        
+        if semantic_page:
+            route = Route(page=semantic_page)  # type: ignore[arg-type]
+            self.navigate(route)
+        else:
+            # Fallback to legacy navigation for unmapped pages
+            self._navigate_to(target_key)
 
     def _section_key_from_identifier(self, identifier: str) -> str | None:
         if identifier in self.pages:
@@ -655,36 +700,48 @@ class GridironLabsMainWindow(QMainWindow):
                 return key
         return None
 
-    def _update_context_bar(self, section_key: str) -> None:
+    def _update_context_bar_for_route(self, route: Route) -> None:
+        """Update context bar based on route."""
+        section_key = route.page
         payload = self.context_payloads.get(section_key, self.context_payloads.get("default", {}))
         title = payload.get("title", "Context")
         subtitle = payload.get("subtitle", "")
         stats = payload.get("stats", [])
         self.context_bar.set_content(title=title, subtitle=subtitle, stats=stats)  # type: ignore[arg-type]
 
-    def _navigate_to(self, section_key: str, *, from_history: bool = False) -> None:
-        if section_key not in self.pages:
+    def navigate(self, route: Route, *, from_history: bool = False) -> None:
+        """Navigate to a route using NavigationService."""
+        if self.nav_service is None:
+            if self.logger:
+                self.logger.warning("NavigationService not initialized", extra={"route": str(route)})
             return
-        target = self.pages[section_key]
-        self.content_stack.setCurrentWidget(target)
-        if section_key in self.navigation_sections:
-            self.top_nav.set_active(section_key)
+        
+        self.nav_service.navigate(route, from_history=from_history)
+        
+        # Update nav bar active state for section pages
+        if route.page in self.navigation_sections:
+            self.top_nav.set_active(route.page)
         else:
             self.top_nav.clear_active()
-
+        
         if not from_history:
-            self._record_history(section_key)
+            self._record_history(route)
         self._update_history_buttons()
-        self._update_context_bar(section_key)
+        self._update_context_bar_for_route(route)
 
-        if self.logger:
-            self.logger.info("Navigate", extra={"section": section_key})
+    def _navigate_to(self, section_key: str, *, from_history: bool = False) -> None:
+        """Legacy navigation for section pages (backward compatibility)."""
+        route = Route(page=section_key)  # type: ignore[arg-type]
+        self.navigate(route, from_history=from_history)
 
-    def _record_history(self, section_key: str) -> None:
-        if self.history and self.history[self.history_index] == section_key:
-            return
+    def _record_history(self, route: Route) -> None:
+        # Don't record duplicate routes
+        if self.history and self.history_index >= 0:
+            current = self.history[self.history_index]
+            if current.page == route.page and current.entity == route.entity:
+                return
         self.history = self.history[: self.history_index + 1]
-        self.history.append(section_key)
+        self.history.append(route)
         self.history_index = len(self.history) - 1
 
     def _update_history_buttons(self) -> None:
@@ -697,13 +754,13 @@ class GridironLabsMainWindow(QMainWindow):
         if self.history_index <= 0:
             return
         self.history_index -= 1
-        self._navigate_to(self.history[self.history_index], from_history=True)
+        self.navigate(self.history[self.history_index], from_history=True)
 
     def _go_forward(self) -> None:
         if self.history_index >= len(self.history) - 1:
             return
         self.history_index += 1
-        self._navigate_to(self.history[self.history_index], from_history=True)
+        self.navigate(self.history[self.history_index], from_history=True)
 
     def _on_home(self) -> None:
         self._navigate_to("home")
@@ -724,9 +781,14 @@ class GridironLabsMainWindow(QMainWindow):
         self._navigate_to("settings")
 
     def _on_team_selected(self, team_name: str) -> None:
+        """Legacy team click handler (name-based, for dummy standings).
+        
+        TODO Phase 2: Replace with EntityRef-based clicks from data-driven standings.
+        """
         # Accept either full team name ("Kansas City Chiefs") or abbreviation ("KC").
         # Some UI surfaces may fall back to abbreviations if the team lookup is unavailable.
         resolved_name = team_name
+        team_id = None
         if self.repository:
             try:
                 teams = list(self.repository.iter_teams())
@@ -740,18 +802,23 @@ class GridironLabsMainWindow(QMainWindow):
                 )
                 if match:
                     resolved_name = match.name
+                    team_id = match.id
             except Exception:
                 pass
-        if self.logger:
-            self.logger.info("Team selected", extra={"team": resolved_name, "raw_team": team_name})
-        self.team_summary_page.set_team(resolved_name)
-        self._navigate_to("team-summary")
+        
+        if team_id:
+            # Navigate via Route + EntityRef
+            route = Route(page="team", entity=EntityRef(entity_type="team", id=team_id))
+            self.navigate(route)
+        else:
+            # Fallback: show placeholder (no team found)
+            if self.logger:
+                self.logger.warning("Team not found", extra={"team_name": team_name})
 
-    def _on_player_selected(self, player_name: str) -> None:
-        if self.logger:
-            self.logger.info("Player selected", extra={"player": player_name})
-        self.player_summary_page.set_player(player_name)
-        self._navigate_to("player-summary")
+    def _on_player_selected(self, entity_ref: EntityRef) -> None:
+        """Player click handler (EntityRef-based)."""
+        route = Route(page="player", entity=entity_ref)
+        self.navigate(route)
 
     def _build_upcoming_matchups(
         self, games: Iterable[GameSummary], teams: Iterable[Any]

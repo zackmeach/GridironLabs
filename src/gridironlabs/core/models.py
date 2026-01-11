@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime
-from typing import Mapping, Sequence
+from typing import Any, Literal, Mapping, Sequence
 
 
 @dataclass(frozen=True)
@@ -69,3 +69,35 @@ class GameSummary:
     home_score: int | None = None
     away_score: int | None = None
     playoff_round: str | None = None
+
+
+@dataclass(frozen=True)
+class EntityRef:
+    """Canonical reference to a player/team/coach entity for navigation."""
+
+    entity_type: Literal["player", "team", "coach"]
+    id: str
+    season: int | None = None  # optional; future-proofing for multi-era data
+
+
+@dataclass(frozen=True)
+class Route:
+    """Internal navigation route (typed; history stores Route instances)."""
+
+    page: Literal["home", "player", "team", "coach", "search", "settings"]
+    entity: EntityRef | None = None
+    params: dict[str, Any] = field(default_factory=dict)
+    ui_state: dict[str, Any] = field(default_factory=dict)
+
+
+def route_to_string(route: Route) -> str:
+    """Convert Route to a debug/log string (no parsing implemented in Phase 1)."""
+    if route.entity:
+        entity_str = f"{route.entity.entity_type}:{route.entity.id}"
+        if route.entity.season:
+            entity_str += f"@{route.entity.season}"
+        return f"Route({route.page}, {entity_str})"
+    if route.params:
+        params_str = ",".join(f"{k}={v}" for k, v in route.params.items())
+        return f"Route({route.page}, params={params_str})"
+    return f"Route({route.page})"

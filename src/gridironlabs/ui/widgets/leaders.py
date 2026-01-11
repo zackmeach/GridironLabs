@@ -8,7 +8,7 @@ from typing import Callable, Iterable, Mapping
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget
 
-from gridironlabs.core.models import EntitySummary
+from gridironlabs.core.models import EntityRef, EntitySummary
 from gridironlabs.ui.panels.bars.standard_bars import SectionBar
 from gridironlabs.ui.widgets.scroll_guard import make_locked_scroll
 
@@ -150,12 +150,12 @@ class LeadersRow(QFrame):
         rank: int,
         player: EntitySummary,
         stats: tuple[LeadersStatSpec, ...],
-        on_player_click: Callable[[str], None] | None,
+        on_player_click: Callable[[EntityRef], None] | None,
     ) -> None:
         super().__init__()
         self.setObjectName("LeadersRow")
         self.setFixedHeight(ROW_H)
-        self._player_name = player.name
+        self._player = player
         self._on_player_click = on_player_click
 
         if self._on_player_click is not None:
@@ -193,7 +193,9 @@ class LeadersRow(QFrame):
 
     def mousePressEvent(self, event) -> None:  # type: ignore[override]
         if event.button() == Qt.LeftButton and self._on_player_click is not None:
-            self._on_player_click(self._player_name)
+            # Phase 1: emit only id (no season derivation from era)
+            entity_ref = EntityRef(entity_type="player", id=self._player.id)
+            self._on_player_click(entity_ref)
             event.accept()
             return
         super().mousePressEvent(event)
@@ -205,7 +207,7 @@ class CategorySection(QFrame):
         *,
         spec: LeadersCategorySpec,
         players: list[EntitySummary],
-        on_player_click: Callable[[str], None] | None,
+        on_player_click: Callable[[EntityRef], None] | None,
     ) -> None:
         super().__init__()
         self.setObjectName("LeadersCategorySection")
@@ -651,7 +653,7 @@ class LeagueLeadersWidget(QFrame):
     def __init__(
         self,
         *,
-        on_player_click: Callable[[str], None] | None = None,
+        on_player_click: Callable[[EntityRef], None] | None = None,
         category_specs: tuple[LeadersCategorySpec, ...] | None = None,
     ) -> None:
         super().__init__()

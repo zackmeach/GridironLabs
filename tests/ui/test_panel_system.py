@@ -182,6 +182,12 @@ def test_micro_scroll_guard_disables_1px_overflow_and_restores_for_real_overflow
 
 @pytest.mark.qt
 def test_standings_row_click_navigates_to_team_summary(qtbot, monkeypatch, tmp_path):
+    """Test standings row click navigation (requires data).
+    
+    Note: This test now requires actual team data in the repository because
+    navigation is ID-based. Without data, the team lookup fails and navigation
+    doesn't happen (which is correct behavior).
+    """
     root = tmp_path / "app"
     root.mkdir()
     monkeypatch.setenv("GRIDIRONLABS_ROOT", str(root))
@@ -189,6 +195,64 @@ def test_standings_row_click_navigates_to_team_summary(qtbot, monkeypatch, tmp_p
     paths = AppPaths.from_env()
     config = load_config(paths, env_file=None)
     logger = logging.getLogger("gridironlabs.ui.test")
+
+    # Create fake team data so navigation can work
+    from datetime import date
+    import polars as pl
+    from gridironlabs.core.models import EntitySummary
+    
+    processed_dir = paths.data_processed
+    processed_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Create a minimal teams.parquet with Buffalo Bills
+    teams_data = {
+        "id": ["team-buf-2025"],
+        "name": ["Buffalo Bills"],
+        "entity_type": ["team"],
+        "era": ["2025"],
+        "team": ["BUF"],
+        "ratings": [{"overall": 85.0}],
+        "stats": [{"wins": 11.0, "losses": 6.0}],
+        "schema_version": ["v0"],
+        "source": ["test"],
+        "updated_at": [date(2025, 1, 1)],
+        "logo_url": [None],
+        "logo_path": [None],
+    }
+    pl.from_dict(teams_data).write_parquet(processed_dir / "teams.parquet")
+    
+    # Also create empty players/coaches/games so repository doesn't fail
+    for table_name in ["players", "coaches"]:
+        empty_data = {
+            "id": [],
+            "name": [],
+            "entity_type": [],
+            "era": [],
+            "team": [],
+            "position": [],
+            "ratings": [],
+            "stats": [],
+            "schema_version": [],
+            "source": [],
+            "updated_at": [],
+        }
+        pl.from_dict(empty_data).write_parquet(processed_dir / f"{table_name}.parquet")
+    
+    games_data = {
+        "id": [],
+        "season": [],
+        "week": [],
+        "home_team": [],
+        "away_team": [],
+        "location": [],
+        "start_time": [],
+        "status": [],
+        "is_postseason": [],
+        "playoff_round": [],
+        "home_score": [],
+        "away_score": [],
+    }
+    pl.from_dict(games_data).write_parquet(processed_dir / "games.parquet")
 
     window = GridironLabsMainWindow(config=config, paths=paths, logger=logger)
     qtbot.addWidget(window)

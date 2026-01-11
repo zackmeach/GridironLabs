@@ -50,6 +50,10 @@ class ParquetSummaryRepository:
 
         self._entity_cache: dict[str, list[EntitySummary]] = {}
         self._games_cache: list[GameSummary] | None = None
+        # O(1) id→index maps (rebuilt any time entity cache is loaded/reloaded)
+        self._players_by_id: dict[str, int] = {}
+        self._teams_by_id: dict[str, int] = {}
+        self._coaches_by_id: dict[str, int] = {}
 
     def _path_for(self, name: str) -> Path:
         return self.root / f"{name}.parquet"
@@ -217,7 +221,18 @@ class ParquetSummaryRepository:
             )
 
         self._entity_cache[name] = records
+        # Rebuild id→index map for this table (repository is single owner)
+        self._rebuild_index_for_table(name, records)
         return records
+
+    def _rebuild_index_for_table(self, name: str, records: list[EntitySummary]) -> None:
+        """Rebuild id→index map when entity cache is loaded/reloaded."""
+        if name == "players":
+            self._players_by_id = {entity.id: idx for idx, entity in enumerate(records)}
+        elif name == "teams":
+            self._teams_by_id = {entity.id: idx for idx, entity in enumerate(records)}
+        elif name == "coaches":
+            self._coaches_by_id = {entity.id: idx for idx, entity in enumerate(records)}
 
     def iter_players(self) -> Iterable[EntitySummary]:
         return self._load_entity_table("players")
@@ -228,23 +243,41 @@ class ParquetSummaryRepository:
     def iter_coaches(self) -> Iterable[EntitySummary]:
         return self._load_entity_table("coaches")
 
+    def get_player_by_id(self, player_id: str) -> EntitySummary:
+        """O(1) lookup by player id using index."""
+        players = self._load_entity_table("players")
+        idx = self._players_by_id.get(player_id)
+        if idx is None:
+            raise NotFoundError(f"Player {player_id} not found")
+        return players[idx]
+
+    def get_team_by_id(self, team_id: str) -> EntitySummary:
+        """O(1) lookup by team id using index."""
+        teams = self._load_entity_table("teams")
+        idx = self._teams_by_id.get(team_id)
+        if idx is None:
+            raise NotFoundError(f"Team {team_id} not found")
+        return teams[idx]
+
+    def get_coach_by_id(self, coach_id: str) -> EntitySummary:
+        """O(1) lookup by coach id using index."""
+        coaches = self._load_entity_table("coaches")
+        idx = self._coaches_by_id.get(coach_id)
+        if idx is None:
+            raise NotFoundError(f"Coach {coach_id} not found")
+        return coaches[idx]
+
     def get_player(self, player_id: str) -> EntitySummary:
-        for player in self.iter_players():
-            if player.id == player_id:
-                return player
-        raise NotFoundError(f"Player {player_id} not found")
+        """Backward compatibility wrapper for get_player_by_id."""
+        return self.get_player_by_id(player_id)
 
     def get_team(self, team_id: str) -> EntitySummary:
-        for team in self.iter_teams():
-            if team.id == team_id:
-                return team
-        raise NotFoundError(f"Team {team_id} not found")
+        """Backward compatibility wrapper for get_team_by_id."""
+        return self.get_team_by_id(team_id)
 
     def get_coach(self, coach_id: str) -> EntitySummary:
-        for coach in self.iter_coaches():
-            if coach.id == coach_id:
-                return coach
-        raise NotFoundError(f"Coach {coach_id} not found")
+        """Backward compatibility wrapper for get_coach_by_id."""
+        return self.get_coach_by_id(coach_id)
 
     def iter_games(self) -> Iterable[GameSummary]:
         if self._games_cache is not None:
@@ -304,6 +337,9 @@ class ParquetSummaryRepository:
 
         self._entity_cache.clear()
         self._games_cache = None
+        self._players_by_id.clear()
+        self._teams_by_id.clear()
+        self._coaches_by_id.clear()
 
     def validate_schema(self) -> None:
         """Placeholder for schema validation logic."""
